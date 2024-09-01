@@ -5,6 +5,8 @@ export type UserState = {
     avatar?: string
     userName?: string
     email?: string
+    key: string
+    status: boolean
     authority?: string[]
 }
 
@@ -12,6 +14,8 @@ const initialState: UserState = {
     avatar: '',
     userName: '',
     email: '',
+    key: '',
+    status: false,
     authority: [],
 }
 

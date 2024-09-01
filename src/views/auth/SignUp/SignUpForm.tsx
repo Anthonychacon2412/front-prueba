@@ -9,6 +9,7 @@ import { Field, Form, Formik } from 'formik'
 import * as Yup from 'yup'
 import useAuth from '@/utils/hooks/useAuth'
 import type { CommonProps } from '@/@types/common'
+import { Notification, toast } from '@/components/ui'
 
 interface SignUpFormProps extends CommonProps {
     disableSubmit?: boolean
@@ -44,15 +45,63 @@ const SignUpForm = (props: SignUpFormProps) => {
         values: SignUpFormSchema,
         setSubmitting: (isSubmitting: boolean) => void,
     ) => {
-        const { userName, password, email } = values
         setSubmitting(true)
-        const result = await signUp({ userName, password, email })
 
-        if (result?.status === 'failed') {
-            setMessage(result.message)
+        console.log(values)
+
+        const newUser = {
+            email: values.email,
+            registered: true,
+            status: true,
+            verified: false,
+            password: values.password,
         }
 
+        console.log(newUser)
+
+        signUp(newUser)
+            .then((resp) => {
+                console.log(resp)
+            })
+            .catch((error) => {
+                console.log(error)
+                // if (result?.status === 'failed') {
+                switch (error) {
+                    case 'FirebaseError: Firebase: Password should be at least 6 characters (auth/weak-password).':
+                        showToast(
+                            'La contraseña debe tener al menos 6 caracteres.',
+                        )
+
+                        break
+                    case 'Firebase: Error (auth/email-already-in-use).':
+                        showToast(
+                            'La dirección de correo electrónico ya está en uso por otra cuenta',
+                        )
+                        break
+                    case 'Firebase: Error (auth/invalid-email).':
+                        showToast(
+                            'La dirección de correo electrónico no es valida',
+                        )
+                        break
+                    default:
+                        showToast(error)
+                        break
+                }
+                // }
+            })
+
         setSubmitting(false)
+    }
+
+    const showToast = (message: any = '') => {
+        toast.push(
+            <Notification title={'Atención'} type="warning" duration={2500}>
+                {message}
+            </Notification>,
+            {
+                placement: 'top-center',
+            },
+        )
     }
 
     return (
