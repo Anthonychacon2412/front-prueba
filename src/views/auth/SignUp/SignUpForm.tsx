@@ -82,7 +82,7 @@ const SignUpForm = (props: SignUpFormProps) => {
                     <Form>
                         <FormContainer>
                             <FormItem
-                                label="User Name"
+                                label="Nombre de Usuario"
                                 invalid={errors.userName && touched.userName}
                                 errorMessage={errors.userName}
                             >
@@ -90,12 +90,12 @@ const SignUpForm = (props: SignUpFormProps) => {
                                     type="text"
                                     autoComplete="off"
                                     name="userName"
-                                    placeholder="User Name"
+                                    placeholder="Nombre de usuario"
                                     component={Input}
                                 />
                             </FormItem>
                             <FormItem
-                                label="Email"
+                                label="Correo"
                                 invalid={errors.email && touched.email}
                                 errorMessage={errors.email}
                             >
@@ -103,24 +103,24 @@ const SignUpForm = (props: SignUpFormProps) => {
                                     type="email"
                                     autoComplete="off"
                                     name="email"
-                                    placeholder="Email"
+                                    placeholder="Correo"
                                     component={Input}
                                 />
                             </FormItem>
                             <FormItem
-                                label="Password"
+                                label="Contraseña"
                                 invalid={errors.password && touched.password}
                                 errorMessage={errors.password}
                             >
                                 <Field
                                     autoComplete="off"
                                     name="password"
-                                    placeholder="Password"
+                                    placeholder="Contraseña"
                                     component={PasswordInput}
                                 />
                             </FormItem>
                             <FormItem
-                                label="Confirm Password"
+                                label="Confrimar Contraseña"
                                 invalid={
                                     errors.confirmPassword &&
                                     touched.confirmPassword
@@ -130,7 +130,7 @@ const SignUpForm = (props: SignUpFormProps) => {
                                 <Field
                                     autoComplete="off"
                                     name="confirmPassword"
-                                    placeholder="Confirm Password"
+                                    placeholder="Confrimar Contraseña"
                                     component={PasswordInput}
                                 />
                             </FormItem>
@@ -143,7 +143,7 @@ const SignUpForm = (props: SignUpFormProps) => {
                                 {isSubmitting ? 'Creando cuenta' : 'Registrar'}
                             </Button>
                             <div className="mt-4 text-center">
-                                <span>Already have an account? </span>
+                                <span>¿Ya tienes una cuenta? </span>
                                 <ActionLink to={signInUrl}>
                                     Iniciar Sesion
                                 </ActionLink>

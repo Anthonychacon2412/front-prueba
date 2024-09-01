@@ -17,7 +17,7 @@ const Cover = ({ children, content, ...rest }: CoverProps) => {
                     backgroundImage: `url('/img/others/auth-cover-bg.jpg')`,
                 }}
             >
-                <Logo mode="dark" />
+                <Logo />
                 <div>
                     <h3 className="text-white mb-4">
                         Jump start your project with Mobility

@@ -1,3 +1,5 @@
+import { BsEye } from 'react-icons/bs'
+import { FaRegEye } from 'react-icons/fa'
 import {
     HiOutlineChartSquareBar,
     HiOutlineUserGroup,
@@ -57,6 +59,7 @@ const navigationIcon: NavigationIcons = {
     utilsDoc: <HiOutlineVariable />,
     changeLog: <HiOutlineCode />,
     maptime: <RiMapPinTimeLine />,
+    eye: <FaRegEye />,
 }
 
 export default navigationIcon

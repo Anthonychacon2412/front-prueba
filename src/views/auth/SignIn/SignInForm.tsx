@@ -24,8 +24,8 @@ type SignInFormSchema = {
 }
 
 const validationSchema = Yup.object().shape({
-    userName: Yup.string().required('Please enter your user name'),
-    password: Yup.string().required('Please enter your password'),
+    userName: Yup.string().required('Por favor ingrese su nombre de usuario'),
+    password: Yup.string().required('Por favor ingrese su contraseña'),
     rememberMe: Yup.bool(),
 })
 
@@ -83,7 +83,7 @@ const SignInForm = (props: SignInFormProps) => {
                     <Form>
                         <FormContainer>
                             <FormItem
-                                label="Correo electrónico o cédula de identidad"
+                                label="Nombre de Usuario"
                                 invalid={
                                     (errors.userName &&
                                         touched.userName) as boolean
@@ -94,7 +94,7 @@ const SignInForm = (props: SignInFormProps) => {
                                     type="text"
                                     autoComplete="off"
                                     name="userName"
-                                    placeholder="Ingrese su correo electrónico o cedula de identidad"
+                                    placeholder="Ingrese su nombre de usuario"
                                     component={Input}
                                 />
                             </FormItem>
