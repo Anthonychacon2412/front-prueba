@@ -21,5 +21,15 @@ export default defineConfig({
   },
   build: {
     outDir: 'build'
-  }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://api.ejemplo.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 });
+
