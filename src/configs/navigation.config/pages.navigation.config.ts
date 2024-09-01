@@ -1,4 +1,4 @@
-import { PAGES_PREFIX_PATH } from '@/constants/route.constant'
+import { APP_PREFIX_PATH, PAGES_PREFIX_PATH } from '@/constants/route.constant'
 import {
     NAV_ITEM_TYPE_TITLE,
     NAV_ITEM_TYPE_ITEM,
@@ -17,25 +17,37 @@ const pagesNavigationConfig: NavigationTree[] = [
         authority: [ADMIN, USER],
         subMenu: [
             {
-                key: 'pages.welcome',
-                path: `${PAGES_PREFIX_PATH}/welcome`,
-                title: 'Welcome',
-                translateKey: 'nav.pages.welcome',
-                icon: 'welcome',
+                key: 'pages.supervisiones',
+                path: `${APP_PREFIX_PATH}/supervisiones`,
+                title: 'Supervisiones',
+                translateKey: 'nav.pages.supervisiones',
+                icon: 'crm',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
                 subMenu: [],
             },
             {
-                key: 'pages.accessDenied',
-                path: '/access-denied',
-                title: 'Access Denied',
-                translateKey: 'nav.pages.accessDenied',
-                icon: 'accessDenied',
+                key: 'pages.form',
+                path: `${APP_PREFIX_PATH}/form`,
+                title: 'Formulario',
+                translateKey: 'nav.pages.form',
+                icon: 'forms',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
                 subMenu: [],
             },
+            {
+                key: 'pages.seguimiento',
+                path: `${APP_PREFIX_PATH}/seguimiento`,
+                title: 'Seguimiento',
+                translateKey: 'nav.pages.seguimiento',
+                icon: 'maptime',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },
+            
+        
         ],
     },
 ]

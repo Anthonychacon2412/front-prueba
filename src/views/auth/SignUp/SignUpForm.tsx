@@ -22,14 +22,14 @@ type SignUpFormSchema = {
 }
 
 const validationSchema = Yup.object().shape({
-    userName: Yup.string().required('Please enter your user name'),
+    userName: Yup.string().required('Por favor ingrese su nombre de usuario'),
     email: Yup.string()
-        .email('Invalid email')
-        .required('Please enter your email'),
-    password: Yup.string().required('Please enter your password'),
+        .email('Correo invalido')
+        .required('Por favor ingrese un correo'),
+    password: Yup.string().required('Por favor ingrese una contraseña'),
     confirmPassword: Yup.string().oneOf(
         [Yup.ref('password')],
-        'Your passwords do not match'
+        'Las contraseñas no coinciden',
     ),
 })
 
@@ -42,7 +42,7 @@ const SignUpForm = (props: SignUpFormProps) => {
 
     const onSignUp = async (
         values: SignUpFormSchema,
-        setSubmitting: (isSubmitting: boolean) => void
+        setSubmitting: (isSubmitting: boolean) => void,
     ) => {
         const { userName, password, email } = values
         setSubmitting(true)
@@ -64,10 +64,10 @@ const SignUpForm = (props: SignUpFormProps) => {
             )}
             <Formik
                 initialValues={{
-                    userName: 'admin1',
-                    password: '123Qwe1',
-                    confirmPassword: '123Qwe1',
-                    email: 'test@testmail.com',
+                    userName: '',
+                    password: '',
+                    confirmPassword: '',
+                    email: '',
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
@@ -140,13 +140,13 @@ const SignUpForm = (props: SignUpFormProps) => {
                                 variant="solid"
                                 type="submit"
                             >
-                                {isSubmitting
-                                    ? 'Creating Account...'
-                                    : 'Sign Up'}
+                                {isSubmitting ? 'Creando cuenta' : 'Registrar'}
                             </Button>
                             <div className="mt-4 text-center">
                                 <span>Already have an account? </span>
-                                <ActionLink to={signInUrl}>Sign in</ActionLink>
+                                <ActionLink to={signInUrl}>
+                                    Iniciar Sesion
+                                </ActionLink>
                             </div>
                         </FormContainer>
                     </Form>

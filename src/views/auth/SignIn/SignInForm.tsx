@@ -137,7 +137,7 @@ const SignInForm = (props: SignInFormProps) => {
                                 <div className="mt-0 text-center text-xs">
                                     <span>{`¿No te has registrado?`} </span>
                                     <ActionLink to={signUpUrl}>
-                                        Iniciar sesión
+                                        Registrarse
                                     </ActionLink>
                                 </div>
                             </div>
