@@ -24,6 +24,7 @@ import {
     HiOutlineVariable,
     HiOutlineCode,
 } from 'react-icons/hi'
+import { RiMapPinTimeLine } from 'react-icons/ri'
 
 export type NavigationIcons = Record<string, JSX.Element>
 
@@ -55,6 +56,7 @@ const navigationIcon: NavigationIcons = {
     sharedComponentDoc: <HiOutlineShare />,
     utilsDoc: <HiOutlineVariable />,
     changeLog: <HiOutlineCode />,
+    maptime: <RiMapPinTimeLine />,
 }
 
 export default navigationIcon

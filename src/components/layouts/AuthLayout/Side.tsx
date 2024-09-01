@@ -11,27 +11,9 @@ interface SideProps extends CommonProps {
 const Side = ({ children, content, ...rest }: SideProps) => {
     return (
         <div className="grid lg:grid-cols-3 h-full">
-            <div
-                className="bg-no-repeat bg-cover py-6 px-16 flex-col justify-between hidden lg:flex"
-                style={{
-                    backgroundImage: `url('/img/others/auth-side-bg.png')`,
-                }}
-            >
-                <Logo mode="dark" />
+            <div className=" bg-orange-600 bg-no-repeat bg-cover py-6 px-16 flex-col justify-between hidden lg:flex">
+                <h1 className="text-white">Mobility</h1>
                 <div>
-                    <div className="mb-6 flex items-center gap-4">
-                        <Avatar
-                            className="border-2 border-white"
-                            shape="circle"
-                            src="/img/avatars/thumb-10.jpg"
-                        />
-                        <div className="text-white">
-                            <div className="font-semibold text-base">
-                                Brittany Hale
-                            </div>
-                            <span className="opacity-80">CTO, Onward</span>
-                        </div>
-                    </div>
                     <p className="text-lg text-white opacity-80">
                         Mobility comes with a complete set of UI components
                         crafted with Tailwind CSS, it fulfilled most of the use

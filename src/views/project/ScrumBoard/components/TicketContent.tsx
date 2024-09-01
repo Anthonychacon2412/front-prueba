@@ -91,7 +91,7 @@ const TicketContent = ({ onTicketClose }: { onTicketClose: () => void }) => {
     const ticketId = useAppSelector((state) => state.scrumBoard.data.ticketId)
     const columns = useAppSelector((state) => state.scrumBoard.data.columns)
     const boardMembers = useAppSelector(
-        (state) => state.scrumBoard.data.boardMembers
+        (state) => state.scrumBoard.data.boardMembers,
     )
 
     const dispatch = useAppDispatch()
@@ -215,7 +215,7 @@ const TicketContent = ({ onTicketClose }: { onTicketClose: () => void }) => {
                                                 (member) =>
                                                     !ticketData.members?.some(
                                                         (m) =>
-                                                            m.id === member.id
+                                                            m.id === member.id,
                                                     ) && (
                                                         <Dropdown.Item
                                                             key={member.name}
@@ -243,7 +243,7 @@ const TicketContent = ({ onTicketClose }: { onTicketClose: () => void }) => {
                                                                 </div>
                                                             </div>
                                                         </Dropdown.Item>
-                                                    )
+                                                    ),
                                             )}
                                         </Dropdown>
                                     )}
@@ -274,7 +274,7 @@ const TicketContent = ({ onTicketClose }: { onTicketClose: () => void }) => {
                                             {labelList.map(
                                                 (label) =>
                                                     !ticketData.labels?.includes(
-                                                        label
+                                                        label,
                                                     ) && (
                                                         <Dropdown.Item
                                                             key={label}
@@ -292,7 +292,7 @@ const TicketContent = ({ onTicketClose }: { onTicketClose: () => void }) => {
                                                                 </span>
                                                             </div>
                                                         </Dropdown.Item>
-                                                    )
+                                                    ),
                                             )}
                                         </Dropdown>
                                     </div>
@@ -401,9 +401,9 @@ const TicketContent = ({ onTicketClose }: { onTicketClose: () => void }) => {
                                                                 </span>
                                                                 <span>
                                                                     {dayjs(
-                                                                        comment.date
+                                                                        comment.date,
                                                                     ).format(
-                                                                        'DD MMMM YYYY'
+                                                                        'DD MMMM YYYY',
                                                                     )}
                                                                 </span>
                                                             </div>
@@ -414,7 +414,7 @@ const TicketContent = ({ onTicketClose }: { onTicketClose: () => void }) => {
                                                             </p>
                                                         </div>
                                                     </div>
-                                                )
+                                                ),
                                             )}
                                         </>
                                     )}

@@ -282,7 +282,7 @@ const Issue = () => {
                                 ) : (
                                     <div className="prose dark:prose-invert max-w-none">
                                         {ReactHtmlParser(
-                                            data.description || ''
+                                            data.description || '',
                                         )}
                                     </div>
                                 )}
@@ -297,8 +297,8 @@ const Issue = () => {
                                                 item,
                                                 isLastChild(
                                                     data.activity || [],
-                                                    index
-                                                )
+                                                    index,
+                                                ),
                                             )}
                                         </Fragment>
                                     ))}

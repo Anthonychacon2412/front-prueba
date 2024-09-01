@@ -11,9 +11,21 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
-        key: 'appsProject.projectList',
-        path: `${APP_PREFIX_PATH}/project/project-list`,
-        component: lazy(() => import('@/views/project/ProjectList')),
+        key: 'appform',
+        path: `${APP_PREFIX_PATH}/form`,
+        component: lazy(() => import('@/views/form/index')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'appsupervisiones',
+        path: `${APP_PREFIX_PATH}/supervisiones`,
+        component: lazy(() => import('@/views/supervisiones/index')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'appseguimiento',
+        path: `${APP_PREFIX_PATH}/seguimiento`,
+        component: lazy(() => import('@/views/seguimiento/index')),
         authority: [ADMIN, USER],
     },
     {
@@ -183,7 +195,7 @@ const appsRoute: Routes = [
                 () =>
                     import(
                         '@/views/knowledge-base/ManageArticles/components/PanelHeader'
-                    )
+                    ),
             ),
             headerContainer: true,
         },
