@@ -21,7 +21,7 @@ type ForgotPasswordFormSchema = {
 }
 
 const validationSchema = Yup.object().shape({
-    email: Yup.string().required('Please enter your email'),
+    email: Yup.string().required('Por favor ingrese su correo electronico'),
 })
 
 const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
@@ -33,7 +33,7 @@ const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
 
     const onSendMail = async (
         values: ForgotPasswordFormSchema,
-        setSubmitting: (isSubmitting: boolean) => void
+        setSubmitting: (isSubmitting: boolean) => void,
     ) => {
         setSubmitting(true)
         try {
@@ -45,7 +45,7 @@ const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
         } catch (errors) {
             setMessage(
                 (errors as AxiosError<{ message: string }>)?.response?.data
-                    ?.message || (errors as Error).toString()
+                    ?.message || (errors as Error).toString(),
             )
             setSubmitting(false)
         }
@@ -56,18 +56,18 @@ const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
             <div className="mb-6">
                 {emailSent ? (
                     <>
-                        <h3 className="mb-1">Check your email</h3>
+                        <h3 className="mb-1">Revisa tu correo electrónico</h3>
                         <p>
-                            We have sent a password recovery instruction to your
-                            email
+                            Hemos enviado una instrucción para recuperar la
+                            contraseña a tu correo electrónico.
                         </p>
                     </>
                 ) : (
                     <>
-                        <h3 className="mb-1">Forgot Password</h3>
+                        <h3 className="mb-1">Recuperar Contraseña</h3>
                         <p>
-                            Please enter your email address to receive a
-                            verification code
+                            Por favor ingrese su dirección de correo electrónico
+                            para recibir un código de verificación
                         </p>
                     </>
                 )}
@@ -79,7 +79,7 @@ const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
             )}
             <Formik
                 initialValues={{
-                    email: 'admin@mail.com',
+                    email: '',
                 }}
                 validationSchema={validationSchema}
                 onSubmit={(values, { setSubmitting }) => {
@@ -102,7 +102,7 @@ const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
                                         type="email"
                                         autoComplete="off"
                                         name="email"
-                                        placeholder="Email"
+                                        placeholder="Correo electronico"
                                         component={Input}
                                     />
                                 </FormItem>
@@ -113,11 +113,15 @@ const ForgotPasswordForm = (props: ForgotPasswordFormProps) => {
                                 variant="solid"
                                 type="submit"
                             >
-                                {emailSent ? 'Resend Email' : 'Send Email'}
+                                {emailSent
+                                    ? 'Reenviar correo'
+                                    : 'Enviar Correo'}
                             </Button>
                             <div className="mt-4 text-center">
-                                <span>Back to </span>
-                                <ActionLink to={signInUrl}>Sign in</ActionLink>
+                                <span>Vover a </span>
+                                <ActionLink to={signInUrl}>
+                                    Inicio de Sesion
+                                </ActionLink>
                             </div>
                         </FormContainer>
                     </Form>

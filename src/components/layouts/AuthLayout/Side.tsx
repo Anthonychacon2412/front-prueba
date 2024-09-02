@@ -12,13 +12,9 @@ const Side = ({ children, content, ...rest }: SideProps) => {
     return (
         <div className="grid lg:grid-cols-3 h-full">
             <div className=" bg-orange-600 bg-no-repeat bg-cover py-6 px-16 flex-col justify-between hidden lg:flex">
-                <h1 className="text-white">Mobility</h1>
-                <div>
-                    <p className="text-lg text-white opacity-80">
-                        Mobility comes with a complete set of UI components
-                        crafted with Tailwind CSS, it fulfilled most of the use
-                        case to create modern and beautiful UI and application
-                    </p>
+                <div className="flex items-center">
+                    <Logo className="" logoWidth={50}></Logo>
+                    <h2 className="text-white">Mobility</h2>
                 </div>
                 <span className="text-white">
                     Copyright &copy; {`${new Date().getFullYear()}`}{' '}
