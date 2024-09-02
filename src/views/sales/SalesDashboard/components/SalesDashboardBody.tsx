@@ -20,7 +20,20 @@ const SalesDashboardBody = () => {
         dispatch(getSalesDashboardData())
     }
 
-    return <></>
+    return (
+        <>
+            <div className="text-center p-8 bg-white rounded-lg">
+                <h1 className="text-4xl font-bold text-gray-800 mb-4">
+                    Bienvenidos a Mobility
+                </h1>
+                <p className="text-gray-600 mb-6">
+                    La solución integral para gestionar tu merchandising de
+                    manera eficiente y efectiva. ¡Explora nuestras herramientas
+                    y optimiza tu estrategia de ventas!
+                </p>
+            </div>
+        </>
+    )
 }
 
 export default SalesDashboardBody
