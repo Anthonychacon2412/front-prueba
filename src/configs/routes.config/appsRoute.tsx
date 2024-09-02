@@ -11,6 +11,12 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'appformularios',
+        path: `${APP_PREFIX_PATH}/formularios`,
+        component: lazy(() => import('@/views/formularios/index')),
+        authority: [ADMIN, USER],
+    },
+    {
         key: 'appvisualizacion',
         path: `${APP_PREFIX_PATH}/visualizacion-rutas`,
         component: lazy(() => import('@/views/visualizacion-rutas/index')),
