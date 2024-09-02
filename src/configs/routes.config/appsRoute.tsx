@@ -29,6 +29,15 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'appFormularioDetalle',
+        path: `${APP_PREFIX_PATH}/formulariodetalle`,
+        component: lazy(() => import('@/views/formulariodetalle/index')),
+        authority: [ADMIN, USER],
+        meta: {
+            header: 'Formulario Detalle',
+        },
+    },
+    {
         key: 'appsupervisiones',
         path: `${APP_PREFIX_PATH}/supervisiones`,
         component: lazy(() => import('@/views/supervisiones/index')),

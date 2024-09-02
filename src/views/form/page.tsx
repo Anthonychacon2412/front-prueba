@@ -1,7 +1,164 @@
 import { Button, Select } from '@/components/ui'
-import React from 'react'
+import { collection, getDocs, query, where } from 'firebase/firestore'
+import React, { useEffect, useState } from 'react'
+import { db } from '@/configs/firebaseAssets.config'
+import { useNavigate } from 'react-router-dom'
+
+interface Cliente {
+    value: string
+    label: string
+}
+
+interface Establecimiento {
+    value: string
+    label: string
+}
+
+interface Pregunta {
+    pregunta: string
+}
+
+interface Producto {
+    producto: string
+    Preguntas: Pregunta[]
+}
+
+interface Marca {
+    marca: string
+    productos: Producto[]
+}
+
+interface Subcategoria {
+    subcategoria: string
+    marcas: Marca[]
+}
+
+interface Categoria {
+    categoria: string
+    hijos: Subcategoria[]
+}
 
 const Forms = () => {
+    const [clientes, setClientes] = useState<Cliente[]>([])
+    const [establecimientos, setEstablecimientos] = useState<Establecimiento[]>(
+        [],
+    )
+    const [selectedCliente, setSelectedCliente] = useState<string | null>(null)
+    const [formData, setFormData] = useState<Categoria[]>([])
+    const [dataFormsD, setDataFormsD] = useState<any[]>([])
+    const navigate = useNavigate()
+
+    const getClientes = async () => {
+        try {
+            const q = query(collection(db, 'formularios'))
+            const querySnapshot = await getDocs(q)
+            const clientesData: Cliente[] = querySnapshot.docs.map((doc) => ({
+                value: doc.data().cliente,
+                label: doc.data().cliente,
+            }))
+            setClientes(clientesData)
+            console.log('Clientes obtenidos:', clientesData)
+        } catch (error) {
+            console.error('Error al obtener los clientes:', error)
+        }
+    }
+
+    const getEstablecimientos = async (cliente: string) => {
+        try {
+            const q = query(
+                collection(db, 'establecimientos'),
+                where('clientes', 'array-contains', cliente),
+            )
+            const querySnapshot = await getDocs(q)
+            const establecimientosData: Establecimiento[] =
+                querySnapshot.docs.map((doc) => ({
+                    value: doc.data().nombre,
+                    label: doc.data().nombre,
+                }))
+            setEstablecimientos(establecimientosData)
+            console.log('Establecimientos obtenidos:', establecimientosData)
+        } catch (error) {
+            console.error('Error al obtener los establecimientos:', error)
+        }
+    }
+
+    const getForms = async (cliente: any) => {
+        try {
+            const q = query(
+                collection(db, 'formularios'),
+                where('cliente', '==', cliente),
+            )
+            const querySnapshot = await getDocs(q)
+            const formData = querySnapshot.docs.map(
+                (doc) => doc.data().hijos,
+            )[0]
+
+            setFormData(formData)
+            console.log('Formulario obtenido:', formData)
+        } catch (error) {
+            console.error('Error al obtener el formulario:', error)
+        }
+    }
+
+    const getData = () => {
+        console.log(formData)
+        if (!formData || !Array.isArray(formData)) {
+            console.log('No se encontró formData o no es un array')
+            return
+        }
+
+        // Procesar la estructura de `formData`
+        const products = formData.flatMap(
+            (category: Categoria, catIndex: number) =>
+                category.hijos.flatMap(
+                    (subcategory: Subcategoria, subIndex: number) =>
+                        subcategory.marcas.flatMap(
+                            (marca: Marca, marcaIndex: number) =>
+                                marca.productos.flatMap(
+                                    (producto: Producto, prodIndex: number) =>
+                                        producto.Preguntas.map(
+                                            (
+                                                pregunta: Pregunta,
+                                                pregIndex: number,
+                                            ) => ({
+                                                key: `${catIndex}-${subIndex}-${marcaIndex}-${prodIndex}-${pregIndex}`,
+                                                categoria: category.categoria,
+                                                subcategoria:
+                                                    subcategory.subcategoria,
+                                                marcas: marca.marca,
+                                                producto: producto.producto,
+                                                preguntas: pregunta.pregunta,
+                                            }),
+                                        ),
+                                ),
+                        ),
+                ),
+        )
+
+        console.log('Datos procesados:', products)
+        setDataFormsD(products)
+    }
+
+    useEffect(() => {
+        getClientes()
+    }, [])
+
+    useEffect(() => {
+        if (selectedCliente) {
+            getEstablecimientos(selectedCliente)
+            getForms(selectedCliente)
+        } else {
+            setEstablecimientos([])
+            setFormData([])
+        }
+    }, [selectedCliente])
+
+    const handleFundamentalClick = () => {
+        if (selectedCliente) {
+            navigate(`/formulario-detalle?nombre=${selectedCliente}`)
+        }
+    }
+
     return (
         <div className="flex h-screen bg-slate-400">
             <main className="flex-1 p-6 bg-white">
@@ -16,7 +173,16 @@ const Forms = () => {
                                 >
                                     Clientes
                                 </label>
-                                <Select></Select>
+                                <Select
+                                    options={clientes}
+                                    onChange={(option) =>
+                                        setSelectedCliente(
+                                            option?.value || null,
+                                        )
+                                    }
+                                    placeholder="Selecciona un cliente"
+                                    className="w-full"
+                                />
                             </div>
                         </form>
                         <form>
@@ -27,7 +193,11 @@ const Forms = () => {
                                 >
                                     Establecimientos
                                 </label>
-                                <Select></Select>
+                                <Select
+                                    options={establecimientos}
+                                    placeholder="Selecciona un establecimiento"
+                                    className="w-full"
+                                />
                             </div>
                         </form>
                     </div>
@@ -39,11 +209,9 @@ const Forms = () => {
                             <Button
                                 size="md"
                                 className="border-orange-400 hover:bg-orange-200 mr-2 h-[20vh] rounded-full"
+                                onClick={getData}
                             >
                                 Fundamental
-                            </Button>
-                            <Button className="border-orange-400 hover:bg-orange-200 ml-2 h-[20vh]">
-                                Competencia
                             </Button>
                         </div>
                     </div>
