@@ -1,31 +1,28 @@
 import { ColumnDef, DataTable } from '@/components/shared'
-import { Table } from '@/components/ui'
-import TBody from '@/components/ui/Table/TBody'
-import Td from '@/components/ui/Table/Td'
-import Th from '@/components/ui/Table/Th'
-import THead from '@/components/ui/Table/THead'
-import Tr from '@/components/ui/Table/Tr'
-import { db } from '@/configs/firebaseAssets.config'
-import { useAppDispatch } from '@/store'
-import { collection, doc, getDocs, query } from 'firebase/firestore'
+import { Button, Dialog } from '@/components/ui'
+import { collection, getDocs, query } from 'firebase/firestore'
 import React, { useEffect, useMemo, useState } from 'react'
-import { HiOutlineEye } from 'react-icons/hi'
-import { useNavigate } from 'react-router-dom'
+import { HiOutlineGlobe } from 'react-icons/hi'
+import { db } from '@/configs/firebaseAssets.config'
+import 'leaflet/dist/leaflet.css'
+import MapComponent from './components/mapComponent'
 
-const visualizacion = () => {
-    const [data, setData] = useState<any>()
+const Visualizacion = () => {
+    const [data, setData] = useState<any[]>([])
+    const [dialogIsOpen, setIsOpen] = useState(false)
+    const [selectedRow, setSelectedRow] = useState<any | null>(null)
+
     const getData = async () => {
         try {
             const q = query(collection(db, 'Rutas'))
-
             const querySnapshot = await getDocs(q)
-            const dataDocs: any[] = [] // Crear un array para acumular los documentos
+            const dataDocs: any[] = []
 
             querySnapshot.forEach((doc) => {
-                dataDocs.push(doc.data()) // Agregar cada documento al array
+                dataDocs.push(doc.data())
             })
 
-            setData(dataDocs) // Actualizar el estado con todos los documentos
+            setData(dataDocs)
         } catch (error) {
             console.log(error)
         }
@@ -33,23 +30,21 @@ const visualizacion = () => {
 
     useEffect(() => {
         getData()
-        console.log(data)
     }, [])
+
+    const onDetail = (row: any) => {
+        setSelectedRow(row)
+        setIsOpen(true)
+    }
+
     const ActionColumn = ({ row }: { row: any }) => {
-        const dispatch = useAppDispatch()
-        const navigate = useNavigate()
-
-        const onDetail = () => {
-            console.log(row)
-        }
-
         return (
             <div className="flex justify-end text-lg">
                 <span
                     className="cursor-pointer p-2 hover:text-cyan-500"
-                    onClick={onDetail}
+                    onClick={() => onDetail(row.original)}
                 >
-                    <HiOutlineEye />
+                    <HiOutlineGlobe />
                 </span>
             </div>
         )
@@ -59,46 +54,64 @@ const visualizacion = () => {
         () => [
             {
                 header: 'Nombre Establecimiento',
-                accessorKey: 'client',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <span>{row.establecimiento}</span>
-                },
+                accessorKey: 'establecimiento',
+                cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
                 header: 'Promotor',
-                accessorKey: 'client',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <span>{row.promotor}</span>
-                },
+                accessorKey: 'promotor',
+                cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
                 header: 'Dia',
-                accessorKey: 'client',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <span>{row.dia}</span>
-                },
+                accessorKey: 'dia',
+                cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
                 header: 'Direccion',
-                accessorKey: 'client',
-                cell: (props) => {
-                    const row = props.row.original
-                    return <span>{row.direccion}</span>
-                },
+                accessorKey: 'direccion',
+                cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
-                header: 'mapa',
+                header: 'Mapa',
                 id: 'action',
-                cell: (props) => <ActionColumn row={props} />,
+                cell: (props) => <ActionColumn row={props.row} />,
             },
         ],
         [],
     )
 
-    return <DataTable columns={columns} data={data} />
+    return (
+        <>
+            <h1 className="text-2xl font-semibold mb-3">
+                Visualización de Rutas
+            </h1>
+            <DataTable columns={columns} data={data} />
+
+            {/* Modal para Detalles del Mapa */}
+            <Dialog
+                isOpen={dialogIsOpen}
+                onClose={() => setIsOpen(false)}
+                onRequestClose={() => setIsOpen(false)}
+                className="max-w-3xl w-full"
+            >
+                <div className="h-96">
+                    {selectedRow && (
+                        <MapComponent
+                            promotorCoords={[
+                                selectedRow.coordenadas_pro.latitude,
+                                selectedRow.coordenadas_pro.longitude,
+                            ]}
+                            estCoords={[
+                                selectedRow.coordenadas_est.latitude,
+                                selectedRow.coordenadas_est.longitude,
+                            ]}
+                        />
+                    )}
+                </div>
+            </Dialog>
+        </>
+    )
 }
 
-export default visualizacion
+export default Visualizacion
