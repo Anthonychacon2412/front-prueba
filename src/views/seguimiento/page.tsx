@@ -8,11 +8,10 @@ import {
     getDocs,
     query,
     where,
-    doc,
-    getDoc,
 } from 'firebase/firestore'
 import 'leaflet/dist/leaflet.css'
 import { db } from '@/configs/firebaseAssets.config'
+import moment from 'moment'
 
 const Seguimiento = () => {
     const [cliente, setCliente] = useState<any>(null)
@@ -21,7 +20,8 @@ const Seguimiento = () => {
     const [fecha, setFecha] = useState<any>(null)
     const [dataClients, setDataClients] = useState<any[]>([])
     const [dataRegion, setDataRegion] = useState<any[]>([])
-    const [dataUsuarios, setDataUsuarios] = useState<any[]>([]) // Estado para usuarios
+    const [dataUsuarios, setDataUsuarios] = useState<any[]>([])
+    const [mapData, setMapData] = useState<any[]>([]) // Estado para datos del mapa
 
     const getClients = async () => {
         const db = getFirestore()
@@ -30,7 +30,7 @@ const Seguimiento = () => {
         try {
             const querySnapshot = await getDocs(clientsCollection)
             const optionsClients = querySnapshot.docs.map((doc) => {
-                const nombreCliente = doc.data().nombre // Ajusta 'nombre' según tu estructura de datos
+                const nombreCliente = doc.data().nombre
                 return { value: nombreCliente, label: nombreCliente }
             })
             setDataClients(optionsClients)
@@ -46,7 +46,7 @@ const Seguimiento = () => {
         try {
             const querySnapshot = await getDocs(regionCollection)
             const optionsRegion = querySnapshot.docs.map((doc) => {
-                const nombreRegion = doc.data().nombre // Ajusta 'nombre' según tu estructura de datos
+                const nombreRegion = doc.data().nombre
                 return { value: nombreRegion, label: nombreRegion }
             })
             setDataRegion(optionsRegion)
@@ -55,48 +55,95 @@ const Seguimiento = () => {
         }
     }
 
-    const getUsuarios = async (cliente: string, region: string) => {
+    const getUsuarios = async (cliente: any, region: any) => {
+        const db = getFirestore()
         const usuariosCollection = collection(db, 'usuarios')
 
+        const q = query(
+            usuariosCollection,
+            where('cliente', '==', cliente),
+            where('region', '==', region),
+        )
+
         try {
-            // Consulta por cliente
-            const qCliente = query(
-                usuariosCollection,
-                where('clientes', 'array-contains', cliente),
-            )
-            const querySnapshotCliente = await getDocs(qCliente)
-            const usuariosPorCliente = new Set(
-                querySnapshotCliente.docs.map((doc) => doc.id),
-            )
-
-            // Consulta por región
-            const qRegion = query(
-                usuariosCollection,
-                where('regiones', 'array-contains', region),
-            )
-            const querySnapshotRegion = await getDocs(qRegion)
-            const usuariosPorRegion = new Set(
-                querySnapshotRegion.docs.map((doc) => doc.id),
-            )
-
-            // Intersección de usuarios
-            const usuariosFiltradosIds = Array.from(usuariosPorCliente).filter(
-                (id) => usuariosPorRegion.has(id),
-            )
-
-            // Obtener detalles de los usuarios filtrados
-            const usuariosFiltrados = await Promise.all(
-                usuariosFiltradosIds.map(async (id) => {
-                    const docRef = doc(usuariosCollection, id)
-                    const docSnap = await getDoc(docRef)
-                    return { id: docSnap.id, ...docSnap.data() }
-                }),
-            )
-
+            const querySnapshot = await getDocs(q)
+            const usuariosFiltrados = querySnapshot.docs.map((doc) => {
+                return { id: doc.id, ...doc.data() }
+            })
             setDataUsuarios(usuariosFiltrados)
         } catch (error) {
             console.error('Error getting users: ', error)
         }
+    }
+
+    const getFormularios = async (usuarioNombre: string, fecha: Date) => {
+        const db = getFirestore()
+        const formulariosCollection = collection(db, 'formularios_llenos')
+
+        try {
+            const q = query(
+                formulariosCollection,
+                where('promotor', '==', usuarioNombre),
+                where(
+                    'fecha_sincronizado',
+                    '==',
+                    moment(fecha).format('YYYY-MM-DD'),
+                ),
+            )
+            const querySnapshot = await getDocs(q)
+            return querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }))
+        } catch (error) {
+            console.error('Error getting formularios: ', error)
+            return []
+        }
+    }
+
+    const getActivaciones = async (usuarioNombre: string, fecha: Date) => {
+        const db = getFirestore()
+        const activacionCollection = collection(db, 'activacion')
+
+        try {
+            const q = query(
+                activacionCollection,
+                where('nombre', '==', usuarioNombre),
+                where(
+                    'fecha_activacion',
+                    '==',
+                    moment(fecha).format('YYYY-MM-DD'),
+                ),
+            )
+            const querySnapshot = await getDocs(q)
+            return querySnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+            }))
+        } catch (error) {
+            console.error('Error getting activaciones: ', error)
+            return []
+        }
+    }
+
+    const combineData = (formularios: any, activaciones: any) => {
+        return formularios.map((formulario: any) => {
+            const activacion = activaciones.find(
+                (act: { nombre: any }) => act.nombre === formulario.promotor,
+            )
+            return {
+                ...formulario,
+                coordenadas: {
+                    sincronizado: formulario.coordenadas,
+                    fin: activacion?.coordenadas?.fin,
+                    inicio: activacion?.coordenadas?.inicio,
+                },
+                fechas: {
+                    sincronizado: formulario.fecha_sincronizado,
+                    activacion: activacion?.fecha_activacion,
+                },
+            }
+        })
     }
 
     useEffect(() => {
@@ -105,13 +152,24 @@ const Seguimiento = () => {
     }, [])
 
     useEffect(() => {
-        // Llama a getUsuarios cada vez que se seleccionen cliente y región
         if (cliente && region) {
             getUsuarios(cliente.value, region.value)
         } else {
-            setDataUsuarios([]) // Limpia los usuarios si no hay cliente o región seleccionados
+            setDataUsuarios([])
         }
     }, [cliente, region])
+
+    const handleSearch = async () => {
+        if (usuario && fecha) {
+            const formularios = await getFormularios(usuario.label, fecha)
+            const activaciones = await getActivaciones(usuario.label, fecha)
+            const combinedData = combineData(formularios, activaciones)
+            setMapData(combinedData) // Almacena los datos combinados para usarlos en el mapa
+            console.log('Datos combinados:', combinedData)
+        } else {
+            console.warn('Por favor selecciona un usuario y una fecha.')
+        }
+    }
 
     return (
         <div>
@@ -134,7 +192,7 @@ const Seguimiento = () => {
                     placeholder="Usuario"
                     options={dataUsuarios.map((usuario) => ({
                         value: usuario.id,
-                        label: usuario.nombre || 'Sin Nombre', // Ajusta según tu estructura de datos
+                        label: usuario.nombre,
                     }))}
                     onChange={(value) => setUsuario(value)}
                 />
@@ -143,17 +201,13 @@ const Seguimiento = () => {
                     placeholder="Fecha"
                     onChange={(date) => setFecha(date)}
                 />
-                <Button
-                    variant="solid"
-                    onClick={() =>
-                        console.log({ cliente, region, usuario, fecha })
-                    }
-                >
+                <Button variant="solid" onClick={handleSearch}>
                     <HiOutlineSearch />
                 </Button>
             </div>
             <div className="relative z-0">
-                <MapComponent />
+                <MapComponent data={mapData} />{' '}
+                {/* Pasa los datos combinados al mapa */}
             </div>
         </div>
     )
