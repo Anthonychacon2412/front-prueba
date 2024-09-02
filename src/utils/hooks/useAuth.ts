@@ -91,7 +91,7 @@ function useAuth() {
                     if (userCredential?.user) {
                         console.log(userCredential?.user?.uid)
                         getDoc(
-                            doc(db, 'u_clients', userCredential?.user?.uid),
+                            doc(db, 'usuarios', userCredential?.user?.uid),
                         ).then((resp) => {
                             const info = resp.data()
                             localStorage.setItem('userName', info?.name)
@@ -149,8 +149,8 @@ function useAuth() {
                     if (user?.uid) {
                         const token = user?.uid
                         console.log(token)
-
-                        setDoc(doc(db, 'usuarios', user.uid), values).then(
+                        console.log(values)
+                        setDoc(doc(db, 'usuarios', user?.uid), values).then(
                             (resp) => {
                                 dispatch(signInSuccess(token))
                                 if (user?.uid) {
