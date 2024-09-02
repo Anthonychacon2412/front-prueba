@@ -98,6 +98,7 @@ const Visualizacion = () => {
                 <div className="h-96">
                     {selectedRow && (
                         <MapComponent
+                            establecimientoNombre={selectedRow.establecimiento}
                             promotorCoords={[
                                 selectedRow.coordenadas_pro.latitude,
                                 selectedRow.coordenadas_pro.longitude,
