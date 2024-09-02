@@ -7,13 +7,40 @@ import 'leaflet-routing-machine'
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css'
 import { useEffect } from 'react'
 
-// Import the leaflet-routing-machine library to make sure TypeScript recognizes it
-import 'leaflet-routing-machine'
+// Componente para el control de enrutamiento
+const RoutingControl = ({
+    promotorCoords,
+    estCoords,
+}: {
+    promotorCoords: LatLngExpression
+    estCoords: LatLngExpression
+}) => {
+    const map = useMap()
+
+    useEffect(() => {
+        if (!map) return
+
+        const promotorLatLng = L.latLng(promotorCoords as [number, number])
+        const estLatLng = L.latLng(estCoords as [number, number])
+
+        const routingControl = L.Routing.control({
+            waypoints: [promotorLatLng, estLatLng],
+            routeWhileDragging: true,
+        }).addTo(map)
+
+        return () => {
+            map.removeControl(routingControl)
+        }
+    }, [map, promotorCoords, estCoords])
+
+    return null
+}
 
 const MapComponent: React.FC<{
     promotorCoords: LatLngExpression
     estCoords: LatLngExpression
-}> = ({ promotorCoords, estCoords }) => {
+    establecimientoNombre: string // Nombre del establecimiento para el popup
+}> = ({ promotorCoords, estCoords, establecimientoNombre }) => {
     const customIcon = L.icon({
         iconUrl: markerIcon,
         shadowUrl: markerShadow,
@@ -22,46 +49,6 @@ const MapComponent: React.FC<{
         popupAnchor: [1, -34],
         shadowSize: [41, 41],
     })
-
-    // Hook to add routing control
-    const RoutingControl = () => {
-        const map = useMap()
-
-        useEffect(() => {
-            if (!map) return
-
-            // Convert LatLngExpression to L.LatLng if necessary
-            const promotorLatLng = L.latLng(
-                Array.isArray(promotorCoords)
-                    ? promotorCoords[0]
-                    : promotorCoords.lat,
-                Array.isArray(promotorCoords)
-                    ? promotorCoords[1]
-                    : promotorCoords.lng,
-            )
-            const estLatLng = L.latLng(
-                Array.isArray(estCoords) ? estCoords[0] : estCoords.lat,
-                Array.isArray(estCoords) ? estCoords[1] : estCoords.lng,
-            )
-
-            // Create routing control
-            L.Routing.control({
-                waypoints: [promotorLatLng, estLatLng],
-                routeWhileDragging: true,
-            }).addTo(map)
-
-            // Cleanup function to remove control on component unmount
-            return () => {
-                map.eachLayer((layer) => {
-                    if (layer instanceof L.Routing.Control) {
-                        map.removeLayer(layer)
-                    }
-                })
-            }
-        }, [map, promotorCoords, estCoords])
-
-        return null
-    }
 
     return (
         <div style={{ height: '100%', width: '100%' }}>
@@ -79,9 +66,12 @@ const MapComponent: React.FC<{
                     <Popup>Promotor</Popup>
                 </Marker>
                 <Marker position={estCoords} icon={customIcon}>
-                    <Popup>Establecimiento</Popup>
+                    <Popup>{establecimientoNombre}</Popup>
                 </Marker>
-                <RoutingControl />
+                <RoutingControl
+                    promotorCoords={promotorCoords}
+                    estCoords={estCoords}
+                />
             </MapContainer>
         </div>
     )
