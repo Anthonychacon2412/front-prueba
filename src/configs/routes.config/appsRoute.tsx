@@ -38,15 +38,33 @@ const appsRoute: Routes = [
         },
     },
     {
+        key: 'appasignacionruta',
+        path: `/asignacion_ruta/:id`,
+        component: lazy(() => import('@/views/asignacion_ruta/index')),
+        authority: [ADMIN, USER],
+    },
+    {
         key: 'appsupervisiones',
         path: `${APP_PREFIX_PATH}/supervisiones`,
         component: lazy(() => import('@/views/supervisiones/index')),
         authority: [ADMIN, USER],
     },
     {
+        key: 'appasignacionpromotor',
+        path: `${APP_PREFIX_PATH}/asignacion_promotor`,
+        component: lazy(() => import('@/views/asignacion_promotor/index')),
+        authority: [ADMIN, USER],
+    },
+    {
         key: 'appseguimiento',
         path: `${APP_PREFIX_PATH}/seguimiento`,
         component: lazy(() => import('@/views/seguimiento/index')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'appplantilla',
+        path: `${APP_PREFIX_PATH}/plantilla-rutas`,
+        component: lazy(() => import('@/views/plantilla-rutas/index')),
         authority: [ADMIN, USER],
     },
     {

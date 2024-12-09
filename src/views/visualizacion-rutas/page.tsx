@@ -39,7 +39,7 @@ const Visualizacion = () => {
 
     const ActionColumn = ({ row }: { row: any }) => {
         return (
-            <div className="flex justify-end text-lg">
+            <div className="justify-center text-lg">
                 <span
                     className="cursor-pointer p-2 hover:text-cyan-500"
                     onClick={() => onDetail(row.original)}

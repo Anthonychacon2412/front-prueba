@@ -26,6 +26,7 @@ import {
     HiOutlineVariable,
     HiOutlineCode,
     HiOutlineGlobe,
+    HiOutlineMap,
 } from 'react-icons/hi'
 import { RiMapPinTimeLine } from 'react-icons/ri'
 
@@ -62,6 +63,7 @@ const navigationIcon: NavigationIcons = {
     maptime: <RiMapPinTimeLine />,
     eye: <FaRegEye />,
     globe: <HiOutlineGlobe />,
+    ruta: <HiOutlineMap />,
 }
 
 export default navigationIcon

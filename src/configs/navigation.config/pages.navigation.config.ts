@@ -56,7 +56,26 @@ const pagesNavigationConfig: NavigationTree[] = [
                 authority: [ADMIN, USER],
                 subMenu: [],
             },
-        
+            {
+                key: 'pages.plantilla-rutas',
+                path: `${APP_PREFIX_PATH}/plantilla-rutas`,
+                title: 'Plantilla Rutas',
+                translateKey: 'nav.pages.plantilla-rutas',
+                icon: 'ruta',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },
+            {
+                key: 'pages.asignacion_promotor',
+                path: `${APP_PREFIX_PATH}/asignacion_promotor`,
+                title: 'Asignacion ruta promotores',
+                translateKey: 'nav.pages.asignacion_promotor',
+                icon: 'ruta',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },
         ],
     },
 ]

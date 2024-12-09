@@ -1,6 +1,5 @@
 import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
-import Checkbox from '@/components/ui/Checkbox'
 import { FormItem, FormContainer } from '@/components/ui/Form'
 import Alert from '@/components/ui/Alert'
 import PasswordInput from '@/components/shared/PasswordInput'
@@ -24,7 +23,7 @@ type SignInFormSchema = {
 }
 
 const validationSchema = Yup.object().shape({
-    userName: Yup.string().required('Por favor ingrese su nombre de usuario'),
+    userName: Yup.string().required('Por favor ingrese su email'),
     password: Yup.string().required('Por favor ingrese su contraseña'),
     rememberMe: Yup.bool(),
 })
