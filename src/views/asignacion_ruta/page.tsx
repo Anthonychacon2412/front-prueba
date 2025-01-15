@@ -73,14 +73,26 @@ const AsignacionRuta = () => {
             const establecimientosDisponibles: any[] = []
 
             querySnapshot.forEach((doc) => {
-                const data = doc.data()
-                // Verifica si la región de los establecimientos coincide con la región de la ruta
-                if (
-                    rutaData &&
-                    data.region === rutaData.region &&
-                    data.status === 'Disponible'
-                ) {
-                    establecimientosDisponibles.push(data)
+                const data = doc.data() // Aquí debes asegurarte que `data` contiene `region`, `status`, etc.
+
+                // Verifica si `data` tiene las propiedades necesarias
+                if (data && data.region && data.status) {
+                    // Incluye el ID del documento en los datos
+                    const establecimientoConId = { ...data, id: doc.id }
+
+                    // Verifica si la región de los establecimientos coincide con la región de la ruta
+                    if (
+                        rutaData &&
+                        data.region === rutaData.region &&
+                        data.status === 'Disponible'
+                    ) {
+                        establecimientosDisponibles.push(establecimientoConId)
+                    }
+                } else {
+                    console.warn(
+                        'El establecimiento no tiene las propiedades necesarias: ',
+                        doc.id,
+                    )
                 }
             })
 
@@ -89,6 +101,12 @@ const AsignacionRuta = () => {
             console.error('Error al obtener establecimientos:', error)
         }
     }
+
+    useEffect(() => {
+        if (id) {
+            getRutaData()
+        }
+    }, [id])
 
     useEffect(() => {
         if (id) {
@@ -106,7 +124,7 @@ const AsignacionRuta = () => {
         if (checked) {
             // Verificar si el establecimiento ya está en selectedEstablecimientos
             const isAlreadySelected = selectedEstablecimientos.some(
-                (selected) => selected.uid === row.uid,
+                (selected) => selected.id === row.id,
             )
 
             if (!isAlreadySelected) {
@@ -133,42 +151,54 @@ const AsignacionRuta = () => {
                 return
             }
 
-            const rutaRef = doc(db, 'Plantilla_rutas', id)
-            const establecimientosRef = collection(rutaRef, 'Establecimientos')
+            const rutaRef = doc(db, 'Plantilla_rutas', id) // Referencia a la ruta
+            const establecimientosRef = collection(rutaRef, 'Establecimientos') // Subcolección de Establecimientos
 
             for (const establecimiento of selectedEstablecimientos) {
-                // Verificar si el establecimiento ya está asignado
+                // Verificar si el establecimiento ya está asignado a la ruta
                 const isAssigned = establecimientosAsignados.some(
-                    (asignado) => asignado.uid === establecimiento.uid,
+                    (asignado) => asignado.uid === establecimiento.uid, // Usamos uid para comparar
                 )
 
                 if (isAssigned) {
                     console.warn(
                         `El establecimiento ${establecimiento.nombre} ya está asignado.`,
                     )
-                    continue
+                    continue // Si ya está asignado, seguimos al siguiente establecimiento
                 }
 
-                // Agregar el establecimiento a la ruta
+                // Agregar el establecimiento a la subcolección "Establecimientos" de la ruta
                 await addDoc(establecimientosRef, {
                     nombre_establecimiento: establecimiento.nombre,
                     region: establecimiento.region,
                     status: 'Asignado',
+                    uid: establecimiento.uid, // Guardamos el uid para referencia futura
                 })
 
-                // Actualizar el campo `status` en la colección global por su ID
+                // **Verificar que el documento con el `uid` existe en la colección global `establecimientos`**
                 const globalDocRef = doc(
                     db,
                     'establecimientos',
                     establecimiento.uid,
-                )
+                ) // Usamos el `uid` para acceder al documento global
+                const globalDocSnap = await getDoc(globalDocRef)
+
+                if (!globalDocSnap.exists()) {
+                    console.error(
+                        `No se encontró el documento global para el establecimiento con uid: ${establecimiento.uid}`,
+                    )
+                    continue // Si no existe el documento, saltamos este establecimiento
+                }
+
+                // Si el documento existe, actualizamos el `status`
                 await updateDoc(globalDocRef, { status: 'Asignado' })
             }
 
-            // Refrescar los datos
-            await getRutaData()
-            setSelectedEstablecimientos([])
-            setEstablecimientosDisponibles([])
+            // Refrescar los datos después de la asignación
+            await getRutaData() // Volver a cargar los datos de la ruta
+            setSelectedEstablecimientos([]) // Limpiar los establecimientos seleccionados
+            setEstablecimientosDisponibles([]) // Limpiar los establecimientos disponibles
+            setEstablecimientosAsignados([]) // Limpiar los establecimientos ya asignados
         } catch (error) {
             console.error('Error al asignar establecimientos:', error)
         }
@@ -218,7 +248,9 @@ const AsignacionRuta = () => {
 
     return (
         <>
-            <h1 className="mb-4">Asignación de Establecimientos</h1>
+            <h1 className="mb-4">
+                Asignación de Establecimientos a ruta {rutaData?.nombre}
+            </h1>
             <div className="mt-4 flex justify-evenly items-center">
                 <div className="rounded shadow">
                     <DataTable
@@ -240,9 +272,6 @@ const AsignacionRuta = () => {
                     </Button>
                 </div>
                 <div className="rounded shadow">
-                    <h6 className="mb-2">
-                        Establecimientos asignados a ruta: {rutaData?.nombre}
-                    </h6>
                     <DataTable
                         columns={columns1}
                         data={establecimientosAsignados}
