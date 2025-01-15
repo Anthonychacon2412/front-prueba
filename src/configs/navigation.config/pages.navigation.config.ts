@@ -76,6 +76,16 @@ const pagesNavigationConfig: NavigationTree[] = [
                 authority: [ADMIN, USER],
                 subMenu: [],
             },
+            {
+                key: 'pages.establecimientos',
+                path: `${APP_PREFIX_PATH}/establecimientos`,
+                title: 'Establecimientos',
+                translateKey: 'nav.pages.establecimientos',
+                icon: 'ruta',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },
         ],
     },
 ]

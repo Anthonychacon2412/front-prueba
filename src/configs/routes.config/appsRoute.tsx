@@ -50,6 +50,12 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'appestablecimientos',
+        path: `${APP_PREFIX_PATH}/establecimientos`,
+        component: lazy(() => import('@/views/establecimientos/index')),
+        authority: [ADMIN, USER],
+    },
+    {
         key: 'appasignacionpromotor',
         path: `${APP_PREFIX_PATH}/asignacion_promotor`,
         component: lazy(() => import('@/views/asignacion_promotor/index')),
