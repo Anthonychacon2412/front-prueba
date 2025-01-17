@@ -1,10 +1,11 @@
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { collection, getDocs, query, doc } from 'firebase/firestore'
+import { db } from '@/configs/firebaseAssets.config'
 import { ColumnDef, DataTable } from '@/components/shared'
 import { Button, Dialog } from '@/components/ui'
-import { db } from '@/configs/firebaseAssets.config'
-import { collection, getDocs, query } from 'firebase/firestore'
-import { useEffect, useMemo, useState } from 'react'
 import { HiOutlinePlusSm } from 'react-icons/hi'
-import { useNavigate } from 'react-router-dom'
+import { FaRegEye } from 'react-icons/fa'
 import DrawerRutas from './drawer'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -23,9 +24,20 @@ const Plantilla_rutas = () => {
             const querySnapshot = await getDocs(q)
             const plantilla: any[] = []
 
-            querySnapshot.forEach((doc) => {
-                plantilla.push({ id: doc.id, ...doc.data() })
-            })
+            for (const docSnap of querySnapshot.docs) {
+                const establecimientosRef = collection(
+                    db,
+                    'Plantilla_rutas',
+                    docSnap.id,
+                    'Establecimientos',
+                )
+                const establecimientosSnap = await getDocs(establecimientosRef)
+                plantilla.push({
+                    id: docSnap.id,
+                    ...docSnap.data(),
+                    hasEstablecimientos: !establecimientosSnap.empty,
+                })
+            }
 
             setData(plantilla)
         } catch (error) {
@@ -44,15 +56,25 @@ const Plantilla_rutas = () => {
 
     const ActionColumn = ({ row }: { row: any }) => {
         return (
-            <div className="justify-center text-lg">
+            <div className="justify-center text-lg flex">
                 <span
                     className="cursor-pointer p-2 hover:text-cyan-500"
                     onClick={() =>
                         navigate(`/asignacion_ruta/${row.original.id}`)
                     }
                 >
-                    <HiOutlinePlusSm />
+                    <FaRegEye />
                 </span>
+                {row.original.hasEstablecimientos && (
+                    <span
+                        className="cursor-pointer p-2 hover:text-cyan-500"
+                        onClick={() =>
+                            navigate(`/asignacion_dias/${row.original.id}`)
+                        }
+                    >
+                        <HiOutlinePlusSm />
+                    </span>
+                )}
             </div>
         )
     }
