@@ -1,6 +1,7 @@
 import { DataTable } from '@/components/shared'
 import { Button } from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
 import { ColumnDef } from '@tanstack/react-table'
 
 import {
@@ -14,7 +15,8 @@ import {
     where,
 } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { FaArrowLeft } from 'react-icons/fa'
+import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 const AsignacionRuta = () => {
     const { id } = useParams<{ id: string }>() // Obtén el id de la URL
@@ -30,6 +32,7 @@ const AsignacionRuta = () => {
     const [selectedEstablecimientos, setSelectedEstablecimientos] = useState<
         any[]
     >([])
+    const navigate = useNavigate()
 
     // Obtén los datos de la ruta
     const getRutaData = async () => {
@@ -295,6 +298,13 @@ const AsignacionRuta = () => {
 
     return (
         <>
+            <button
+                onClick={() => navigate(`${APP_PREFIX_PATH}/plantilla-rutas`)}
+                className="flex items-center text-blue-900 mb-3 ml-2 px-4 py-2 bg-blue-100 rounded-lg hover:bg-blue-200 transition duration-200"
+            >
+                <FaArrowLeft className="mr-2" />
+                <span>Volver</span>
+            </button>
             <h1 className="mb-4 text-2xl font-bold text-center text-gray-800">
                 Asignación de Establecimientos a ruta {rutaData?.nombre}
             </h1>

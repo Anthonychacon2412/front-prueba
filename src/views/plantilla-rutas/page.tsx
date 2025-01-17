@@ -1,15 +1,20 @@
-import { ColumnDef, DataTable } from '@/components/shared'
-import { Dialog } from '@/components/ui'
-import { db } from '@/configs/firebaseAssets.config'
-import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { HiOutlinePlusSm } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
+import { collection, getDocs, query, doc } from 'firebase/firestore'
+import { db } from '@/configs/firebaseAssets.config'
+import { ColumnDef, DataTable } from '@/components/shared'
+import { Button, Dialog, Notification, toast } from '@/components/ui'
+import { HiOutlinePlusSm, HiOutlineRefresh } from 'react-icons/hi'
+import { FaRegEye } from 'react-icons/fa'
+import DrawerRutas from './drawer'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 const Plantilla_rutas = () => {
     const [data, setData] = useState<any>()
     const [dialogIsOpen, setIsOpen] = useState(false)
     const [selectedRow, setSelectedRow] = useState<any | null>(null)
+    const [drawerCreateIsOpen, setDrawerCreateIsOpen] = useState(false)
 
     const navigate = useNavigate()
 
@@ -19,9 +24,20 @@ const Plantilla_rutas = () => {
             const querySnapshot = await getDocs(q)
             const plantilla: any[] = []
 
-            querySnapshot.forEach((doc) => {
-                plantilla.push({ id: doc.id, ...doc.data() }) // Incluye el ID del documento si lo necesitas
-            })
+            for (const docSnap of querySnapshot.docs) {
+                const establecimientosRef = collection(
+                    db,
+                    'Plantilla_rutas',
+                    docSnap.id,
+                    'Establecimientos',
+                )
+                const establecimientosSnap = await getDocs(establecimientosRef)
+                plantilla.push({
+                    id: docSnap.id,
+                    ...docSnap.data(),
+                    hasEstablecimientos: !establecimientosSnap.empty,
+                })
+            }
 
             setData(plantilla)
         } catch (error) {
@@ -33,6 +49,15 @@ const Plantilla_rutas = () => {
         getDataFromPlantillaRutas()
     }, [])
 
+    const handleRefresh = async () => {
+        await getDataFromPlantillaRutas()
+        toast.push(
+            <Notification title="Datos actualizados">
+                La tabla ha sido actualizada con éxito.
+            </Notification>,
+        )
+    }
+
     const onDetail = (row: any) => {
         setSelectedRow(row)
         setIsOpen(true)
@@ -40,15 +65,25 @@ const Plantilla_rutas = () => {
 
     const ActionColumn = ({ row }: { row: any }) => {
         return (
-            <div className="justify-center text-lg">
+            <div className="justify-center text-lg flex">
                 <span
                     className="cursor-pointer p-2 hover:text-cyan-500"
                     onClick={() =>
                         navigate(`/asignacion_ruta/${row.original.id}`)
-                    } // Pasa el id
+                    }
                 >
-                    <HiOutlinePlusSm />
+                    <FaRegEye />
                 </span>
+                {row.original.hasEstablecimientos && (
+                    <span
+                        className="cursor-pointer p-2 hover:text-cyan-500"
+                        onClick={() =>
+                            navigate(`/asignacion_dias/${row.original.id}`)
+                        }
+                    >
+                        <HiOutlinePlusSm />
+                    </span>
+                )}
             </div>
         )
     }
@@ -76,8 +111,32 @@ const Plantilla_rutas = () => {
 
     return (
         <>
-            <h1 className="text-2xl font-semibold mb-3">Plantilla Rutas</h1>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-2xl font-semibold mb-3">
+                    Plantilla Rutas{' '}
+                    <button
+                        className="p-2 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 shadow-md transform hover:scale-105 rounded-md"
+                        onClick={handleRefresh}
+                    >
+                        <HiOutlineRefresh className="w-5 h-5 text-gray-700 hover:text-blue-500 transition-colors duration-200" />
+                    </button>
+                </h1>
+
+                <Button
+                    className="w-40 ml-4 text-white hover:opacity-80"
+                    style={{ backgroundColor: '#000B7E' }}
+                    onClick={() => setDrawerCreateIsOpen(true)}
+                >
+                    Crear Ruta
+                </Button>
+            </div>
             <DataTable columns={columns} data={data} />
+            <DrawerRutas
+                isOpen={drawerCreateIsOpen}
+                onClose={() => setDrawerCreateIsOpen(false)}
+                onRutaCreated={getDataFromPlantillaRutas}
+            />
+            <ToastContainer />
         </>
     )
 }
