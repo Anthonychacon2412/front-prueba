@@ -118,14 +118,14 @@ const Plantilla_rutas = () => {
                         className="p-2 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 shadow-md transform hover:scale-105 rounded-md"
                         onClick={handleRefresh}
                     >
-                        <HiOutlineRefresh className="w-5 h-5 text-gray-700 hover:text-blue-500 transition-colors duration-200" />
+                        <HiOutlineRefresh className="w-5 h-5 text-gray-700 hover:text-orange-500 transition-colors duration-200" />
                     </button>
                 </h1>
 
                 <Button
-                    className="w-40 ml-4 text-white hover:opacity-80"
-                    style={{ backgroundColor: '#000B7E' }}
+                    className="p-2 ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
                     onClick={() => setDrawerCreateIsOpen(true)}
+                    style={{ backgroundColor: '#FFA500' }}
                 >
                     Crear Ruta
                 </Button>

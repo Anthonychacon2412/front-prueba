@@ -298,16 +298,20 @@ const AsignacionRuta = () => {
 
     return (
         <>
-            <button
-                onClick={() => navigate(`${APP_PREFIX_PATH}/plantilla-rutas`)}
-                className="flex items-center text-blue-900 mb-3 ml-2 px-4 py-2 bg-blue-100 rounded-lg hover:bg-blue-200 transition duration-200"
-            >
-                <FaArrowLeft className="mr-2" />
-                <span>Volver</span>
-            </button>
-            <h1 className="mb-4 text-2xl font-bold text-center text-gray-800">
-                Asignación de Establecimientos a ruta {rutaData?.nombre}
-            </h1>
+            <div>
+                <button
+                    onClick={() =>
+                        navigate(`${APP_PREFIX_PATH}/plantilla-rutas`)
+                    }
+                    className="flex items-center text-white mb-3 ml-2 px-4 py-2 bg-orange-400 rounded-lg hover:bg-orange-500 transition duration-300"
+                >
+                    <FaArrowLeft className="mr-2" />
+                    <span>Volver</span>
+                </button>
+                <h1 className="mb-4 text-2xl font-bold text-center text-gray-800">
+                    Asignación de Establecimientos a ruta {rutaData?.nombre}
+                </h1>
+            </div>
             <div className="mt-4 flex justify-evenly items-center my-3">
                 <div className="rounded shadow-lg p-4 bg-white h-screen">
                     <DataTable

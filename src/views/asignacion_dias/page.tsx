@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { doc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import { toast } from 'react-toastify'
@@ -7,12 +7,14 @@ import { DataTable } from '@/components/shared'
 import { ColumnDef } from '@tanstack/react-table'
 import Checkbox from '@/components/ui/Checkbox'
 import { Button } from '@/components/ui'
+import { FaArrowLeft } from 'react-icons/fa'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
 
 const AsignacionDias = () => {
     const { id } = useParams<{ id: string }>()
     const [rutaData, setRutaData] = useState<any>(null)
     const [establecimientos, setEstablecimientos] = useState<any[]>([])
-
+    const navigate = useNavigate()
     useEffect(() => {
         const getRutaData = async () => {
             if (!id) {
@@ -180,6 +182,13 @@ const AsignacionDias = () => {
 
     return (
         <div>
+            <button
+                onClick={() => navigate(`${APP_PREFIX_PATH}/plantilla-rutas`)}
+                className="flex items-center text-white mb-3 ml-2 px-4 py-2 bg-orange-400 rounded-lg hover:bg-orange-500 transition duration-300"
+            >
+                <FaArrowLeft className="mr-2" />
+                <span>Volver</span>
+            </button>
             <h1>Asignación de Días para la Ruta {rutaData?.nombre_ruta}</h1>
             {rutaData ? (
                 <div>
@@ -188,7 +197,7 @@ const AsignacionDias = () => {
                             <div className="justify-end flex mb-2">
                                 <Button
                                     className="w-40 ml-4 text-white hover:opacity-80"
-                                    style={{ backgroundColor: '#000B7E' }}
+                                    style={{ backgroundColor: '#FFA500' }}
                                     // Agrega el evento onClick para llamar a handleSaveDays
                                 >
                                     Asignar Días
