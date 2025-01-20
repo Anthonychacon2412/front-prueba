@@ -7,6 +7,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import {
     addDoc,
     collection,
+    deleteDoc,
     doc,
     getDoc,
     getDocs,
@@ -15,7 +16,7 @@ import {
     where,
 } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { FaArrowLeft } from 'react-icons/fa'
+import { FaArrowLeft, FaRegEye } from 'react-icons/fa'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 const AsignacionRuta = () => {
@@ -104,6 +105,42 @@ const AsignacionRuta = () => {
             setEstablecimientosDisponibles(establecimientosDisponibles)
         } catch (error) {
             console.error('Error al obtener establecimientos:', error)
+        }
+    }
+
+    const handleDelete = async (row: any) => {
+        console.log('rutaData', rutaData)
+        try {
+            console.log('Row recibido:', row)
+            console.log('ID recibido:', id)
+
+            const docRef = doc(db, 'establecimientos', row.uid)
+            console.log('Referencia del documento creada:', docRef)
+
+            await updateDoc(docRef, { status: 'Disponible' })
+            console.log('Documento actualizado.')
+
+            const q = query(
+                collection(db, 'establecimientos'),
+                where('status', '==', 'Disponible'),
+                // where('region', '==', rutaData?.region),
+            )
+            const querySnapshot = await getDocs(q)
+
+            const subDocRef = doc(
+                db,
+                `Plantilla_rutas/${id}/Establecimientos`,
+                row.id,
+            )
+            console.log('Referencia del subdocumento creada:', subDocRef)
+
+            await deleteDoc(subDocRef)
+            console.log('Subdocumento eliminado.')
+            getRutaData()
+
+            console.log('Estado de "Establecimientos disponibles" actualizado.')
+        } catch (error) {
+            console.error('Error en handleDelete:', error)
         }
     }
 
@@ -275,6 +312,22 @@ const AsignacionRuta = () => {
         [],
     )
 
+    const ActionColumn = ({ row }: { row: any }) => {
+        console.log('row', row)
+        return (
+            <div className="justify-center text-lg flex">
+                <span
+                    className="cursor-pointer p-2 hover:text-cyan-500"
+                    onClick={
+                        () => handleDelete(row) // Llama a la función `handleDelete` con el ID del establecimiento
+                    }
+                >
+                    <FaRegEye />
+                </span>
+            </div>
+        )
+    }
+
     const columns1: ColumnDef<any>[] = useMemo(
         () => [
             {
@@ -291,6 +344,11 @@ const AsignacionRuta = () => {
                 header: 'Estado',
                 accessorKey: 'status',
                 cell: (props: any) => <span>{props.getValue()}</span>,
+            },
+            {
+                header: '',
+                id: 'action',
+                cell: (props) => <ActionColumn row={props.row.original} />,
             },
         ],
         [],
@@ -312,8 +370,8 @@ const AsignacionRuta = () => {
                     Asignación de Establecimientos a ruta {rutaData?.nombre}
                 </h1>
             </div>
-            <div className="mt-4 flex justify-evenly items-center my-3">
-                <div className="rounded shadow-lg p-4 bg-white h-screen">
+            <div className="mt-4 flex flex-col justify-evenly items-center my-3">
+                <div className="rounded shadow-lg p-4 bg-white">
                     <DataTable
                         selectable
                         onCheckBoxChange={handleRowSelect}
@@ -332,7 +390,7 @@ const AsignacionRuta = () => {
                         <span>Asignar</span>
                     </Button>
                 </div>
-                <div className="rounded shadow h-screen">
+                <div className="rounded shadow">
                     <DataTable
                         columns={columns1}
                         data={establecimientosAsignados}
