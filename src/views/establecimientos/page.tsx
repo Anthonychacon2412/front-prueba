@@ -3,17 +3,19 @@ import { Button, Dialog } from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { HiOutlinePlusSm } from 'react-icons/hi'
+import { HiOutlinePlusSm, HiOutlinePencil } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import DrawerEstablecimiento from './Drawer'
+import EditDrawer from './EditDrawer'
 
 const Establecimientos = () => {
     const [data, setData] = useState<any>()
     const [dialogIsOpen, setIsOpen] = useState(false)
     const [selectedRow, setSelectedRow] = useState<any | null>(null)
     const [drawerCreateIsOpen, setDrawerCreateIsOpen] = useState(false)
+    const [drawerEditIsOpen, setDrawerEditIsOpen] = useState(false)
 
     const navigate = useNavigate()
 
@@ -43,16 +45,19 @@ const Establecimientos = () => {
         setIsOpen(true)
     }
 
+    const onEdit = (row: any) => {
+        setSelectedRow(row)
+        setDrawerEditIsOpen(true)
+    }
+
     const ActionColumn = ({ row }: { row: any }) => {
         return (
-            <div className="justify-center text-lg">
+            <div className="flex justify-center text-lg space-x-2">
                 <span
                     className="cursor-pointer p-2 hover:text-cyan-500"
-                    onClick={() =>
-                        navigate(`/asignacion_ruta/${row.original.id}`)
-                    }
+                    onClick={() => onEdit(row.original)}
                 >
-                    <HiOutlinePlusSm />
+                    <HiOutlinePencil />
                 </span>
             </div>
         )
@@ -102,8 +107,16 @@ const Establecimientos = () => {
             <DrawerEstablecimiento
                 isOpen={drawerCreateIsOpen}
                 onClose={() => setDrawerCreateIsOpen(false)}
-                onEstablecimientoCreated={getDataEstablecimientos} // Renombrado para mayor claridad
+                onEstablecimientoCreated={getDataEstablecimientos}
             />
+            {selectedRow && (
+                <EditDrawer
+                    isOpen={drawerEditIsOpen}
+                    onClose={() => setDrawerEditIsOpen(false)}
+                    establecimientoId={selectedRow.id}
+                    onEstablecimientoUpdated={getDataEstablecimientos}
+                />
+            )}
             <ToastContainer />
         </>
     )

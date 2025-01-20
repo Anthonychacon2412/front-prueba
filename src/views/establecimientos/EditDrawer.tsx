@@ -1,16 +1,17 @@
 import { Button, Drawer } from '@/components/ui'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { addDoc, collection, getDocs } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
-import Mapcreate from './MapCreate'
+import EditMap from './EditMap'
 
-interface DrawerEstablecimientoProps {
+interface EditDrawerProps {
     isOpen: boolean
     onClose: () => void
-    onEstablecimientoCreated: () => void
+    establecimientoId: string
+    onEstablecimientoUpdated: () => void
 }
 
 interface FormValues {
@@ -19,19 +20,19 @@ interface FormValues {
     ubicacion: [number, number] | null
 }
 
-const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
+const EditDrawer: React.FC<EditDrawerProps> = ({
     isOpen,
     onClose,
-    onEstablecimientoCreated,
+    establecimientoId,
+    onEstablecimientoUpdated,
 }) => {
     const [regiones, setRegiones] = useState<string[]>([])
     const [ubicacion, setUbicacion] = useState<[number, number] | null>(null)
-
-    const initialValues: FormValues = {
+    const [initialValues, setInitialValues] = useState<FormValues>({
         nombre: '',
         region: '',
         ubicacion: null,
-    }
+    })
 
     const validationSchema = Yup.object({
         nombre: Yup.string().required(
@@ -45,19 +46,22 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
         { setSubmitting }: FormikHelpers<FormValues>,
     ) => {
         try {
-            const newEstablecimiento = {
+            const establecimientoRef = doc(
+                db,
+                'establecimientos',
+                establecimientoId,
+            )
+            await updateDoc(establecimientoRef, {
                 ...values,
                 ubicacion,
-                status: 'Disponible',
-            }
-            await addDoc(collection(db, 'establecimientos'), newEstablecimiento)
-            toast.success('Establecimiento creado exitosamente')
+            })
+            toast.success('Establecimiento actualizado exitosamente')
             setSubmitting(false)
             onClose()
-            onEstablecimientoCreated()
+            onEstablecimientoUpdated()
         } catch (error) {
-            console.error('Error al crear el establecimiento:', error)
-            toast.error('Error al crear el establecimiento')
+            console.error('Error al actualizar el establecimiento:', error)
+            toast.error('Error al actualizar el establecimiento')
             setSubmitting(false)
         }
     }
@@ -75,14 +79,42 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
         }
     }
 
+    const getEstablecimiento = async () => {
+        try {
+            const establecimientoRef = doc(
+                db,
+                'establecimientos',
+                establecimientoId,
+            )
+            const docSnap = await getDoc(establecimientoRef)
+            if (docSnap.exists()) {
+                const data = docSnap.data()
+                setInitialValues({
+                    nombre: data.nombre,
+                    region: data.region,
+                    ubicacion: data.ubicacion,
+                })
+                setUbicacion(data.ubicacion)
+            } else {
+                console.error('No se encontró el establecimiento')
+            }
+        } catch (error) {
+            console.error('Error al obtener el establecimiento:', error)
+        }
+    }
+
     useEffect(() => {
         getRegiones()
-    }, [])
+        if (establecimientoId) {
+            getEstablecimiento()
+        }
+    }, [establecimientoId])
 
     return (
         <Drawer isOpen={isOpen} onClose={onClose} className="rounded-md shadow">
-            <h2 className="mb-4 text-xl font-bold">Crear Establecimiento</h2>
+            <h2 className="mb-4 text-xl font-bold">Editar Establecimiento</h2>
             <Formik
+                enableReinitialize
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={handleSubmit}
@@ -128,7 +160,12 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                             />
                         </div>
                         <div className="flex flex-col">
-                            <Mapcreate onLocationSelect={setUbicacion} />
+                            {ubicacion && (
+                                <EditMap
+                                    initialLocation={ubicacion}
+                                    onLocationSelect={setUbicacion}
+                                />
+                            )}
                         </div>
 
                         <div className="text-right mt-6">
@@ -155,4 +192,4 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
     )
 }
 
-export default DrawerEstablecimiento
+export default EditDrawer
