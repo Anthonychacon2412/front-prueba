@@ -104,6 +104,7 @@ const Establecimientos = () => {
                 </Button>
             </div>
             <DataTable columns={columns} data={data} />
+
             <DrawerEstablecimiento
                 isOpen={drawerCreateIsOpen}
                 onClose={() => setDrawerCreateIsOpen(false)}
