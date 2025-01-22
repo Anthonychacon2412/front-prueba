@@ -3,17 +3,22 @@ import { Button, Dialog } from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { HiOutlinePlusSm } from 'react-icons/hi'
+import { HiOutlinePlusSm, HiOutlinePencil } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import DrawerEstablecimiento from './Drawer'
+import EditDrawer from './EditDrawer'
 
 const Establecimientos = () => {
-    const [data, setData] = useState<any>()
+    const [data, setData] = useState<any[]>([])
+
     const [dialogIsOpen, setIsOpen] = useState(false)
     const [selectedRow, setSelectedRow] = useState<any | null>(null)
     const [drawerCreateIsOpen, setDrawerCreateIsOpen] = useState(false)
+    const [drawerEditIsOpen, setDrawerEditIsOpen] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const rowsPerPage = 4
 
     const navigate = useNavigate()
 
@@ -38,21 +43,36 @@ const Establecimientos = () => {
         getDataEstablecimientos()
     }, [])
 
+    const paginatedData = useMemo(() => {
+        const startIndex = (currentPage - 1) * rowsPerPage
+        const endIndex = startIndex + rowsPerPage
+        return data.slice(startIndex, endIndex)
+    }, [data, currentPage])
+
+    // Calcula el número total de páginas
+    const totalPages = useMemo(
+        () => (data ? Math.ceil(data.length / rowsPerPage) : 0),
+        [data, rowsPerPage],
+    )
+
     const onDetail = (row: any) => {
         setSelectedRow(row)
         setIsOpen(true)
     }
 
+    const onEdit = (row: any) => {
+        setSelectedRow(row)
+        setDrawerEditIsOpen(true)
+    }
+
     const ActionColumn = ({ row }: { row: any }) => {
         return (
-            <div className="justify-center text-lg">
+            <div className="flex justify-center text-lg space-x-2">
                 <span
                     className="cursor-pointer p-2 hover:text-cyan-500"
-                    onClick={() =>
-                        navigate(`/asignacion_ruta/${row.original.id}`)
-                    }
+                    onClick={() => onEdit(row.original)}
                 >
-                    <HiOutlinePlusSm />
+                    <HiOutlinePencil />
                 </span>
             </div>
         )
@@ -98,12 +118,37 @@ const Establecimientos = () => {
                     Crear Establecimiento
                 </Button>
             </div>
-            <DataTable columns={columns} data={data} />
+            <DataTable columns={columns} data={paginatedData} />
+            <div className="flex justify-end items-center space-x-2 mt-4">
+                <Button
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                >
+                    Anterior
+                </Button>
+                <span>
+                    Página {currentPage} de {totalPages}
+                </span>
+                <Button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                >
+                    Siguiente
+                </Button>
+            </div>
             <DrawerEstablecimiento
                 isOpen={drawerCreateIsOpen}
                 onClose={() => setDrawerCreateIsOpen(false)}
-                onEstablecimientoCreated={getDataEstablecimientos} // Renombrado para mayor claridad
+                onEstablecimientoCreated={getDataEstablecimientos}
             />
+            {selectedRow && (
+                <EditDrawer
+                    isOpen={drawerEditIsOpen}
+                    onClose={() => setDrawerEditIsOpen(false)}
+                    establecimientoId={selectedRow.id}
+                    onEstablecimientoUpdated={getDataEstablecimientos}
+                />
+            )}
             <ToastContainer />
         </>
     )
