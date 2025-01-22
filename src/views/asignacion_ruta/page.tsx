@@ -1,5 +1,8 @@
 import { DataTable } from '@/components/shared'
-import { Button } from '@/components/ui'
+import { Button, Notification, Tabs, toast } from '@/components/ui'
+import TabContent from '@/components/ui/Tabs/TabContent'
+import TabList from '@/components/ui/Tabs/TabList'
+import TabNav from '@/components/ui/Tabs/TabNav'
 import { db } from '@/configs/firebaseAssets.config'
 import { APP_PREFIX_PATH } from '@/constants/route.constant'
 import { ColumnDef } from '@tanstack/react-table'
@@ -17,6 +20,7 @@ import {
 } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
 import { FaArrowLeft, FaRegEye } from 'react-icons/fa'
+import { HiChevronLeft, HiOutlineTrash, HiTrash } from 'react-icons/hi'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 
 const AsignacionRuta = () => {
@@ -108,6 +112,12 @@ const AsignacionRuta = () => {
         }
     }
 
+    const deleteNotification = (
+        <Notification title="Mesasge" type="success">
+            Se elimino el establecimiento de la ruta con exito!
+        </Notification>
+    )
+
     const handleDelete = async (row: any) => {
         console.log('rutaData', rutaData)
         try {
@@ -123,9 +133,7 @@ const AsignacionRuta = () => {
             const q = query(
                 collection(db, 'establecimientos'),
                 where('status', '==', 'Disponible'),
-                // where('region', '==', rutaData?.region),
             )
-            const querySnapshot = await getDocs(q)
 
             const subDocRef = doc(
                 db,
@@ -134,7 +142,9 @@ const AsignacionRuta = () => {
             )
             console.log('Referencia del subdocumento creada:', subDocRef)
 
-            await deleteDoc(subDocRef)
+            await deleteDoc(subDocRef).then(() => {
+                toast.push(deleteNotification)
+            })
             console.log('Subdocumento eliminado.')
             getRutaData()
 
@@ -219,6 +229,11 @@ const AsignacionRuta = () => {
         }
     }
 
+    const toastNotification = (
+        <Notification title="Mesasge" type="success">
+            Se asigno el establecimiento con exito!
+        </Notification>
+    )
     const handleAsignarEstablecimientos = async () => {
         try {
             if (!id) {
@@ -260,6 +275,8 @@ const AsignacionRuta = () => {
                     region: establecimiento.region,
                     status: 'Asignado',
                     uid: establecimiento.id, // Guardamos el uid para referencia futura
+                }).then((resp) => {
+                    toast.push(toastNotification)
                 })
 
                 // **Verificar que el documento con el `uid` existe en la colección global `establecimientos`**
@@ -317,12 +334,12 @@ const AsignacionRuta = () => {
         return (
             <div className="justify-center text-lg flex">
                 <span
-                    className="cursor-pointer p-2 hover:text-cyan-500"
+                    className="cursor-pointer p-2 hover:text-red-500"
                     onClick={
                         () => handleDelete(row) // Llama a la función `handleDelete` con el ID del establecimiento
                     }
                 >
-                    <FaRegEye />
+                    <HiOutlineTrash />
                 </span>
             </div>
         )
@@ -356,47 +373,59 @@ const AsignacionRuta = () => {
 
     return (
         <>
-            <div>
-                <button
+            <div className="flex mb-6">
+                <span
+                    className="cursor-pointer p-2 hover:text-red-500 text-2xl"
                     onClick={() =>
                         navigate(`${APP_PREFIX_PATH}/plantilla-rutas`)
                     }
-                    className="flex items-center text-white mb-3 ml-2 px-4 py-2 bg-orange-400 rounded-lg hover:bg-orange-500 transition duration-300"
                 >
-                    <FaArrowLeft className="mr-2" />
-                    <span>Volver</span>
-                </button>
-                <h1 className="mb-4 text-2xl font-bold text-center text-gray-800">
-                    Asignación de Establecimientos a ruta {rutaData?.nombre}
-                </h1>
-            </div>
-            <div className="mt-4 flex flex-col justify-evenly items-center my-3">
-                <div className="rounded shadow-lg p-4 bg-white">
-                    <DataTable
-                        selectable
-                        onCheckBoxChange={handleRowSelect}
-                        columns={columns}
-                        data={establecimientosDisponibles}
-                    />
-                </div>
+                    <HiChevronLeft className="mr-2" />
+                </span>
                 <div>
-                    <Button
-                        className="mx-6 bg-orange-400 text-white font-semibold py-2 px-4 rounded hover:bg-orange-500 transition duration-300"
-                        color="orange-400"
-                        variant="solid"
-                        onClick={handleAsignarEstablecimientos}
-                        disabled={selectedEstablecimientos.length === 0} // Desactiva si no hay seleccionados
-                    >
-                        <span>Asignar</span>
-                    </Button>
-                </div>
-                <div className="rounded shadow">
-                    <DataTable
-                        columns={columns1}
-                        data={establecimientosAsignados}
-                    />
+                    <h1 className=" text-2xl font-bold text-center text-gray-800">
+                        Asignación de establecimientos
+                    </h1>
+                    <span>
+                        Nombre de la ruta:{' '}
+                        <b className="text-black">{rutaData?.nombre}</b>
+                    </span>
                 </div>
             </div>
+
+            <Tabs defaultValue="tab1" variant="pill">
+                <TabList>
+                    <TabNav value="tab1">Establecimientos Disponibles</TabNav>
+                    <TabNav value="tab2">Establecimientos Asignados</TabNav>
+                </TabList>
+                <div className="p-4">
+                    <TabContent value="tab1">
+                        <DataTable
+                            selectable
+                            onCheckBoxChange={handleRowSelect}
+                            columns={columns}
+                            data={establecimientosDisponibles}
+                        />
+                        <div className="flex justify-end mt-4">
+                            <Button
+                                className="bg-orange-400 text-white font-semibold py-2 px-6 rounded-lg shadow hover:bg-orange-500 transition duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                color="orange-400"
+                                variant="solid"
+                                onClick={handleAsignarEstablecimientos}
+                                disabled={selectedEstablecimientos.length === 0}
+                            >
+                                <span>Asignar Establecimientos</span>
+                            </Button>
+                        </div>
+                    </TabContent>
+                    <TabContent value="tab2">
+                        <DataTable
+                            columns={columns1}
+                            data={establecimientosAsignados}
+                        />
+                    </TabContent>
+                </div>
+            </Tabs>
         </>
     )
 }
