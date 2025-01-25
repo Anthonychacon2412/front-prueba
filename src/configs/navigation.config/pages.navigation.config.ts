@@ -57,6 +57,16 @@ const pagesNavigationConfig: NavigationTree[] = [
                 subMenu: [],
             },
             {
+                key: 'pages.appformprueba',
+                path: `${APP_PREFIX_PATH}/pruebaForm`,
+                title: 'Formulario Prueba',
+                translateKey: 'nav.pages.appformprueba',
+                icon: 'eye',
+                type: NAV_ITEM_TYPE_ITEM,
+                authority: [ADMIN, USER],
+                subMenu: [],
+            },
+            {
                 key: 'pages.plantilla-rutas',
                 path: `${APP_PREFIX_PATH}/plantilla-rutas`,
                 title: 'Plantilla Rutas',

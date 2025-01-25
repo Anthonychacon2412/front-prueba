@@ -111,9 +111,9 @@ const Establecimientos = () => {
                     Establecimientos
                 </h1>
                 <Button
-                    className="w-40 ml-4 text-white hover:opacity-80"
-                    style={{ backgroundColor: '#000B7E' }}
+                    className="ml-4hover:opacity-80"
                     onClick={() => setDrawerCreateIsOpen(true)}
+                    variant="solid"
                 >
                     Crear Establecimiento
                 </Button>
