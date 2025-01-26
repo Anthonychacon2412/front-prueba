@@ -71,12 +71,16 @@ const Mapcreate: React.FC<MapcreateProps> = ({ onLocationSelect }) => {
     }
 
     return (
-        <div style={{ height: '100vh', width: '100%' }}>
+        <div className="h-80">
             <MapContainer
                 center={[10.4806, -66.9036]} // Coordenadas de Caracas, Venezuela
                 zoom={13}
                 scrollWheelZoom={false}
-                style={{ height: '50%', width: '100%' }}
+                style={{
+                    height: '100%',
+                    width: '100%',
+                    backgroundColor: 'red',
+                }}
             >
                 <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

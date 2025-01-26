@@ -74,6 +74,12 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'appformprueba',
+        path: `${APP_PREFIX_PATH}/pruebaForm`,
+        component: lazy(() => import('@/views/forms-prueba/index')),
+        authority: [ADMIN, USER],
+    },
+    {
         key: 'appplantilla',
         path: `${APP_PREFIX_PATH}/plantilla-rutas`,
         component: lazy(() => import('@/views/plantilla-rutas/index')),

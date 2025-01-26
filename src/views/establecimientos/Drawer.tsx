@@ -131,7 +131,7 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                             <Mapcreate onLocationSelect={setUbicacion} />
                         </div>
 
-                        <div className="text-right mt-6">
+                        <div className="text-right">
                             <Button
                                 variant="default"
                                 onClick={onClose}
