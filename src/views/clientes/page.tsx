@@ -1,5 +1,5 @@
 import { ColumnDef, DataTable } from '@/components/shared'
-import { Button, Dialog } from '@/components/ui'
+import { Button, Dialog, Spinner } from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
@@ -13,6 +13,7 @@ import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 
 const Clientes = () => {
     const [data, setData] = useState<any[]>([])
+    const [isLoading, setIsLoading] = useState(true) // Nuevo estado de carga
 
     const [dialogIsOpen, setIsOpen] = useState(false)
     const [selectedRow, setSelectedRow] = useState<any | null>(null)
@@ -25,6 +26,7 @@ const Clientes = () => {
 
     const getDataClientes = async () => {
         try {
+            setIsLoading(true) // Inicia la carga
             const q = query(collection(db, 'clientes'))
             const querySnapshot = await getDocs(q)
             const clientes: any[] = []
@@ -32,12 +34,13 @@ const Clientes = () => {
             querySnapshot.forEach((doc) => {
                 clientes.push({ id: doc.id, ...doc.data() })
             })
-            console.log(clientes)
 
             setData(clientes)
         } catch (error) {
             console.error('Error al obtener los clientes:', error)
             toast.error('Error al obtener los clientes')
+        } finally {
+            setIsLoading(false) // Termina la carga
         }
     }
 
@@ -51,20 +54,23 @@ const Clientes = () => {
         return data.slice(startIndex, endIndex)
     }, [data, currentPage])
 
-    // Calcula el número total de páginas
     const totalPages = useMemo(
         () => (data ? Math.ceil(data.length / rowsPerPage) : 0),
         [data, rowsPerPage],
     )
 
     const onDetail = (row: any) => {
-        setSelectedRow(row)
-        setIsOpen(true)
+        if (!isLoading) {
+            setSelectedRow(row)
+            setIsOpen(true)
+        }
     }
 
     const onEdit = (row: any) => {
-        setSelectedRow(row)
-        setDrawerEditIsOpen(true)
+        if (!isLoading) {
+            setSelectedRow(row)
+            setDrawerEditIsOpen(true)
+        }
     }
 
     const ActionColumn = ({ row }: { row: any }) => {
@@ -102,18 +108,18 @@ const Clientes = () => {
                 accessorKey: 'status',
                 cell: (props: any) => {
                     const value = props.getValue()
-                    const label = value ? 'Activo' : 'Inactivo' // Mapea true a 'Aprobado' y false a 'Rechazado'
+                    const label = value ? 'Activo' : 'Inactivo'
                     const backgroundColor = value
                         ? 'rgba(144, 238, 144, 0.2)'
-                        : 'rgba(255, 99, 71, 0.2)' // Colores suaves
-                    const color = value ? 'green' : 'red' // Texto en verde o rojo
+                        : 'rgba(255, 99, 71, 0.2)'
+                    const color = value ? 'green' : 'red'
                     return (
                         <span
                             style={{
                                 color,
                                 backgroundColor,
-                                padding: '4px 8px', // Espaciado interno
-                                borderRadius: '10px', // Bordes redondeados
+                                padding: '4px 8px',
+                                borderRadius: '10px',
                             }}
                         >
                             {label}
@@ -121,7 +127,6 @@ const Clientes = () => {
                     )
                 },
             },
-
             {
                 header: '',
                 id: 'action',
@@ -138,29 +143,38 @@ const Clientes = () => {
                 <Button
                     className="w-40 ml-4 text-white hover:opacity-80"
                     variant="solid"
-                    onClick={() => setDrawerCreateIsOpen(true)}
+                    onClick={() => !isLoading && setDrawerCreateIsOpen(true)}
+                    disabled={isLoading} // Deshabilita el botón mientras carga
                 >
                     Crear Cliente
                 </Button>
             </div>
-            <DataTable columns={columns} data={paginatedData} />
-            <div className="flex justify-center items-center space-x-2 mt-4">
-                <Button
-                    icon={<FaAngleLeft />}
-                    variant="plain"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((prev) => prev - 1)}
-                />
-                <span>
-                    Página {currentPage} de {totalPages}
-                </span>
-                <Button
-                    icon={<FaAngleRight />}
-                    variant="plain"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((prev) => prev + 1)}
-                />
-            </div>
+            {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                    <Spinner color="orange-500" size={60} />
+                </div>
+            ) : (
+                <>
+                    <DataTable columns={columns} data={paginatedData} />
+                    <div className="flex justify-center items-center space-x-2 mt-4">
+                        <Button
+                            icon={<FaAngleLeft />}
+                            variant="plain"
+                            disabled={currentPage === 1 || isLoading}
+                            onClick={() => setCurrentPage((prev) => prev - 1)}
+                        />
+                        <span>
+                            Página {currentPage} de {totalPages}
+                        </span>
+                        <Button
+                            icon={<FaAngleRight />}
+                            variant="plain"
+                            disabled={currentPage === totalPages || isLoading}
+                            onClick={() => setCurrentPage((prev) => prev + 1)}
+                        />
+                    </div>
+                </>
+            )}
             <CreateDrawer
                 isOpen={drawerCreateIsOpen}
                 onClose={() => setDrawerCreateIsOpen(false)}

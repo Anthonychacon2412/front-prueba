@@ -47,16 +47,6 @@ const pagesNavigationConfig: NavigationTree[] = [
                 subMenu: [],
             },
             {
-                key: 'pages.visualizacion',
-                path: `${APP_PREFIX_PATH}/visualizacion-rutas`,
-                title: 'Visualizacion de Rutas',
-                translateKey: 'nav.pages.visualizacion-rutas',
-                icon: 'eye',
-                type: NAV_ITEM_TYPE_ITEM,
-                authority: [ADMIN, USER],
-                subMenu: [],
-            },
-            {
                 key: 'pages.appformprueba',
                 path: `${APP_PREFIX_PATH}/pruebaForm`,
                 title: 'Formulario Prueba',

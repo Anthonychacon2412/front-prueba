@@ -1,11 +1,4 @@
-import {
-    Button,
-    Drawer,
-    Input,
-    InputGroup,
-    Select,
-    Spinner,
-} from '@/components/ui'
+import { Button, Drawer, Spinner, Switcher } from '@/components/ui'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
@@ -24,6 +17,7 @@ interface FormValues {
     nombre: string
     region: string
     rif: string
+    status: boolean
 }
 
 const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
@@ -37,6 +31,7 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
         nombre: '',
         region: '',
         rif: '',
+        status: false, // Estado inicial del status
     })
     const [isLoading, setIsLoading] = useState<boolean>(true) // Estado para cargar datos
 
@@ -52,8 +47,8 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
     })
 
     const handleSubmit = async (
-        values: FormValues,
-        { setSubmitting }: FormikHelpers<FormValues>,
+        values: FormValues & { status: boolean },
+        { setSubmitting }: FormikHelpers<FormValues & { status: boolean }>,
     ) => {
         try {
             const clienteRef = doc(db, 'clientes', clienteId)
@@ -94,6 +89,7 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
                     nombre: data.nombre,
                     region: data.region,
                     rif: data.rif,
+                    status: data.status || false,
                 })
             } else {
                 console.error('No se encontró el cliente')
@@ -132,15 +128,29 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
 
     return (
         <Drawer isOpen={isOpen} onClose={onClose} className="rounded-md shadow">
-            <h2 className="mb-4 text-xl font-bold">Editar Cliente</h2>
+            <div className="flex justify-between">
+                <h2 className="mb-4 text-xl font-bold">Editar Cliente</h2>
+            </div>
             <Formik
                 enableReinitialize
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={handleSubmit}
             >
-                {({ isSubmitting }) => (
+                {({ values, setFieldValue, isSubmitting }) => (
                     <Form className="flex flex-col space-y-6">
+                        <div className="flex items-center space-x-4">
+                            <label className="font-semibold text-gray-700">
+                                Estado del cliente:
+                            </label>
+                            <Switcher
+                                defaultChecked={values.status}
+                                onChange={(checked) =>
+                                    setFieldValue('status', checked)
+                                }
+                                color="green-500"
+                            />
+                        </div>
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
                                 Nombre cliente:
@@ -156,6 +166,7 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
                                 className="text-red-600 text-sm mt-1"
                             />
                         </div>
+
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
                                 Rif:

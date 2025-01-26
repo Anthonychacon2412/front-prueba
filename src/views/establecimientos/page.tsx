@@ -9,6 +9,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import DrawerEstablecimiento from './Drawer'
 import EditDrawer from './EditDrawer'
+import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 
 const Establecimientos = () => {
     const [data, setData] = useState<any[]>([])
@@ -119,22 +120,22 @@ const Establecimientos = () => {
                 </Button>
             </div>
             <DataTable columns={columns} data={paginatedData} />
-            <div className="flex justify-end items-center space-x-2 mt-4">
+            <div className="flex justify-center items-center space-x-2 mt-4">
                 <Button
+                    icon={<FaAngleLeft />}
+                    variant="plain"
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((prev) => prev - 1)}
-                >
-                    Anterior
-                </Button>
+                />
                 <span>
                     Página {currentPage} de {totalPages}
                 </span>
                 <Button
+                    icon={<FaAngleRight />}
+                    variant="plain"
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((prev) => prev + 1)}
-                >
-                    Siguiente
-                </Button>
+                />
             </div>
             <DrawerEstablecimiento
                 isOpen={drawerCreateIsOpen}
