@@ -1,43 +1,54 @@
-import { Button, Drawer, Spinner } from '@/components/ui'
+import {
+    Button,
+    Drawer,
+    Input,
+    InputGroup,
+    Select,
+    Spinner,
+} from '@/components/ui'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { addDoc, collection, getDocs } from 'firebase/firestore'
+import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
-import Mapcreate from './MapCreate'
 
-interface DrawerEstablecimientoProps {
+interface EditDrawerClienteProps {
     isOpen: boolean
     onClose: () => void
-    onEstablecimientoCreated: () => void
+    clienteId: string
+    onClienteUpdated: () => void
 }
 
 interface FormValues {
     nombre: string
     region: string
-    ubicacion: [number, number] | null
+    rif: string
 }
 
-const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
+const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
     isOpen,
     onClose,
-    onEstablecimientoCreated,
+    clienteId,
+    onClienteUpdated,
 }) => {
     const [regiones, setRegiones] = useState<string[]>([])
-    const [ubicacion, setUbicacion] = useState<[number, number] | null>(null)
-
-    const initialValues: FormValues = {
+    const [initialValues, setInitialValues] = useState<FormValues>({
         nombre: '',
         region: '',
-        ubicacion: null,
-    }
+        rif: '',
+    })
+    const [isLoading, setIsLoading] = useState<boolean>(true) // Estado para cargar datos
 
     const validationSchema = Yup.object({
-        nombre: Yup.string().required(
-            'El nombre del establecimiento es obligatorio',
-        ),
+        nombre: Yup.string().required('El nombre del cliente es obligatorio'),
         region: Yup.string().required('La región es obligatoria'),
+        rif: Yup.string()
+            .matches(
+                /^[JE]-\d+$/,
+                'El RIF debe comenzar con J- o E- seguido de números',
+            )
+            .required('El RIF es obligatorio'),
     })
 
     const handleSubmit = async (
@@ -45,19 +56,17 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
         { setSubmitting }: FormikHelpers<FormValues>,
     ) => {
         try {
-            const newEstablecimiento = {
+            const clienteRef = doc(db, 'clientes', clienteId)
+            await updateDoc(clienteRef, {
                 ...values,
-                ubicacion,
-                status: 'Disponible',
-            }
-            await addDoc(collection(db, 'establecimientos'), newEstablecimiento)
-            toast.success('Establecimiento creado exitosamente')
+            })
+            toast.success('Cliente actualizado exitosamente')
             setSubmitting(false)
             onClose()
-            onEstablecimientoCreated()
+            onClienteUpdated()
         } catch (error) {
-            console.error('Error al crear el establecimiento:', error)
-            toast.error('Error al crear el establecimiento')
+            console.error('Error al actualizar el cliente:', error)
+            toast.error('Error al actualizar el cliente')
             setSubmitting(false)
         }
     }
@@ -75,14 +84,57 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
         }
     }
 
+    const getCliente = async () => {
+        try {
+            const clienteRef = doc(db, 'clientes', clienteId)
+            const docSnap = await getDoc(clienteRef)
+            if (docSnap.exists()) {
+                const data = docSnap.data()
+                setInitialValues({
+                    nombre: data.nombre,
+                    region: data.region,
+                    rif: data.rif,
+                })
+            } else {
+                console.error('No se encontró el cliente')
+            }
+        } catch (error) {
+            console.error('Error al obtener el cliente:', error)
+        }
+    }
+
     useEffect(() => {
-        getRegiones()
-    }, [])
+        const loadData = async () => {
+            setIsLoading(true) // Iniciar carga
+            await getRegiones()
+            if (clienteId) {
+                await getCliente()
+            }
+            setIsLoading(false) // Finalizar carga
+        }
+
+        loadData()
+    }, [clienteId])
+
+    if (isLoading) {
+        return (
+            <Drawer
+                isOpen={isOpen}
+                onClose={onClose}
+                className="rounded-md shadow"
+            >
+                <div className="flex justify-center items-center h-full">
+                    <Spinner size={40} />
+                </div>
+            </Drawer>
+        )
+    }
 
     return (
         <Drawer isOpen={isOpen} onClose={onClose} className="rounded-md shadow">
-            <h2 className="mb-4 text-xl font-bold">Crear Establecimiento</h2>
+            <h2 className="mb-4 text-xl font-bold">Editar Cliente</h2>
             <Formik
+                enableReinitialize
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={handleSubmit}
@@ -91,7 +143,7 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                     <Form className="flex flex-col space-y-6">
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
-                                Nombre establecimiento:
+                                Nombre cliente:
                             </label>
                             <Field
                                 type="text"
@@ -100,6 +152,22 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                             />
                             <ErrorMessage
                                 name="nombre"
+                                component="div"
+                                className="text-red-600 text-sm mt-1"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="font-semibold text-gray-700">
+                                Rif:
+                            </label>
+                            <Field
+                                type="text"
+                                name="rif"
+                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                disabled
+                            />
+                            <ErrorMessage
+                                name="rif"
                                 component="div"
                                 className="text-red-600 text-sm mt-1"
                             />
@@ -127,9 +195,6 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                                 className="text-red-600 text-sm mt-1"
                             />
                         </div>
-                        <div className="flex flex-col">
-                            <Mapcreate onLocationSelect={setUbicacion} />
-                        </div>
 
                         <div className="text-right mt-6">
                             <Button
@@ -149,7 +214,7 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                                 {isSubmitting ? (
                                     <Spinner color="white" />
                                 ) : (
-                                    'Crear'
+                                    'Editar'
                                 )}
                             </Button>
                         </div>
@@ -160,4 +225,4 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
     )
 }
 
-export default DrawerEstablecimiento
+export default EditDrawerCliente

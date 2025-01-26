@@ -1,43 +1,63 @@
-import { Button, Drawer, Spinner } from '@/components/ui'
-import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
+import {
+    Button,
+    Drawer,
+    Input,
+    InputGroup,
+    Select,
+    Spinner,
+} from '@/components/ui'
+import {
+    ErrorMessage,
+    Field,
+    Form,
+    Formik,
+    FormikHelpers,
+    useFormikContext,
+} from 'formik'
 import * as Yup from 'yup'
 import { addDoc, collection, getDocs } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
-import Mapcreate from './MapCreate'
 
-interface DrawerEstablecimientoProps {
+interface CreateDrawerProps {
     isOpen: boolean
     onClose: () => void
-    onEstablecimientoCreated: () => void
+    onClienteCreated: () => void
 }
 
 interface FormValues {
     nombre: string
     region: string
-    ubicacion: [number, number] | null
+    rif: string
 }
 
-const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
+const CreateDrawer: React.FC<CreateDrawerProps> = ({
     isOpen,
     onClose,
-    onEstablecimientoCreated,
+    onClienteCreated,
 }) => {
     const [regiones, setRegiones] = useState<string[]>([])
-    const [ubicacion, setUbicacion] = useState<[number, number] | null>(null)
 
     const initialValues: FormValues = {
         nombre: '',
+        rif: '',
         region: '',
-        ubicacion: null,
     }
+    const options1 = [
+        { value: 'J-', label: 'J-' },
+        { value: 'E-', label: 'E-' },
+    ]
 
     const validationSchema = Yup.object({
-        nombre: Yup.string().required(
-            'El nombre del establecimiento es obligatorio',
-        ),
+        nombre: Yup.string().required('El nombre del cliente es obligatorio'),
         region: Yup.string().required('La región es obligatoria'),
+        rif: Yup.string()
+            .matches(
+                /^[JE]-\d+$/,
+                'El RIF debe comenzar con J- o E- seguido de números',
+            )
+            .required('El RIF es obligatorio'),
     })
 
     const handleSubmit = async (
@@ -45,19 +65,18 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
         { setSubmitting }: FormikHelpers<FormValues>,
     ) => {
         try {
-            const newEstablecimiento = {
+            const newCliente = {
                 ...values,
-                ubicacion,
-                status: 'Disponible',
+                status: 'true',
             }
-            await addDoc(collection(db, 'establecimientos'), newEstablecimiento)
-            toast.success('Establecimiento creado exitosamente')
+            await addDoc(collection(db, 'clientes'), newCliente)
+            toast.success('Cliente creado exitosamente')
             setSubmitting(false)
             onClose()
-            onEstablecimientoCreated()
+            onClienteCreated()
         } catch (error) {
-            console.error('Error al crear el establecimiento:', error)
-            toast.error('Error al crear el establecimiento')
+            console.error('Error al crear el cliente:', error)
+            toast.error('Error al crear el cliente')
             setSubmitting(false)
         }
     }
@@ -81,25 +100,60 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
 
     return (
         <Drawer isOpen={isOpen} onClose={onClose} className="rounded-md shadow">
-            <h2 className="mb-4 text-xl font-bold">Crear Establecimiento</h2>
+            <h2 className="mb-4 text-xl font-bold">Crear Cliente</h2>
             <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}
                 onSubmit={handleSubmit}
             >
-                {({ isSubmitting }) => (
+                {({ isSubmitting, values, setFieldValue }) => (
                     <Form className="flex flex-col space-y-6">
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
-                                Nombre establecimiento:
+                                Nombre Cliente:
                             </label>
                             <Field
                                 type="text"
                                 name="nombre"
+                                placeholder="Ingrese nombre"
                                 className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                             />
                             <ErrorMessage
                                 name="nombre"
+                                component="div"
+                                className="text-red-600 text-sm mt-1"
+                            />
+                        </div>
+
+                        <div className="flex flex-col">
+                            <label className="font-semibold text-gray-700">
+                                Rif:
+                            </label>
+                            <InputGroup>
+                                <div style={{ minWidth: 80 }}>
+                                    <Select
+                                        isSearchable={false}
+                                        options={options1}
+                                        onChange={(option) => {
+                                            const rifNumber =
+                                                values.rif.replace(/^[JE]-/, '')
+                                            setFieldValue(
+                                                'rif',
+                                                `${option?.value}${rifNumber}`,
+                                            )
+                                        }}
+                                    />
+                                </div>
+                                <Input
+                                    value={values.rif}
+                                    onChange={(e) =>
+                                        setFieldValue('rif', e.target.value)
+                                    }
+                                    placeholder="Ingrese RIF"
+                                />
+                            </InputGroup>
+                            <ErrorMessage
+                                name="rif"
                                 component="div"
                                 className="text-red-600 text-sm mt-1"
                             />
@@ -127,9 +181,6 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                                 className="text-red-600 text-sm mt-1"
                             />
                         </div>
-                        <div className="flex flex-col">
-                            <Mapcreate onLocationSelect={setUbicacion} />
-                        </div>
 
                         <div className="text-right mt-6">
                             <Button
@@ -143,7 +194,6 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                             <Button
                                 type="submit"
                                 variant="solid"
-                                className="text-white hover:opacity-80"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? (
@@ -160,4 +210,4 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
     )
 }
 
-export default DrawerEstablecimiento
+export default CreateDrawer

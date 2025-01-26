@@ -1,4 +1,4 @@
-import { Button, Drawer } from '@/components/ui'
+import { Button, Drawer, Spinner } from '@/components/ui'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
@@ -173,16 +173,21 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                                 variant="default"
                                 onClick={onClose}
                                 className="mr-2"
+                                type="button"
                             >
                                 Cancelar
                             </Button>
                             <Button
                                 type="submit"
-                                style={{ backgroundColor: '#000B7E' }}
+                                variant="solid"
                                 className="text-white hover:opacity-80"
                                 disabled={isSubmitting}
                             >
-                                {isSubmitting ? 'Guardando...' : 'Guardar'}
+                                {isSubmitting ? (
+                                    <Spinner color="white" />
+                                ) : (
+                                    'Editar'
+                                )}
                             </Button>
                         </div>
                     </Form>

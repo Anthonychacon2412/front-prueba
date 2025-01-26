@@ -3,14 +3,15 @@ import { Button, Dialog } from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { HiOutlinePlusSm, HiOutlinePencil } from 'react-icons/hi'
+import { HiOutlinePencil } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import DrawerEstablecimiento from './Drawer'
-import EditDrawer from './EditDrawer'
+import CreateDrawer from './components/CreateDrawer'
+import EditDrawerCliente from './components/EditDrawerCliente'
+import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 
-const Establecimientos = () => {
+const Clientes = () => {
     const [data, setData] = useState<any[]>([])
 
     const [dialogIsOpen, setIsOpen] = useState(false)
@@ -22,25 +23,26 @@ const Establecimientos = () => {
 
     const navigate = useNavigate()
 
-    const getDataEstablecimientos = async () => {
+    const getDataClientes = async () => {
         try {
-            const q = query(collection(db, 'establecimientos'))
+            const q = query(collection(db, 'clientes'))
             const querySnapshot = await getDocs(q)
-            const establecimientos: any[] = []
+            const clientes: any[] = []
 
             querySnapshot.forEach((doc) => {
-                establecimientos.push({ id: doc.id, ...doc.data() })
+                clientes.push({ id: doc.id, ...doc.data() })
             })
+            console.log(clientes)
 
-            setData(establecimientos)
+            setData(clientes)
         } catch (error) {
-            console.error('Error al obtener los establecimientos:', error)
-            toast.error('Error al obtener los establecimientos')
+            console.error('Error al obtener los clientes:', error)
+            toast.error('Error al obtener los clientes')
         }
     }
 
     useEffect(() => {
-        getDataEstablecimientos()
+        getDataClientes()
     }, [])
 
     const paginatedData = useMemo(() => {
@@ -91,10 +93,35 @@ const Establecimientos = () => {
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
-                header: 'Status',
-                accessorKey: 'status',
+                header: 'Rif',
+                accessorKey: 'rif',
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
+            {
+                header: 'Status',
+                accessorKey: 'status',
+                cell: (props: any) => {
+                    const value = props.getValue()
+                    const label = value ? 'Activo' : 'Inactivo' // Mapea true a 'Aprobado' y false a 'Rechazado'
+                    const backgroundColor = value
+                        ? 'rgba(144, 238, 144, 0.2)'
+                        : 'rgba(255, 99, 71, 0.2)' // Colores suaves
+                    const color = value ? 'green' : 'red' // Texto en verde o rojo
+                    return (
+                        <span
+                            style={{
+                                color,
+                                backgroundColor,
+                                padding: '4px 8px', // Espaciado interno
+                                borderRadius: '10px', // Bordes redondeados
+                            }}
+                        >
+                            {label}
+                        </span>
+                    )
+                },
+            },
+
             {
                 header: '',
                 id: 'action',
@@ -107,46 +134,44 @@ const Establecimientos = () => {
     return (
         <>
             <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-semibold mb-3">
-                    Establecimientos
-                </h1>
+                <h1 className="text-2xl font-semibold mb-3">Clientes</h1>
                 <Button
                     className="w-40 ml-4 text-white hover:opacity-80"
                     variant="solid"
                     onClick={() => setDrawerCreateIsOpen(true)}
                 >
-                    Crear Establecimiento
+                    Crear Cliente
                 </Button>
             </div>
             <DataTable columns={columns} data={paginatedData} />
-            <div className="flex justify-end items-center space-x-2 mt-4">
+            <div className="flex justify-center items-center space-x-2 mt-4">
                 <Button
+                    icon={<FaAngleLeft />}
+                    variant="plain"
                     disabled={currentPage === 1}
                     onClick={() => setCurrentPage((prev) => prev - 1)}
-                >
-                    Anterior
-                </Button>
+                />
                 <span>
                     Página {currentPage} de {totalPages}
                 </span>
                 <Button
+                    icon={<FaAngleRight />}
+                    variant="plain"
                     disabled={currentPage === totalPages}
                     onClick={() => setCurrentPage((prev) => prev + 1)}
-                >
-                    Siguiente
-                </Button>
+                />
             </div>
-            <DrawerEstablecimiento
+            <CreateDrawer
                 isOpen={drawerCreateIsOpen}
                 onClose={() => setDrawerCreateIsOpen(false)}
-                onEstablecimientoCreated={getDataEstablecimientos}
+                onClienteCreated={getDataClientes}
             />
             {selectedRow && (
-                <EditDrawer
+                <EditDrawerCliente
                     isOpen={drawerEditIsOpen}
                     onClose={() => setDrawerEditIsOpen(false)}
-                    establecimientoId={selectedRow.id}
-                    onEstablecimientoUpdated={getDataEstablecimientos}
+                    clienteId={selectedRow.id}
+                    onClienteUpdated={getDataClientes}
                 />
             )}
             <ToastContainer />
@@ -154,4 +179,4 @@ const Establecimientos = () => {
     )
 }
 
-export default Establecimientos
+export default Clientes

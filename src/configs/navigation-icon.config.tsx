@@ -28,6 +28,7 @@ import {
     HiOutlineGlobe,
     HiOutlineMap,
 } from 'react-icons/hi'
+import { MdOutlineAddBusiness } from 'react-icons/md'
 import { RiMapPinTimeLine } from 'react-icons/ri'
 
 export type NavigationIcons = Record<string, JSX.Element>
@@ -64,6 +65,7 @@ const navigationIcon: NavigationIcons = {
     eye: <FaRegEye />,
     globe: <HiOutlineGlobe />,
     ruta: <HiOutlineMap />,
+    business: <MdOutlineAddBusiness />,
 }
 
 export default navigationIcon
