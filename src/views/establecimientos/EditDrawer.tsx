@@ -1,4 +1,4 @@
-import { Button, Drawer, Spinner } from '@/components/ui'
+import { Button, Drawer, Select, Spinner } from '@/components/ui'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
@@ -17,6 +17,7 @@ interface EditDrawerProps {
 interface FormValues {
     nombre: string
     region: string
+    cliente: string
     ubicacion: [number, number] | null
 }
 
@@ -27,10 +28,12 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
     onEstablecimientoUpdated,
 }) => {
     const [regiones, setRegiones] = useState<string[]>([])
+    const [clientes, setClientes] = useState<string[]>([])
     const [ubicacion, setUbicacion] = useState<[number, number] | null>(null)
     const [initialValues, setInitialValues] = useState<FormValues>({
         nombre: '',
         region: '',
+        cliente: '',
         ubicacion: null,
     })
 
@@ -79,6 +82,19 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
         }
     }
 
+    const getClientes = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(db, 'clientes'))
+            const clienteslist: string[] = []
+            querySnapshot.forEach((doc) => {
+                clienteslist.push(doc.data().nombre)
+            })
+            setClientes(clienteslist)
+        } catch (error) {
+            console.error('Error al obtener los clientes', error)
+        }
+    }
+
     const getEstablecimiento = async () => {
         try {
             const establecimientoRef = doc(
@@ -93,8 +109,10 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                     nombre: data.nombre,
                     region: data.region,
                     ubicacion: data.ubicacion,
+                    cliente: data.cliente,
                 })
                 setUbicacion(data.ubicacion)
+                console.log('establecimientos data', data)
             } else {
                 console.error('No se encontró el establecimiento')
             }
@@ -107,6 +125,7 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
         getRegiones()
         if (establecimientoId) {
             getEstablecimiento()
+            getClientes()
         }
     }, [establecimientoId])
 
@@ -119,7 +138,7 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                 validationSchema={validationSchema}
                 onSubmit={handleSubmit}
             >
-                {({ isSubmitting }) => (
+                {({ setFieldValue, isSubmitting }) => (
                     <Form className="flex flex-col space-y-6">
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
@@ -155,6 +174,35 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                             </Field>
                             <ErrorMessage
                                 name="region"
+                                component="div"
+                                className="text-red-600 text-sm mt-1"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="font-semibold text-gray-700">
+                                Clientes:
+                            </label>
+                            <Select
+                                name="cliente"
+                                isMulti
+                                options={clientes.map((cliente) => ({
+                                    value: cliente,
+                                    label: cliente,
+                                }))}
+                                onChange={(selectedOptions) =>
+                                    setFieldValue(
+                                        'cliente',
+                                        selectedOptions
+                                            ? selectedOptions.map(
+                                                  (option) => option.value,
+                                              )
+                                            : [],
+                                    )
+                                }
+                                className="mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                            />
+                            <ErrorMessage
+                                name="cliente"
                                 component="div"
                                 className="text-red-600 text-sm mt-1"
                             />

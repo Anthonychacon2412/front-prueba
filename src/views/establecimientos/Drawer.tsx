@@ -1,4 +1,4 @@
-import { Button, Drawer, Spinner } from '@/components/ui'
+import { Button, Drawer, Select, Spinner } from '@/components/ui'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { addDoc, collection, getDocs } from 'firebase/firestore'
@@ -16,6 +16,7 @@ interface DrawerEstablecimientoProps {
 interface FormValues {
     nombre: string
     region: string
+    cliente: string
     ubicacion: [number, number] | null
 }
 
@@ -25,11 +26,13 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
     onEstablecimientoCreated,
 }) => {
     const [regiones, setRegiones] = useState<string[]>([])
+    const [clientes, setClientes] = useState<string[]>([])
     const [ubicacion, setUbicacion] = useState<[number, number] | null>(null)
 
     const initialValues: FormValues = {
         nombre: '',
         region: '',
+        cliente: '',
         ubicacion: null,
     }
 
@@ -74,9 +77,22 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
             console.error('Error al obtener las regiones:', error)
         }
     }
+    const getClientes = async () => {
+        try {
+            const querySnapshot = await getDocs(collection(db, 'clientes'))
+            const clientesList: string[] = []
+            querySnapshot.forEach((doc) => {
+                clientesList.push(doc.data().nombre)
+            })
+            setClientes(clientesList)
+        } catch (error) {
+            console.error('Error al obtener los clientes:', error)
+        }
+    }
 
     useEffect(() => {
         getRegiones()
+        getClientes()
     }, [])
 
     return (
@@ -87,7 +103,7 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                 validationSchema={validationSchema}
                 onSubmit={handleSubmit}
             >
-                {({ isSubmitting }) => (
+                {({ setFieldValue, isSubmitting }) => (
                     <Form className="flex flex-col space-y-6">
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
@@ -123,6 +139,35 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                             </Field>
                             <ErrorMessage
                                 name="region"
+                                component="div"
+                                className="text-red-600 text-sm mt-1"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="font-semibold text-gray-700">
+                                Clientes:
+                            </label>
+                            <Select
+                                name="clientes"
+                                isMulti
+                                options={clientes.map((cliente) => ({
+                                    value: cliente,
+                                    label: cliente,
+                                }))}
+                                onChange={(selectedOptions) =>
+                                    setFieldValue(
+                                        'cliente',
+                                        selectedOptions
+                                            ? selectedOptions.map(
+                                                  (option) => option.value,
+                                              )
+                                            : [],
+                                    )
+                                }
+                                className="mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                            />
+                            <ErrorMessage
+                                name="cliente"
                                 component="div"
                                 className="text-red-600 text-sm mt-1"
                             />
