@@ -51,13 +51,15 @@ const CreateDrawer: React.FC<CreateDrawerProps> = ({
 
     const validationSchema = Yup.object({
         nombre: Yup.string().required('El nombre del cliente es obligatorio'),
-        region: Yup.string().required('La región es obligatoria'),
         rif: Yup.string()
             .matches(
                 /^[JE]-\d+$/,
                 'El RIF debe comenzar con J- o E- seguido de números',
             )
             .required('El RIF es obligatorio'),
+        region: Yup.array()
+            .of(Yup.string().required('Cada región debe ser válida'))
+            .min(1, 'Debes seleccionar al menos una región'),
     })
 
     const handleSubmit = async (
@@ -161,20 +163,27 @@ const CreateDrawer: React.FC<CreateDrawerProps> = ({
 
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
-                                Región:
+                                Regiones:
                             </label>
-                            <Field
-                                as="select"
+                            <Select
                                 name="region"
-                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                            >
-                                <option value="">Seleccione una región</option>
-                                {regiones.map((region, index) => (
-                                    <option key={index} value={region}>
-                                        {region}
-                                    </option>
-                                ))}
-                            </Field>
+                                isMulti
+                                options={regiones.map((region) => ({
+                                    value: region,
+                                    label: region,
+                                }))}
+                                onChange={(selectedOptions) =>
+                                    setFieldValue(
+                                        'region',
+                                        selectedOptions
+                                            ? selectedOptions.map(
+                                                  (option) => option.value,
+                                              )
+                                            : [],
+                                    )
+                                }
+                                className="mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                            />
                             <ErrorMessage
                                 name="region"
                                 component="div"
