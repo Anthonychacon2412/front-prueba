@@ -4,17 +4,21 @@ import { collection, getDocs, query, doc } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import { ColumnDef, DataTable } from '@/components/shared'
 import { Button, Dialog, Notification, toast } from '@/components/ui'
-import { HiOutlinePlusSm, HiOutlineRefresh } from 'react-icons/hi'
-import { FaRegEye } from 'react-icons/fa'
+import { HiOutlineRefresh } from 'react-icons/hi'
+import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 import DrawerRutas from './drawer'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { MdOutlineAddBusiness } from 'react-icons/md'
+import { BsCalendar4Week } from 'react-icons/bs'
 
 const Plantilla_rutas = () => {
-    const [data, setData] = useState<any>()
+    const [data, setData] = useState<any>([])
     const [dialogIsOpen, setIsOpen] = useState(false)
     const [selectedRow, setSelectedRow] = useState<any | null>(null)
     const [drawerCreateIsOpen, setDrawerCreateIsOpen] = useState(false)
+    const [currentPage, setCurrentPage] = useState(1)
+    const rowsPerPage = 4
 
     const navigate = useNavigate()
 
@@ -41,9 +45,20 @@ const Plantilla_rutas = () => {
 
             setData(plantilla)
         } catch (error) {
-            console.log(error)
+            console.error(error)
         }
     }
+
+    const paginatedData = useMemo(() => {
+        const startIndex = (currentPage - 1) * rowsPerPage
+        const endIndex = startIndex + rowsPerPage
+        return data.slice(startIndex, endIndex)
+    }, [data, currentPage])
+
+    const totalPages = useMemo(
+        () => (data ? Math.ceil(data.length / rowsPerPage) : 0),
+        [data, rowsPerPage],
+    )
 
     useEffect(() => {
         getDataFromPlantillaRutas()
@@ -72,7 +87,7 @@ const Plantilla_rutas = () => {
                         navigate(`/asignacion_ruta/${row.original.id}`)
                     }
                 >
-                    <FaRegEye />
+                    <MdOutlineAddBusiness size={20} />
                 </span>
                 {row.original.hasEstablecimientos && (
                     <span
@@ -81,7 +96,7 @@ const Plantilla_rutas = () => {
                             navigate(`/asignacion_dias/${row.original.id}`)
                         }
                     >
-                        <HiOutlinePlusSm />
+                        <BsCalendar4Week />
                     </span>
                 )}
             </div>
@@ -113,7 +128,7 @@ const Plantilla_rutas = () => {
         <>
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold mb-3">
-                    Plantilla Rutas{' '}
+                    Visualizacion Rutas{' '}
                     <button
                         className="p-2 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 shadow-md transform hover:scale-105 rounded-md"
                         onClick={handleRefresh}
@@ -130,7 +145,25 @@ const Plantilla_rutas = () => {
                     Crear Ruta
                 </Button>
             </div>
-            <DataTable columns={columns} data={data} />
+            {/* Pasamos paginatedData en lugar de data */}
+            <DataTable columns={columns} data={paginatedData} />
+            <div className="flex justify-center items-center space-x-2 mt-4">
+                <Button
+                    icon={<FaAngleLeft />}
+                    variant="plain"
+                    disabled={currentPage === 1}
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                />
+                <span>
+                    Página {currentPage} de {totalPages}
+                </span>
+                <Button
+                    icon={<FaAngleRight />}
+                    variant="plain"
+                    disabled={currentPage === totalPages}
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                />
+            </div>
             <DrawerRutas
                 isOpen={drawerCreateIsOpen}
                 onClose={() => setDrawerCreateIsOpen(false)}

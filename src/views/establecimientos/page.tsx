@@ -112,7 +112,7 @@ const Establecimientos = () => {
                     Establecimientos
                 </h1>
                 <Button
-                    className="ml-4hover:opacity-80"
+                    className="ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
                     onClick={() => setDrawerCreateIsOpen(true)}
                     variant="solid"
                 >

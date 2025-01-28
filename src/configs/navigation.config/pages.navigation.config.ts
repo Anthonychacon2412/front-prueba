@@ -61,7 +61,7 @@ const pagesNavigationConfig: NavigationTree[] = [
                 path: `${APP_PREFIX_PATH}/plantilla-rutas`,
                 title: 'Visualización Rutas',
                 translateKey: 'nav.pages.plantilla-rutas',
-                icon: 'ruta',
+                icon: 'newroute',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [ADMIN, USER],
                 subMenu: [],
