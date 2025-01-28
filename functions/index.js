@@ -1,19 +1,26 @@
-/**
- * Import function triggers from their respective submodules:
- *
- * const {onCall} = require("firebase-functions/v2/https");
- * const {onDocumentWritten} = require("firebase-functions/v2/firestore");
- *
- * See a full list of supported triggers at https://firebase.google.com/docs/functions
- */
+const functions = require('firebase-functions')
+const { defineSecret } = require('firebase-functions/params')
+const OpenAI = require('openai')
+require('dotenv').config() // Carga las variables del archivo .env
 
-const {onRequest} = require("firebase-functions/v2/https");
-const logger = require("firebase-functions/logger");
+const apiKey = process.env.OPENAI_API_KEY || functions.config().openai?.api_key
 
-// Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+const openai = new OpenAI({
+    apiKey: apiKey, // Usa la clave desde el entorno local o de Firebase
+})
 
-// exports.helloWorld = onRequest((request, response) => {
-//   logger.info("Hello logs!", {structuredData: true});
-//   response.send("Hello from Firebase!");
-// });
+exports.getOpenAIResponse = functions.https.onCall(async (data, context) => {
+    try {
+        const response = await openai.chat.completions.create({
+            model: 'gpt-4',
+            messages: data.conversation,
+            temperature: 0.5,
+            top_p: 0.5,
+        })
+
+        return { success: true, data: response.data }
+    } catch (error) {
+        console.error('Error al obtener respuesta de OpenAI:', error)
+        return { success: false, error: error.message }
+    }
+})
