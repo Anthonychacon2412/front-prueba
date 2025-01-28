@@ -141,7 +141,7 @@ const Clientes = () => {
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold mb-3">Clientes</h1>
                 <Button
-                    className="w-40 ml-4 text-white hover:opacity-80"
+                    className="w-40 ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
                     variant="solid"
                     onClick={() => !isLoading && setDrawerCreateIsOpen(true)}
                     disabled={isLoading} // Deshabilita el botón mientras carga
