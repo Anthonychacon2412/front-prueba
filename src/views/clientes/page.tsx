@@ -67,10 +67,8 @@ const Clientes = () => {
     }
 
     const onEdit = (row: any) => {
-        if (!isLoading) {
-            setSelectedRow(row)
-            setDrawerEditIsOpen(true)
-        }
+        setSelectedRow(row)
+        setDrawerEditIsOpen(true)
     }
 
     const ActionColumn = ({ row }: { row: any }) => {
