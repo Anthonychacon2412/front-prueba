@@ -17,7 +17,7 @@ interface EditDrawerProps {
 interface FormValues {
     nombre: string
     region: string
-    cliente: string
+    cliente: string[]
     ubicacion: [number, number] | null
 }
 
@@ -33,7 +33,7 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
     const [initialValues, setInitialValues] = useState<FormValues>({
         nombre: '',
         region: '',
-        cliente: '',
+        cliente: [],
         ubicacion: null,
     })
 
@@ -42,6 +42,11 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
             'El nombre del establecimiento es obligatorio',
         ),
         region: Yup.string().required('La región es obligatoria'),
+        cliente: Yup.array().min(1, 'Debe seleccionar al menos un cliente'),
+        ubicacion: Yup.array()
+            .of(Yup.number())
+            .length(2, 'La ubicación debe tener exactamente dos coordenadas')
+            .nullable(),
     })
 
     const handleSubmit = async (
@@ -56,12 +61,13 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
             )
             await updateDoc(establecimientoRef, {
                 ...values,
-                ubicacion,
+                ubicacion: values.ubicacion || ubicacion, // Usa el valor de Formik o el estado local
             })
+
             toast.success('Establecimiento actualizado exitosamente')
             setSubmitting(false)
-            onClose()
             onEstablecimientoUpdated()
+            onClose()
         } catch (error) {
             console.error('Error al actualizar el establecimiento:', error)
             toast.error('Error al actualizar el establecimiento')
@@ -108,9 +114,10 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                 setInitialValues({
                     nombre: data.nombre,
                     region: data.region,
-                    ubicacion: data.ubicacion,
-                    cliente: data.cliente,
+                    ubicacion: data.ubicacion || null,
+                    cliente: data.cliente || [], // Asegúrate de que cliente sea un array
                 })
+
                 setUbicacion(data.ubicacion)
                 console.log('establecimientos data', data)
             } else {
@@ -123,6 +130,9 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
 
     useEffect(() => {
         getRegiones()
+    }, []) // Se ejecuta solo una vez
+
+    useEffect(() => {
         if (establecimientoId) {
             getEstablecimiento()
             getClientes()
@@ -188,19 +198,21 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                                 options={clientes.map((cliente) => ({
                                     value: cliente,
                                     label: cliente,
-                                }))}
-                                onChange={(selectedOptions) =>
-                                    setFieldValue(
-                                        'cliente',
-                                        selectedOptions
-                                            ? selectedOptions.map(
-                                                  (option) => option.value,
-                                              )
-                                            : [],
+                                }))} // Opciones para el Select
+                                value={initialValues.cliente.map((cliente) => ({
+                                    value: cliente,
+                                    label: cliente,
+                                }))} // Mapea los valores seleccionados actuales
+                                onChange={(selectedOptions) => {
+                                    const selectedValues = selectedOptions.map(
+                                        (option) => option.value,
                                     )
-                                }
+                                    setFieldValue('cliente', selectedValues)
+                                }}
+                                placeholder="Selecciona los clientes"
                                 className="mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                             />
+
                             <ErrorMessage
                                 name="cliente"
                                 component="div"

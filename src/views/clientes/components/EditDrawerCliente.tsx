@@ -1,4 +1,4 @@
-import { Button, Drawer, Spinner, Switcher } from '@/components/ui'
+import { Button, Drawer, Select, Spinner, Switcher } from '@/components/ui'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
@@ -15,7 +15,7 @@ interface EditDrawerClienteProps {
 
 interface FormValues {
     nombre: string
-    region: string
+    region: string[] // Ahora permite múltiples strings
     rif: string
     status: boolean
 }
@@ -29,15 +29,18 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
     const [regiones, setRegiones] = useState<string[]>([])
     const [initialValues, setInitialValues] = useState<FormValues>({
         nombre: '',
-        region: '',
+        region: [], // Ahora es un array
         rif: '',
-        status: false, // Estado inicial del status
+        status: false,
     })
     const [isLoading, setIsLoading] = useState<boolean>(true) // Estado para cargar datos
 
     const validationSchema = Yup.object({
         nombre: Yup.string().required('El nombre del cliente es obligatorio'),
-        region: Yup.string().required('La región es obligatoria'),
+        region: Yup.array()
+            .of(Yup.string().required('Cada región debe ser válida'))
+            .min(1, 'Debe seleccionar al menos una región'),
+
         rif: Yup.string()
             .matches(
                 /^[JE]-\d+$/,
@@ -69,13 +72,15 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
     const getRegiones = async () => {
         try {
             const querySnapshot = await getDocs(collection(db, 'regiones'))
-            const regionesList: string[] = []
-            querySnapshot.forEach((doc) => {
-                regionesList.push(doc.data().nombre)
-            })
+            const regionesList = querySnapshot.docs.map(
+                (doc) => doc.data().nombre,
+            )
             setRegiones(regionesList)
         } catch (error) {
             console.error('Error al obtener las regiones:', error)
+            toast.error(
+                'No se pudieron cargar las regiones. Intente más tarde.',
+            )
         }
     }
 
@@ -86,9 +91,9 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
             if (docSnap.exists()) {
                 const data = docSnap.data()
                 setInitialValues({
-                    nombre: data.nombre,
-                    region: data.region,
-                    rif: data.rif,
+                    nombre: data.nombre || '', // Asegúrate de proporcionar un valor predeterminado
+                    region: Array.isArray(data.region) ? data.region : [],
+                    rif: data.rif || '',
                     status: data.status || false,
                 })
             } else {
@@ -186,20 +191,31 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
 
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
-                                Región:
+                                Regiones:
                             </label>
-                            <Field
-                                as="select"
+                            <Select
                                 name="region"
-                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                            >
-                                <option value="">Seleccione una región</option>
-                                {regiones.map((region, index) => (
-                                    <option key={index} value={region}>
-                                        {region}
-                                    </option>
-                                ))}
-                            </Field>
+                                isMulti
+                                options={regiones.map((region) => ({
+                                    value: region,
+                                    label: region,
+                                }))}
+                                value={values.region.map((region) => ({
+                                    value: region,
+                                    label: region,
+                                }))}
+                                onChange={(selectedOptions) =>
+                                    setFieldValue(
+                                        'region',
+                                        selectedOptions
+                                            ? selectedOptions.map(
+                                                  (option) => option.value,
+                                              )
+                                            : [],
+                                    )
+                                }
+                                className="mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                            />
                             <ErrorMessage
                                 name="region"
                                 component="div"
