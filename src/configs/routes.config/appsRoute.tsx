@@ -75,6 +75,12 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'appPhotos',
+        path: `${APP_PREFIX_PATH}/visualizacion-fotografias`,
+        component: lazy(() => import('@/views/registro_fotografico/index')),
+        authority: [ADMIN, USER],
+    },
+    {
         key: 'appplantilla',
         path: `${APP_PREFIX_PATH}/plantilla-rutas`,
         component: lazy(() => import('@/views/plantilla-rutas/index')),
@@ -84,6 +90,12 @@ const appsRoute: Routes = [
         key: 'appclientes',
         path: `${APP_PREFIX_PATH}/clientes`,
         component: lazy(() => import('@/views/clientes/index')),
+        authority: [ADMIN, USER],
+    },
+    {
+        key: 'appReportes',
+        path: `${APP_PREFIX_PATH}/reportes`,
+        component: lazy(() => import('@/views/reportes/index')),
         authority: [ADMIN, USER],
     },
     {
