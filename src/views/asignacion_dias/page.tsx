@@ -63,18 +63,54 @@ const AsignacionDias = () => {
         getRutaData()
     }, [id])
 
+    const getNextWeekdayDate = (dayOfWeek: string): string => {
+        const daysOfWeek: { [key: string]: number } = {
+            lunes: 1,
+            martes: 2,
+            miercoles: 3,
+            jueves: 4,
+            viernes: 5,
+        }
+
+        const today = new Date()
+        const currentDay = today.getDay() // Día actual (0-6)
+        const targetDay = daysOfWeek[dayOfWeek.toLowerCase()] // Día objetivo (lunes=1, martes=2, etc.)
+
+        // Calcular cuántos días faltan para el próximo día objetivo
+        let daysToAdd = targetDay - currentDay
+        if (daysToAdd <= 0) {
+            daysToAdd += 7 // Si ya pasó el día de la semana, obtenemos el siguiente
+        }
+
+        today.setDate(today.getDate() + daysToAdd) // Establecemos la fecha al próximo día objetivo
+        return today.toLocaleDateString() // Devolvemos la fecha en formato legible
+    }
+
     const handleCheckboxChange = async (
         rowIndex: number,
         day: string,
         checked: boolean,
         e: React.ChangeEvent<HTMLInputElement>,
     ) => {
+        const targetDate = getNextWeekdayDate(day) // Obtenemos la fecha del próximo día
+
         setEstablecimientos((prevState) => {
             const newState = [...prevState]
             if (!newState[rowIndex].dias) {
                 newState[rowIndex].dias = {}
             }
+            if (!newState[rowIndex].fechas) {
+                newState[rowIndex].fechas = {}
+            }
+
+            // Asignamos el día y la fecha al establecimiento
             newState[rowIndex].dias[day] = checked
+            if (checked) {
+                newState[rowIndex].fechas[day] = targetDate // Guardamos la fecha del día específico
+            } else {
+                delete newState[rowIndex].fechas[day] // Eliminamos la fecha si el checkbox se deselecciona
+            }
+
             return newState
         })
 
@@ -87,17 +123,98 @@ const AsignacionDias = () => {
                 'Establecimientos',
                 establecimiento.id,
             )
+
+            // Actualizamos el documento con los días y las fechas
             await updateDoc(establecimientoRef, {
                 dias: {
                     ...establecimiento.dias,
                     [day]: checked,
                 },
+                fechas: {
+                    ...establecimiento.fechas,
+                    [day]: checked ? targetDate : null, // Si el día está activado, asignamos la fecha del día
+                },
             })
-            toast.success('Día actualizado correctamente')
+
+            toast.success('Día y fecha actualizados correctamente')
         } catch (error) {
-            console.error('Error al actualizar el día:', error)
-            toast.error('Error al actualizar el día')
+            console.error('Error al actualizar el día y la fecha:', error)
+            toast.error('Error al actualizar el día y la fecha')
         }
+    }
+
+    const handleAssignDays = async () => {
+        const today = new Date()
+        const currentDay = today.getDay() // 0 (Domingo) a 6 (Sábado)
+
+        // Definir la secuencia de días de la semana (lunes a viernes)
+        const weekDays = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes']
+
+        // Calcular el índice de hoy dentro de los días de la semana (de lunes a viernes)
+        const currentIndex =
+            currentDay >= 1 && currentDay <= 5 ? currentDay - 1 : 0
+
+        // Crear una secuencia rotada de días (lunes a viernes)
+        const rotatedWeekDays = [
+            ...weekDays.slice(currentIndex),
+            ...weekDays.slice(0, currentIndex),
+        ]
+
+        // Limitar a solo 4 combinaciones (patrones) de días consecutivos
+        const dayPatterns = [
+            ['lunes', 'martes'],
+            ['miércoles', 'jueves'],
+            ['viernes', 'lunes'],
+            ['martes', 'miércoles'],
+        ]
+
+        // Ahora actualizamos todos los establecimientos con las fechas correspondientes
+        const monthDays: any = {}
+        dayPatterns.forEach(([day1, day2], index) => {
+            const firstDay1 = getFirstDayOfWeek(today, weekDays.indexOf(day1))
+            const firstDay2 = getFirstDayOfWeek(today, weekDays.indexOf(day2))
+
+            // Si la segunda fecha es antes que la primera, ajustamos al siguiente mes
+            if (firstDay2 < firstDay1) {
+                firstDay2.setMonth(firstDay2.getMonth() + 1)
+            }
+
+            monthDays[`pattern${index + 1}`] = {
+                [day1]: firstDay1.toISOString().split('T')[0],
+                [day2]: firstDay2.toISOString().split('T')[0],
+            }
+        })
+
+        // Actualizar todos los establecimientos con las fechas correspondientes
+        try {
+            for (const establecimiento of establecimientos) {
+                const establecimientoRef = doc(
+                    db,
+                    'Plantilla_rutas',
+                    id!,
+                    'Establecimientos',
+                    establecimiento.id,
+                )
+
+                // Actualizamos las fechas de los días
+                await updateDoc(establecimientoRef, {
+                    dias: monthDays,
+                })
+            }
+
+            toast.success('Días asignados correctamente para todo el mes')
+        } catch (error) {
+            console.error('Error al asignar los días:', error)
+            toast.error('Error al asignar los días')
+        }
+    }
+
+    // Función para obtener el primer día de la semana
+    const getFirstDayOfWeek = (date: Date, dayOfWeek: number) => {
+        const diff = (dayOfWeek - date.getDay() + 7) % 7
+        const firstDayOfWeek = new Date(date)
+        firstDayOfWeek.setDate(date.getDate() + diff)
+        return firstDayOfWeek
     }
 
     const columns: ColumnDef<any>[] = [
@@ -198,7 +315,7 @@ const AsignacionDias = () => {
                                 <Button
                                     className="w-40 ml-4 text-white hover:opacity-80"
                                     style={{ backgroundColor: '#FFA500' }}
-                                    // Agrega el evento onClick para llamar a handleSaveDays
+                                    onClick={handleAssignDays}
                                 >
                                     Asignar Días
                                 </Button>

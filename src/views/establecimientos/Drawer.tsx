@@ -16,7 +16,7 @@ interface DrawerEstablecimientoProps {
 interface FormValues {
     nombre: string
     region: string
-    cliente: string[] // Cambié a un array de strings
+    cliente: { nombre: string; status: boolean }[] // Cambié a un array de objetos
     ubicacion: [number, number] | null
 }
 
@@ -32,7 +32,7 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
     const initialValues: FormValues = {
         nombre: '',
         region: '',
-        cliente: [],
+        cliente: [], // Inicializado como un array vacío
         ubicacion: null,
     }
 
@@ -99,7 +99,6 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
         getRegiones()
     }, [])
 
-    // Mover el uso de valores dentro de Formik
     return (
         <Drawer isOpen={isOpen} onClose={onClose} className="rounded-md shadow">
             <h2 className="mb-4 text-xl font-bold">Crear Establecimiento</h2>
@@ -113,7 +112,6 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                     isSubmitting,
                     values, // Valores directamente desde Formik
                 }) => {
-                    // Ejecutamos el `getClientes` solo cuando la región cambia
                     useEffect(() => {
                         if (values.region) {
                             getClientes(values.region)
@@ -178,9 +176,12 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                                             'cliente',
                                             selectedOptions
                                                 ? selectedOptions.map(
-                                                      (option) => option.value,
+                                                      (option) => ({
+                                                          nombre: option.value,
+                                                          status: false, // Asignar el status por defecto
+                                                      }),
                                                   )
-                                                : [],
+                                                : [], // Si no hay opciones, asignar array vacío
                                         )
                                     }
                                     className="mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"

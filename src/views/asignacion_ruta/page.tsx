@@ -28,6 +28,7 @@ const AsignacionRuta = () => {
     const [rutaData, setRutaData] = useState<{
         nombre: string
         region: string
+        cliente: string
     } | null>(null)
     const [establecimientosAsignados, setEstablecimientosAsignados] = useState<
         any[]
@@ -64,6 +65,7 @@ const AsignacionRuta = () => {
                 setRutaData({
                     nombre: data.nombre_ruta || 'Nombre desconocido',
                     region: data.region || 'Región desconocida',
+                    cliente: data.cliente || 'Región desconocida',
                 })
 
                 setEstablecimientosAsignados(asignados)
@@ -78,25 +80,30 @@ const AsignacionRuta = () => {
     // Obtén los establecimientos
     const getDataEstablecimientos = async () => {
         try {
-            const q = query(collection(db, 'establecimientos'))
-            const querySnapshot = await getDocs(q)
-            const establecimientosDisponibles: any[] = []
+            const q = query(collection(db, 'establecimientos')) // Consulta todos los establecimientos
+            const querySnapshot = await getDocs(q) // Obtiene los documentos de la consulta
+            const establecimientosDisponibles: any[] = [] // Array para guardar los establecimientos filtrados
 
             querySnapshot.forEach((doc) => {
-                const data = doc.data() // Aquí debes asegurarte que `data` contiene `region`, `status`, etc.
+                const data = doc.data() // Obtiene los datos del establecimiento
 
-                // Verifica si `data` tiene las propiedades necesarias
-                if (data && data.region && data.status) {
-                    // Incluye el ID del documento en los datos
-                    const establecimientoConId = { ...data, id: doc.id }
+                // Verifica que el establecimiento tenga las propiedades necesarias
+                if (data && data.region && data.status && data.cliente) {
+                    const establecimientoConId = { ...data, id: doc.id } // Incluye el ID del documento
 
-                    // Verifica si la región de los establecimientos coincide con la región de la ruta
+                    // Filtra los establecimientos que coinciden con la ruta
                     if (
                         rutaData &&
-                        data.region === rutaData.region &&
-                        data.status === 'Disponible'
+                        data.region === rutaData.region && // Coincide la región
+                        data.cliente.some(
+                            (c: { status: boolean }) => c.status === false,
+                        ) &&
+                        data.cliente.some(
+                            (c: { nombre: string }) =>
+                                c.nombre === rutaData.cliente,
+                        ) // Coincide al menos un cliente en el array
                     ) {
-                        establecimientosDisponibles.push(establecimientoConId)
+                        establecimientosDisponibles.push(establecimientoConId) // Añade el establecimiento al array
                     }
                 } else {
                     console.warn(
@@ -106,7 +113,7 @@ const AsignacionRuta = () => {
                 }
             })
 
-            setEstablecimientosDisponibles(establecimientosDisponibles)
+            setEstablecimientosDisponibles(establecimientosDisponibles) // Guarda los establecimientos filtrados
         } catch (error) {
             console.error('Error al obtener establecimientos:', error)
         }
@@ -117,42 +124,6 @@ const AsignacionRuta = () => {
             Se elimino el establecimiento de la ruta con exito!
         </Notification>
     )
-
-    const handleDelete = async (row: any) => {
-        console.log('rutaData', rutaData)
-        try {
-            console.log('Row recibido:', row)
-            console.log('ID recibido:', id)
-
-            const docRef = doc(db, 'establecimientos', row.uid)
-            console.log('Referencia del documento creada:', docRef)
-
-            await updateDoc(docRef, { status: 'Disponible' })
-            console.log('Documento actualizado.')
-
-            const q = query(
-                collection(db, 'establecimientos'),
-                where('status', '==', 'Disponible'),
-            )
-
-            const subDocRef = doc(
-                db,
-                `Plantilla_rutas/${id}/Establecimientos`,
-                row.id,
-            )
-            console.log('Referencia del subdocumento creada:', subDocRef)
-
-            await deleteDoc(subDocRef).then(() => {
-                toast.push(deleteNotification)
-            })
-            console.log('Subdocumento eliminado.')
-            getRutaData()
-
-            console.log('Estado de "Establecimientos disponibles" actualizado.')
-        } catch (error) {
-            console.error('Error en handleDelete:', error)
-        }
-    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -179,11 +150,13 @@ const AsignacionRuta = () => {
                                 ...doc.data(), // Incluye los datos del documento
                             }),
                         )
+                        console.log('Establecimientos asignado', asignados)
 
                         // Actualizar el estado de rutaData
                         setRutaData({
                             nombre: data.nombre_ruta || 'Nombre desconocido',
                             region: data.region || 'Región desconocida',
+                            cliente: data.cliente || 'Región desconocida',
                         })
 
                         setEstablecimientosAsignados(asignados)
@@ -204,6 +177,59 @@ const AsignacionRuta = () => {
             getDataEstablecimientos() // Llama a la función solo cuando "rutaData" se actualiza por primera vez
         }
     }, [rutaData])
+
+    const handleDelete = async (row: any) => {
+        console.log('rutaData', rutaData)
+        try {
+            console.log('Row recibido:', row)
+            console.log('ID recibido:', id)
+
+            // Obtener la referencia del documento global del establecimiento
+            const globalDocRef = doc(db, 'establecimientos', row.uid)
+            const globalDocSnap = await getDoc(globalDocRef)
+
+            if (!globalDocSnap.exists()) {
+                console.error(
+                    `No se encontró el documento global para el establecimiento con uid: ${row.uid}`,
+                )
+                return // Si no existe, detener la ejecución
+            }
+
+            // Obtener los datos del establecimiento global
+            const globalData = globalDocSnap.data()
+            if (globalData && globalData.cliente) {
+                // Actualizar el estado del cliente dentro del array 'cliente'
+                const updatedClientes = globalData.cliente.map(
+                    (cliente: any) => {
+                        if (cliente.nombre === rutaData?.cliente) {
+                            return { ...cliente, status: false } // Cambiar el status a 'false' (o lo que corresponda)
+                        }
+                        return cliente
+                    },
+                )
+
+                // Actualizar el documento con el nuevo array de clientes
+                await updateDoc(globalDocRef, { cliente: updatedClientes })
+            }
+
+            // Referencia al subdocumento dentro de la ruta
+            const subDocRef = doc(
+                db,
+                `Plantilla_rutas/${id}/Establecimientos`,
+                row.id,
+            )
+            console.log('Referencia del subdocumento creada:', subDocRef)
+
+            await deleteDoc(subDocRef).then(() => {
+                toast.push(deleteNotification)
+            })
+            console.log('Subdocumento eliminado.')
+
+            getRutaData() // Recargar datos de la ruta
+        } catch (error) {
+            console.error('Error en handleDelete:', error)
+        }
+    }
 
     const handleRowSelect = (checked: boolean, row: any) => {
         if (checked) {
@@ -248,7 +274,6 @@ const AsignacionRuta = () => {
 
             for (const establecimiento of selectedEstablecimientos) {
                 // Verificar si el establecimiento ya está asignado a la ruta
-
                 console.log(
                     'establecimientosAsignados',
                     establecimientosAsignados,
@@ -256,8 +281,8 @@ const AsignacionRuta = () => {
                 const isAssigned = establecimientosAsignados.some(
                     (asignado) => {
                         console.log('asignado', asignado)
-                        asignado.uid === establecimiento.uid
-                    }, // Usamos uid para comparar
+                        return asignado.uid === establecimiento.uid
+                    },
                 )
 
                 if (isAssigned) {
@@ -273,7 +298,7 @@ const AsignacionRuta = () => {
                 await addDoc(establecimientosRef, {
                     nombre_establecimiento: establecimiento.nombre,
                     region: establecimiento.region,
-                    status: 'Asignado',
+
                     uid: establecimiento.id, // Guardamos el uid para referencia futura
                 }).then((resp) => {
                     toast.push(toastNotification)
@@ -294,15 +319,26 @@ const AsignacionRuta = () => {
                     continue // Si no existe el documento, saltamos este establecimiento
                 }
 
-                // Si el documento existe, actualizamos el `status`
-                await updateDoc(globalDocRef, { status: 'Asignado' })
+                // Obtener los datos del establecimiento global
+                const globalData = globalDocSnap.data()
+                if (globalData && globalData.cliente) {
+                    // Encontrar el cliente dentro del array
+                    const updatedClientes = globalData.cliente.map(
+                        (cliente: any) => {
+                            if (cliente.nombre === rutaData?.cliente) {
+                                // Si el cliente coincide con el que se está asignando, actualizar su status
+                                return { ...cliente, status: true } // Cambiar el status a 'true' (o lo que corresponda)
+                            }
+                            return cliente // De lo contrario, mantener el cliente sin cambios
+                        },
+                    )
+
+                    // Actualizar el documento con el nuevo array de clientes
+                    await updateDoc(globalDocRef, { cliente: updatedClientes })
+                }
             }
 
-            // // Refrescar los datos después de la asignación
             await getRutaData() // Volver a cargar los datos de la ruta
-            // setSelectedEstablecimientos([]) // Limpiar los establecimientos seleccionados
-            // setEstablecimientosDisponibles([]) // Limpiar los establecimientos disponibles
-            // setEstablecimientosAsignados([]) // Limpiar los establecimientos ya asignados
         } catch (error) {
             console.error('Error al asignar establecimientos:', error)
         }
@@ -318,11 +354,6 @@ const AsignacionRuta = () => {
             {
                 header: 'Región',
                 accessorKey: 'region',
-                cell: (props: any) => <span>{props.getValue()}</span>,
-            },
-            {
-                header: 'Estado',
-                accessorKey: 'status',
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
         ],
@@ -357,11 +388,7 @@ const AsignacionRuta = () => {
                 accessorKey: 'region',
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
-            {
-                header: 'Estado',
-                accessorKey: 'status',
-                cell: (props: any) => <span>{props.getValue()}</span>,
-            },
+
             {
                 header: '',
                 id: 'action',

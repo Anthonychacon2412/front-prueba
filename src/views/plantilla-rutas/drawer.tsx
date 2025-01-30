@@ -15,6 +15,7 @@ interface DrawerRutasProps {
 interface FormValues {
     nombre_ruta: string
     region: string
+    cliente: string // Agregamos el campo cliente
 }
 
 const DrawerRutas: React.FC<DrawerRutasProps> = ({
@@ -22,13 +23,19 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
     onClose,
     onRutaCreated,
 }) => {
-    const [regiones, setRegiones] = useState<string[]>([])
-    const [clientes, setClientes] = useState<string[]>([])
+    const [regionesCliente, setRegionesCliente] = useState<string[]>([])
+    const [clientesData, setClientesData] = useState<
+        {
+            nombre: string
+            region: string[]
+        }[]
+    >([])
     const [selectedCliente, setSelectedCliente] = useState<string>('')
 
     const initialValues: FormValues = {
         nombre_ruta: '',
         region: '',
+        cliente: '', // Inicializamos el campo cliente
     }
 
     const validationSchema = Yup.object({
@@ -36,6 +43,7 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
             'El nombre de la ruta es obligatorio',
         ),
         region: Yup.string().required('La región es obligatoria'),
+        cliente: Yup.string().required('El cliente es obligatorio'), // Validación para cliente
     })
 
     const handleSubmit = async (
@@ -43,14 +51,19 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
         { setSubmitting }: FormikHelpers<FormValues>,
     ) => {
         try {
-            await addDoc(collection(db, 'Plantilla_rutas'), values)
+            const rutaData = {
+                ...values,
+                status: true, // Aquí agregas el campo status
+            }
+
+            await addDoc(collection(db, 'Plantilla_rutas'), rutaData)
             toast.success('Ruta creada exitosamente')
-            setSubmitting(false)
             onClose()
             onRutaCreated()
         } catch (error) {
             console.error('Error al crear la ruta:', error)
             toast.error('Error al crear la ruta')
+        } finally {
             setSubmitting(false)
         }
     }
@@ -58,31 +71,25 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
     const getClientes = async () => {
         try {
             const querySnapshot = await getDocs(collection(db, 'clientes'))
-            const clientesList: string[] = []
-            querySnapshot.forEach((doc) => {
-                clientesList.push(doc.data().nombre)
-            })
-            setClientes(clientesList)
-        } catch (error) {
-            console.error('Error al obtener los clientes:', error)
-        }
-    }
+            const clientesList: { nombre: string; region: string[] }[] = []
 
-    const getRegiones = async () => {
-        try {
-            const querySnapshot = await getDocs(collection(db, 'regiones'))
-            const regionesList: string[] = []
             querySnapshot.forEach((doc) => {
-                regionesList.push(doc.data().nombre)
+                const data = doc.data()
+                if (data.nombre) {
+                    clientesList.push({
+                        nombre: data.nombre,
+                        region: data.region || [],
+                    })
+                }
             })
-            setRegiones(regionesList)
+
+            setClientesData(clientesList)
         } catch (error) {
-            console.error('Error al obtener las regiones:', error)
+            console.error('Error al obtener los clientes y regiones:', error)
         }
     }
 
     useEffect(() => {
-        getRegiones()
         getClientes()
     }, [])
 
@@ -98,27 +105,54 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
                     <Form className="flex flex-col space-y-6">
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
+                                Nombre de la Ruta:
+                            </label>
+                            <Field
+                                type="text"
+                                name="nombre_ruta"
+                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                            />
+                            <ErrorMessage
+                                name="nombre_ruta"
+                                component="div"
+                                className="text-red-600 text-sm mt-1"
+                            />
+                        </div>
+                        <div className="flex flex-col">
+                            <label className="font-semibold text-gray-700">
                                 Cliente:
                             </label>
                             <select
-                                onChange={(
-                                    e: React.ChangeEvent<HTMLSelectElement>,
-                                ) => {
+                                onChange={(e) => {
                                     const selectedValue = e.target.value
                                     setSelectedCliente(selectedValue)
-                                    setFieldValue('nombre_ruta', selectedValue) // Rellena el nombre_ruta automáticamente
+                                    setFieldValue('cliente', selectedValue)
+
+                                    // Filtrar las regiones correspondientes al cliente seleccionado
+                                    const clienteData = clientesData.find(
+                                        (cliente) =>
+                                            cliente.nombre === selectedValue,
+                                    )
+                                    setRegionesCliente(
+                                        clienteData?.region || [],
+                                    )
                                 }}
                                 className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                             >
                                 <option value="">Seleccione un cliente</option>
-                                {clientes.map((cliente, index) => (
-                                    <option key={index} value={cliente}>
-                                        {cliente}
+                                {clientesData.map((cliente, index) => (
+                                    <option key={index} value={cliente.nombre}>
+                                        {cliente.nombre}
                                     </option>
                                 ))}
                             </select>
-                        </div>
 
+                            <ErrorMessage
+                                name="cliente"
+                                component="div"
+                                className="text-red-600 text-sm mt-1"
+                            />
+                        </div>
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
                                 Región:
@@ -129,12 +163,13 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
                                 className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                             >
                                 <option value="">Seleccione una región</option>
-                                {regiones.map((region, index) => (
+                                {regionesCliente.map((region, index) => (
                                     <option key={index} value={region}>
                                         {region}
                                     </option>
                                 ))}
                             </Field>
+
                             <ErrorMessage
                                 name="region"
                                 component="div"
@@ -142,24 +177,7 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
                             />
                         </div>
 
-                        <div className="flex flex-col">
-                            <label className="font-semibold text-gray-700">
-                                Nombre de la ruta:
-                            </label>
-                            <Field
-                                type="text"
-                                name="nombre_ruta"
-                                value={selectedCliente} // Se muestra el cliente seleccionado
-                                readOnly
-                                className="mt-1 p-3 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
-                            />
-                            <ErrorMessage
-                                name="nombre_ruta"
-                                component="div"
-                                className="text-red-600 text-sm mt-1"
-                            />
-                        </div>
-
+                        {/* Botones */}
                         <div className="text-right mt-6">
                             <Button
                                 variant="default"
