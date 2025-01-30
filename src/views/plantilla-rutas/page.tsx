@@ -111,6 +111,12 @@ const Plantilla_rutas = () => {
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
+                header: 'Cliente',
+                accessorKey: 'cliente',
+                cell: (props: any) => <span>{props.getValue()}</span>,
+            },
+
+            {
                 header: 'Region',
                 accessorKey: 'region',
                 cell: (props: any) => <span>{props.getValue()}</span>,
