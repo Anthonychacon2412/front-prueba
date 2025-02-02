@@ -93,9 +93,9 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
-        key: 'appReportes',
-        path: `${APP_PREFIX_PATH}/reportes`,
-        component: lazy(() => import('@/views/reportes/index')),
+        key: 'appFormsDetail',
+        path: `/forms/:id`,
+        component: lazy(() => import('@/views/formsDetail/index')),
         authority: [ADMIN, USER],
     },
     {
