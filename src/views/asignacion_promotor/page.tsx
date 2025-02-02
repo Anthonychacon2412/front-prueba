@@ -2,9 +2,13 @@ import { ColumnDef, DataTable } from '@/components/shared'
 import { db } from '@/configs/firebaseAssets.config'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
+import { HiOutlinePencil } from 'react-icons/hi'
+import AsignarDrawer from './components/AsignarDrawer'
 
 const AsignacionPromotor = () => {
-    const [Rutas, setRutas] = useState([]) // Estado inicial como array vacío
+    const [Rutas, setRutas] = useState([])
+    const [selectedRow, setSelectedRow] = useState<any | null>(null)
+    const [drawerAsignarIsOpen, setDrawerAsignarIsOpen] = useState(false)
 
     const getrutas = async () => {
         try {
@@ -24,7 +28,25 @@ const AsignacionPromotor = () => {
 
     useEffect(() => {
         getrutas()
-    }, []) // Asegúrate de incluir las dependencias del efecto
+    }, [])
+
+    const onEdit = (row: any) => {
+        setSelectedRow(row)
+        setDrawerAsignarIsOpen(true)
+    }
+
+    const ActionColumn = ({ row }: { row: any }) => {
+        return (
+            <div className="flex justify-center text-lg space-x-2">
+                <span
+                    className="cursor-pointer p-2 hover:text-cyan-500"
+                    onClick={() => onEdit(row.original)}
+                >
+                    <HiOutlinePencil />
+                </span>
+            </div>
+        )
+    }
 
     const columns: ColumnDef<any>[] = useMemo(
         () => [
@@ -38,14 +60,27 @@ const AsignacionPromotor = () => {
                 accessorKey: 'region',
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
+            {
+                header: '',
+                id: 'action',
+                cell: (props) => <ActionColumn row={props.row} />,
+            },
         ],
-        [], // Memoriza las columnas para evitar renderizados innecesarios
+        [],
     )
 
     return (
         <>
-            <h1>Aquí pones a trabajar al promotor</h1>
+            <h3 className="mb-4">Asignacion promotor</h3>
             <DataTable columns={columns} data={Rutas}></DataTable>
+            {selectedRow && (
+                <AsignarDrawer
+                    isOpen={drawerAsignarIsOpen}
+                    onClose={() => setDrawerAsignarIsOpen(false)}
+                    rutaId={selectedRow.id}
+                    onRutaUpdated={getrutas}
+                />
+            )}
         </>
     )
 }
