@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { doc, getDoc, collection, getDocs, updateDoc } from 'firebase/firestore'
+import {
+    doc,
+    getDoc,
+    collection,
+    getDocs,
+    updateDoc,
+    setDoc,
+} from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import { toast } from 'react-toastify'
 import { DataTable } from '@/components/shared'
 import { ColumnDef } from '@tanstack/react-table'
 import Checkbox from '@/components/ui/Checkbox'
-import { Button } from '@/components/ui'
+import { Button, Calendar, Card } from '@/components/ui'
 import { FaArrowLeft } from 'react-icons/fa'
 import { APP_PREFIX_PATH } from '@/constants/route.constant'
 
@@ -14,7 +21,10 @@ const AsignacionDias = () => {
     const { id } = useParams<{ id: string }>()
     const [rutaData, setRutaData] = useState<any>(null)
     const [establecimientos, setEstablecimientos] = useState<any[]>([])
+    const [selectedDates, setSelectedDates] = useState<Date[]>([])
+
     const navigate = useNavigate()
+
     useEffect(() => {
         const getRutaData = async () => {
             if (!id) {
@@ -43,13 +53,35 @@ const AsignacionDias = () => {
                     const establecimientosSnap =
                         await getDocs(establecimientosRef)
                     const establecimientosList = establecimientosSnap.docs.map(
-                        (doc) => ({ id: doc.id, ...doc.data() }),
+                        (doc) => ({
+                            id: doc.id,
+                            ...(doc.data() as { fechas_asignadas?: string[] }),
+                        }),
                     )
+
                     console.log(
                         'Datos de los establecimientos:',
                         establecimientosList,
                     )
                     setEstablecimientos(establecimientosList)
+
+                    // Extraer todas las fechas asignadas de todos los establecimientos
+                    const fechasAsignadas: Date[] = []
+                    establecimientosList.forEach((est) => {
+                        if (
+                            est.fechas_asignadas &&
+                            Array.isArray(est.fechas_asignadas)
+                        ) {
+                            est.fechas_asignadas.forEach((fechaStr) => {
+                                const fecha = new Date(fechaStr)
+                                if (!isNaN(fecha.getTime())) {
+                                    fechasAsignadas.push(fecha)
+                                }
+                            })
+                        }
+                    })
+
+                    setSelectedDates(fechasAsignadas)
                 } else {
                     console.error('No se encontró el documento')
                     toast.error('No se encontró la ruta')
@@ -63,158 +95,64 @@ const AsignacionDias = () => {
         getRutaData()
     }, [id])
 
-    const getNextWeekdayDate = (dayOfWeek: string): string => {
-        const daysOfWeek: { [key: string]: number } = {
-            lunes: 1,
-            martes: 2,
-            miercoles: 3,
-            jueves: 4,
-            viernes: 5,
+    // Función para asignar la fecha seleccionada a los establecimientos
+    const assignDatesToEstablishments = async () => {
+        if (selectedDates.length === 0) {
+            toast.error('Por favor selecciona al menos una fecha')
+            return
         }
-
-        const today = new Date()
-        const currentDay = today.getDay() // Día actual (0-6)
-        const targetDay = daysOfWeek[dayOfWeek.toLowerCase()] // Día objetivo (lunes=1, martes=2, etc.)
-
-        // Calcular cuántos días faltan para el próximo día objetivo
-        let daysToAdd = targetDay - currentDay
-        if (daysToAdd <= 0) {
-            daysToAdd += 7 // Si ya pasó el día de la semana, obtenemos el siguiente
-        }
-
-        today.setDate(today.getDate() + daysToAdd) // Establecemos la fecha al próximo día objetivo
-        return today.toLocaleDateString() // Devolvemos la fecha en formato legible
-    }
-
-    const handleCheckboxChange = async (
-        rowIndex: number,
-        day: string,
-        checked: boolean,
-        e: React.ChangeEvent<HTMLInputElement>,
-    ) => {
-        const targetDate = getNextWeekdayDate(day) // Obtenemos la fecha del próximo día
-
-        setEstablecimientos((prevState) => {
-            const newState = [...prevState]
-            if (!newState[rowIndex].dias) {
-                newState[rowIndex].dias = {}
-            }
-            if (!newState[rowIndex].fechas) {
-                newState[rowIndex].fechas = {}
-            }
-
-            // Asignamos el día y la fecha al establecimiento
-            newState[rowIndex].dias[day] = checked
-            if (checked) {
-                newState[rowIndex].fechas[day] = targetDate // Guardamos la fecha del día específico
-            } else {
-                delete newState[rowIndex].fechas[day] // Eliminamos la fecha si el checkbox se deselecciona
-            }
-
-            return newState
-        })
 
         try {
-            const establecimiento = establecimientos[rowIndex]
-            const establecimientoRef = doc(
-                db,
-                'Plantilla_rutas',
-                id!,
-                'Establecimientos',
-                establecimiento.id,
-            )
-
-            // Actualizamos el documento con los días y las fechas
-            await updateDoc(establecimientoRef, {
-                dias: {
-                    ...establecimiento.dias,
-                    [day]: checked,
-                },
-                fechas: {
-                    ...establecimiento.fechas,
-                    [day]: checked ? targetDate : null, // Si el día está activado, asignamos la fecha del día
-                },
-            })
-
-            toast.success('Día y fecha actualizados correctamente')
-        } catch (error) {
-            console.error('Error al actualizar el día y la fecha:', error)
-            toast.error('Error al actualizar el día y la fecha')
-        }
-    }
-
-    const handleAssignDays = async () => {
-        const today = new Date()
-        const currentDay = today.getDay() // 0 (Domingo) a 6 (Sábado)
-
-        // Definir la secuencia de días de la semana (lunes a viernes)
-        const weekDays = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes']
-
-        // Calcular el índice de hoy dentro de los días de la semana (de lunes a viernes)
-        const currentIndex =
-            currentDay >= 1 && currentDay <= 5 ? currentDay - 1 : 0
-
-        // Crear una secuencia rotada de días (lunes a viernes)
-        const rotatedWeekDays = [
-            ...weekDays.slice(currentIndex),
-            ...weekDays.slice(0, currentIndex),
-        ]
-
-        // Limitar a solo 4 combinaciones (patrones) de días consecutivos
-        const dayPatterns = [
-            ['lunes', 'martes'],
-            ['miércoles', 'jueves'],
-            ['viernes', 'lunes'],
-            ['martes', 'miércoles'],
-        ]
-
-        // Ahora actualizamos todos los establecimientos con las fechas correspondientes
-        const monthDays: any = {}
-        dayPatterns.forEach(([day1, day2], index) => {
-            const firstDay1 = getFirstDayOfWeek(today, weekDays.indexOf(day1))
-            const firstDay2 = getFirstDayOfWeek(today, weekDays.indexOf(day2))
-
-            // Si la segunda fecha es antes que la primera, ajustamos al siguiente mes
-            if (firstDay2 < firstDay1) {
-                firstDay2.setMonth(firstDay2.getMonth() + 1)
+            if (!id) {
+                throw new Error('ID de la ruta no proporcionado')
             }
 
-            monthDays[`pattern${index + 1}`] = {
-                [day1]: firstDay1.toISOString().split('T')[0],
-                [day2]: firstDay2.toISOString().split('T')[0],
-            }
-        })
+            const rutaDocRef = doc(db, 'Plantilla_rutas', id)
 
-        // Actualizar todos los establecimientos con las fechas correspondientes
-        try {
             for (const establecimiento of establecimientos) {
-                const establecimientoRef = doc(
-                    db,
-                    'Plantilla_rutas',
-                    id!,
+                const estRef = doc(
+                    rutaDocRef,
                     'Establecimientos',
                     establecimiento.id,
                 )
+                const estSnap = await getDoc(estRef)
 
-                // Actualizamos las fechas de los días
-                await updateDoc(establecimientoRef, {
-                    dias: monthDays,
-                })
+                let existingDates: string[] = []
+                if (estSnap.exists()) {
+                    existingDates = estSnap.data().fechas_asignadas || []
+                }
+
+                // Convertimos todas las fechas a string en formato ISO
+                const nuevasFechas = selectedDates.map((d) => d.toISOString())
+
+                // Fusionamos y eliminamos duplicados
+                const fechasFinales = Array.from(
+                    new Set([...existingDates, ...nuevasFechas]),
+                )
+
+                await setDoc(
+                    estRef,
+                    { fechas_asignadas: fechasFinales },
+                    { merge: true },
+                )
             }
 
-            toast.success('Días asignados correctamente para todo el mes')
+            toast.success('Fechas asignadas correctamente')
         } catch (error) {
-            console.error('Error al asignar los días:', error)
-            toast.error('Error al asignar los días')
+            console.error('Error al asignar las fechas:', error)
+            toast.error('Error al asignar las fechas')
         }
     }
 
-    // Función para obtener el primer día de la semana
-    const getFirstDayOfWeek = (date: Date, dayOfWeek: number) => {
-        const diff = (dayOfWeek - date.getDay() + 7) % 7
-        const firstDayOfWeek = new Date(date)
-        firstDayOfWeek.setDate(date.getDate() + diff)
-        return firstDayOfWeek
+    // Función para manejar la selección de fechas
+    const handleDateSelect = (date: Date | Date[]) => {
+        setSelectedDates((prevDates) => {
+            if (Array.isArray(date)) {
+                return date // Si ya es un array, se asigna directamente
+            } else {
+                return [...prevDates, date] // Agrega la nueva fecha al array
+            }
+        })
     }
 
     const columns: ColumnDef<any>[] = [
@@ -222,78 +160,6 @@ const AsignacionDias = () => {
             header: 'Nombre del Establecimiento',
             accessorKey: 'nombre_establecimiento',
             enableSorting: false,
-        },
-        {
-            header: 'Lunes',
-            accessorKey: 'dias.lunes',
-            enableSorting: false,
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={row.original.dias?.lunes || false}
-                    onChange={(
-                        checked: boolean,
-                        e: React.ChangeEvent<HTMLInputElement>,
-                    ) => handleCheckboxChange(row.index, 'lunes', checked, e)}
-                />
-            ),
-        },
-        {
-            header: 'Martes',
-            accessorKey: 'dias.martes',
-            enableSorting: false,
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={row.original.dias?.martes || false}
-                    onChange={(
-                        checked: boolean,
-                        e: React.ChangeEvent<HTMLInputElement>,
-                    ) => handleCheckboxChange(row.index, 'martes', checked, e)}
-                />
-            ),
-        },
-        {
-            header: 'Miércoles',
-            accessorKey: 'dias.miercoles',
-            enableSorting: false,
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={row.original.dias?.miercoles || false}
-                    onChange={(
-                        checked: boolean,
-                        e: React.ChangeEvent<HTMLInputElement>,
-                    ) =>
-                        handleCheckboxChange(row.index, 'miercoles', checked, e)
-                    }
-                />
-            ),
-        },
-        {
-            header: 'Jueves',
-            accessorKey: 'dias.jueves',
-            enableSorting: false,
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={row.original.dias?.jueves || false}
-                    onChange={(
-                        checked: boolean,
-                        e: React.ChangeEvent<HTMLInputElement>,
-                    ) => handleCheckboxChange(row.index, 'jueves', checked, e)}
-                />
-            ),
-        },
-        {
-            header: 'Viernes',
-            accessorKey: 'dias.viernes',
-            enableSorting: false,
-            cell: ({ row }) => (
-                <Checkbox
-                    checked={row.original.dias?.viernes || false}
-                    onChange={(
-                        checked: boolean,
-                        e: React.ChangeEvent<HTMLInputElement>,
-                    ) => handleCheckboxChange(row.index, 'viernes', checked, e)}
-                />
-            ),
         },
     ]
 
@@ -306,24 +172,37 @@ const AsignacionDias = () => {
                 <FaArrowLeft className="mr-2" />
                 <span>Volver</span>
             </button>
-            <h1>Asignación de Días para la Ruta {rutaData?.nombre_ruta}</h1>
+            <h1 className="mb-4">
+                Asignación de Días para la Ruta {rutaData?.nombre_ruta}
+            </h1>
             {rutaData ? (
                 <div>
                     {establecimientos.length > 0 ? (
                         <>
-                            <div className="justify-end flex mb-2">
-                                <Button
-                                    className="w-40 ml-4 text-white hover:opacity-80"
-                                    style={{ backgroundColor: '#FFA500' }}
-                                    onClick={handleAssignDays}
-                                >
-                                    Asignar Días
-                                </Button>
+                            <div className="flex justify-center gap-6">
+                                <div className="mr-5 shadow-sm border border-gray-200 rounded-lg">
+                                    <DataTable
+                                        columns={columns}
+                                        data={establecimientos}
+                                    />
+                                </div>
+
+                                <Card>
+                                    <Calendar
+                                        locale="es"
+                                        multipleSelection={true} // Habilita la selección múltiple
+                                        onChange={handleDateSelect}
+                                        value={selectedDates}
+                                    />
+                                    <Button
+                                        onClick={assignDatesToEstablishments}
+                                        variant="solid"
+                                        className="ml-10 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
+                                    >
+                                        Asignar Fechas
+                                    </Button>
+                                </Card>
                             </div>
-                            <DataTable
-                                columns={columns}
-                                data={establecimientos}
-                            />
                         </>
                     ) : (
                         <p>No hay establecimientos disponibles.</p>
