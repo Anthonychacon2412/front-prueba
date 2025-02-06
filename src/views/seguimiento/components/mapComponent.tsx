@@ -32,8 +32,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ data }) => {
     })
 
     // Genera marcadores dinámicamente para todas las coordenadas
-    const markers = data.flatMap(({ id, nombre, coordenadas }) =>
-        Object.keys(coordenadas).map((key) => {
+    const markers = data.flatMap(({ id, nombre, coordenadas }) => {
+        if (!coordenadas) return [] // Evita generar marcadores si coordenadas es null o undefined
+
+        return Object.keys(coordenadas).map((key) => {
             const coord = coordenadas[key]
             console.log(
                 `Generando marcador para ${nombre} - ${key} con coordenadas:`,
@@ -46,8 +48,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ data }) => {
                     key.charAt(0).toUpperCase() + key.slice(1)
                 }`,
             }
-        }),
-    )
+        })
+    })
+
+    console.log('Marcadores generados:', markers)
 
     console.log('Marcadores generados:', markers)
 

@@ -2,174 +2,92 @@ import { Button, DatePicker, Select } from '@/components/ui'
 import React, { useEffect, useState } from 'react'
 import { HiOutlineSearch } from 'react-icons/hi'
 import MapComponent from './components/mapComponent'
-import {
-    getFirestore,
-    collection,
-    getDocs,
-    query,
-    where,
-} from 'firebase/firestore'
-import 'leaflet/dist/leaflet.css'
+import { collection, getDocs, query, doc } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
-import moment from 'moment'
+
+import 'leaflet/dist/leaflet.css'
 
 const Seguimiento = () => {
     const [cliente, setCliente] = useState<any>(null)
+    const [promotor, setPromotor] = useState<any>(null)
+    const [rutas, setRutas] = useState<any[]>([])
     const [region, setRegion] = useState<any>(null)
-    const [usuario, setUsuario] = useState<any>(null)
-    const [fecha, setFecha] = useState<any>(null)
-    const [dataClients, setDataClients] = useState<any[]>([])
-    const [dataRegion, setDataRegion] = useState<any[]>([])
-    const [dataUsuarios, setDataUsuarios] = useState<any[]>([])
     const [mapData, setMapData] = useState<any[]>([]) // Estado para datos del mapa
 
-    const getClients = async () => {
-        const db = getFirestore()
-        const clientsCollection = collection(db, 'clientes')
-
+    const getDataFromRutas = async () => {
         try {
-            const querySnapshot = await getDocs(clientsCollection)
-            const optionsClients = querySnapshot.docs.map((doc) => {
-                const nombreCliente = doc.data().nombre
-                return { value: nombreCliente, label: nombreCliente }
-            })
-            setDataClients(optionsClients)
-        } catch (error) {
-            console.error('Error getting clients: ', error)
-        }
-    }
-
-    const getRegiones = async () => {
-        const db = getFirestore()
-        const regionCollection = collection(db, 'regiones')
-
-        try {
-            const querySnapshot = await getDocs(regionCollection)
-            const optionsRegion = querySnapshot.docs.map((doc) => {
-                const nombreRegion = doc.data().nombre
-                return { value: nombreRegion, label: nombreRegion }
-            })
-            setDataRegion(optionsRegion)
-        } catch (error) {
-            console.error('Error getting regions: ', error)
-        }
-    }
-
-    const getUsuarios = async (cliente: any, region: any) => {
-        const db = getFirestore()
-        const usuariosCollection = collection(db, 'usuarios')
-
-        const q = query(
-            usuariosCollection,
-            where('cliente', '==', cliente),
-            where('region', '==', region),
-        )
-
-        try {
+            const q = query(collection(db, 'Plantilla_rutas'))
             const querySnapshot = await getDocs(q)
-            const usuariosFiltrados = querySnapshot.docs.map((doc) => {
-                return { id: doc.id, ...doc.data() }
-            })
-            setDataUsuarios(usuariosFiltrados)
-        } catch (error) {
-            console.error('Error getting users: ', error)
-        }
-    }
+            const rutasData: any[] = [] // Cambié rutas a rutasData para evitar confusión
 
-    const getFormularios = async (usuarioNombre: string, fecha: Date) => {
-        const db = getFirestore()
-        const formulariosCollection = collection(db, 'formularios_llenos')
+            for (const docSnap of querySnapshot.docs) {
+                const establecimientosRef = collection(
+                    db,
+                    'Plantilla_rutas',
+                    docSnap.id,
+                    'Establecimientos',
+                )
+                const establecimientosSnap = await getDocs(establecimientosRef)
 
-        try {
-            const q = query(
-                formulariosCollection,
-                where('promotor', '==', usuarioNombre),
-                where(
-                    'fecha_sincronizado',
-                    '==',
-                    moment(fecha).format('YYYY-MM-DD'),
-                ),
-            )
-            const querySnapshot = await getDocs(q)
-            return querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }))
-        } catch (error) {
-            console.error('Error getting formularios: ', error)
-            return []
-        }
-    }
+                // Iteramos sobre los establecimientos en la subcolección
+                for (const establecimientoDoc of establecimientosSnap.docs) {
+                    const data = establecimientoDoc.data()
+                    const { uid, ubicacion, region, nombre_establecimiento } =
+                        data
 
-    const getActivaciones = async (usuarioNombre: string, fecha: Date) => {
-        const db = getFirestore()
-        const activacionCollection = collection(db, 'activacion')
+                    // Accediendo a las coordenadas
+                    const lat = ubicacion._lat
+                    const long = ubicacion._long
 
-        try {
-            const q = query(
-                activacionCollection,
-                where('nombre', '==', usuarioNombre),
-                where(
-                    'fecha_activacion',
-                    '==',
-                    moment(fecha).format('YYYY-MM-DD'),
-                ),
-            )
-            const querySnapshot = await getDocs(q)
-            return querySnapshot.docs.map((doc) => ({
-                id: doc.id,
-                ...doc.data(),
-            }))
-        } catch (error) {
-            console.error('Error getting activaciones: ', error)
-            return []
-        }
-    }
+                    // Mostrar las coordenadas y otros detalles
+                    console.log('Establecimiento:', nombre_establecimiento)
+                    console.log('ID:', uid)
+                    console.log('Región:', region)
+                    console.log('Ubicación:', `Lat: ${lat}, Long: ${long}`)
 
-    const combineData = (formularios: any, activaciones: any) => {
-        return formularios.map((formulario: any) => {
-            const activacion = activaciones.find(
-                (act: { nombre: any }) => act.nombre === formulario.promotor,
-            )
-            return {
-                ...formulario,
-                coordenadas: {
-                    sincronizado: formulario.coordenadas,
-                    fin: activacion?.coordenadas?.fin,
-                    inicio: activacion?.coordenadas?.inicio,
-                },
-                fechas: {
-                    sincronizado: formulario.fecha_sincronizado,
-                    activacion: activacion?.fecha_activacion,
-                },
+                    // Agregar estos datos al estado del mapa
+                    setMapData((prevMapData) => [
+                        ...prevMapData,
+                        { lat, long, nombre_establecimiento, region },
+                    ])
+                }
+
+                rutasData.push({
+                    id: docSnap.id,
+                    ...docSnap.data(),
+                    hasEstablecimientos: !establecimientosSnap.empty,
+                })
             }
-        })
+
+            console.log(rutasData)
+            setRutas(rutasData)
+        } catch (error) {
+            console.error(error)
+        }
     }
 
     useEffect(() => {
-        getClients()
-        getRegiones()
+        getDataFromRutas()
     }, [])
 
-    useEffect(() => {
-        if (cliente && region) {
-            getUsuarios(cliente.value, region.value)
-        } else {
-            setDataUsuarios([])
-        }
-    }, [cliente, region])
-
-    const handleSearch = async () => {
-        if (usuario && fecha) {
-            const formularios = await getFormularios(usuario.label, fecha)
-            const activaciones = await getActivaciones(usuario.label, fecha)
-            const combinedData = combineData(formularios, activaciones)
-            setMapData(combinedData) // Almacena los datos combinados para usarlos en el mapa
-            console.log('Datos combinados:', combinedData)
-        } else {
-            console.warn('Por favor selecciona un usuario y una fecha.')
-        }
+    const handleSearch = () => {
+        // Lógica de búsqueda según cliente, región, etc.
+        console.log('Buscando...', { cliente, region })
     }
+
+    // Mapear las opciones de cliente y región
+    const clientesOptions = rutas.map((ruta) => ({
+        label: ruta.cliente || 'Desconocido', // Ajusta según la estructura de cliente
+        value: ruta.cliente,
+    }))
+    const regionOptions = rutas.map((ruta) => ({
+        label: ruta.region || 'Desconocido', // Ajusta según la estructura de región
+        value: ruta.region,
+    }))
+    const promotorOptions = rutas.map((ruta) => ({
+        label: ruta.promotor || 'Desconocido', // Ajusta según la estructura de región
+        value: ruta.promotor,
+    }))
 
     return (
         <div>
@@ -178,29 +96,22 @@ const Seguimiento = () => {
                 <Select
                     className="relative z-20 w-48"
                     placeholder="Clientes"
-                    options={dataClients}
+                    options={clientesOptions} // Cambié a opciones de clientes
                     onChange={(value) => setCliente(value)}
                 />
                 <Select
                     className="relative z-20 w-48"
                     placeholder="Región"
-                    options={dataRegion}
+                    options={regionOptions} // Cambié a opciones de regiones
                     onChange={(value) => setRegion(value)}
                 />
                 <Select
                     className="relative z-20 w-48"
-                    placeholder="Usuario"
-                    options={dataUsuarios.map((usuario) => ({
-                        value: usuario.id,
-                        label: usuario.nombre,
-                    }))}
-                    onChange={(value) => setUsuario(value)}
+                    placeholder="Promotor"
+                    options={promotorOptions}
+                    onChange={(value) => setPromotor(value)}
                 />
-                <DatePicker
-                    className="relative z-20 w-48"
-                    placeholder="Fecha"
-                    onChange={(date) => setFecha(date)}
-                />
+
                 <Button variant="solid" onClick={handleSearch}>
                     <HiOutlineSearch />
                 </Button>

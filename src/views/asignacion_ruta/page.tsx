@@ -112,6 +112,10 @@ const AsignacionRuta = () => {
                     )
                 }
             })
+            console.log(
+                'estacimientos disponibles',
+                establecimientosDisponibles,
+            )
 
             setEstablecimientosDisponibles(establecimientosDisponibles) // Guarda los establecimientos filtrados
         } catch (error) {
@@ -298,6 +302,7 @@ const AsignacionRuta = () => {
                 await addDoc(establecimientosRef, {
                     nombre_establecimiento: establecimiento.nombre,
                     region: establecimiento.region,
+                    ubicacion: establecimiento.ubicacion,
 
                     uid: establecimiento.id, // Guardamos el uid para referencia futura
                 }).then((resp) => {
