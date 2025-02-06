@@ -58,7 +58,7 @@ const Mapcreate: React.FC<MapcreateProps> = ({ onLocationSelect }) => {
 
     const MapClickHandler = () => {
         useMapEvents({
-            click(e) {
+            click(e: any) {
                 const newLocation: [number, number] = [
                     e.latlng.lat,
                     e.latlng.lng,

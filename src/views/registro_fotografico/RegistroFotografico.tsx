@@ -43,35 +43,18 @@ const Photos = () => {
             })
 
             setFormData(formData)
+
+            // Extraer clientes únicos
+            const clientesUnicos = [
+                ...new Set(formData.map((cliente) => cliente.nombre_cliente)),
+            ].map((cliente) => ({ label: cliente, value: cliente }))
+            setClientes(clientesUnicos)
         } catch (error) {
-            console.error('Error al obtener los clientes:', error)
+            console.error('Error al obtener los datos:', error)
         } finally {
             setIsLoading(false)
         }
     }
-
-    useEffect(() => {
-        if (formData.length > 0) {
-            // Extrae los valores únicos para cada select
-            const clientes = [
-                ...new Set(formData.map((cliente) => cliente.nombre_cliente)),
-            ].map((cliente) => ({ label: cliente, value: cliente }))
-            const establecimientos = [
-                ...new Set(formData.map((cliente) => cliente.establecimiento)),
-            ].map((establecimiento) => ({
-                label: establecimiento,
-                value: establecimiento,
-            }))
-            const regiones = [
-                ...new Set(formData.map((cliente) => cliente.region)),
-            ].map((region) => ({ label: region, value: region }))
-
-            // Asigna esos valores a los selectores
-            setClientes(clientes)
-            setEstablecimientos(establecimientos)
-            setRegiones(regiones)
-        }
-    }, [formData])
 
     useEffect(() => {
         setImageUrls(
@@ -84,49 +67,47 @@ const Photos = () => {
     const handleSelectChange = (
         newValue: SingleValue<OptionType>,
         setter: React.Dispatch<React.SetStateAction<SingleValue<OptionType>>>,
+        type: 'cliente' | 'establecimiento',
     ) => {
         setter(newValue)
-    }
 
-    const handleDownload = async (imageUrl: string) => {
-        try {
-            const response = await fetch(imageUrl)
-            const blob = await response.blob()
-            const url = window.URL.createObjectURL(blob)
-            const a = document.createElement('a')
-            a.href = url
-            a.download = 'imagen-descargada.jpg'
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            window.URL.revokeObjectURL(url)
-        } catch (error) {
-            console.error('Error al descargar la imagen:', error)
+        if (type === 'cliente' && newValue) {
+            // Filtrar los establecimientos solo del cliente seleccionado
+            const establecimientosFiltrados = [
+                ...new Set(
+                    formData
+                        .filter(
+                            (cliente) =>
+                                cliente.nombre_cliente === newValue.value,
+                        )
+                        .map((cliente) => cliente.establecimiento),
+                ),
+            ].map((establecimiento) => ({
+                label: establecimiento,
+                value: establecimiento,
+            }))
+
+            setEstablecimientos(establecimientosFiltrados)
+            setSelectedEstablecimiento(null) // Reset establecimiento al cambiar cliente
+            setSelectedRegion(null) // Reset región al cambiar cliente
+            setRegiones([]) // Limpiar regiones
         }
-    }
 
-    const handleBatchDownload = async (imageUrls: string[]) => {
-        const zip = new JSZip()
-        try {
-            const downloadPromises = imageUrls.map(async (url, index) => {
-                const response = await fetch(url)
-                const blob = await response.blob()
-                zip.file(`imagen-${index + 1}.jpg`, blob)
-            })
-            await Promise.all(downloadPromises)
+        if (type === 'establecimiento' && newValue) {
+            // Filtrar regiones solo del establecimiento seleccionado
+            const regionesFiltradas = [
+                ...new Set(
+                    formData
+                        .filter(
+                            (cliente) =>
+                                cliente.establecimiento === newValue.value,
+                        )
+                        .map((cliente) => cliente.region),
+                ),
+            ].map((region) => ({ label: region, value: region }))
 
-            const zipBlob = await zip.generateAsync({ type: 'blob' })
-            const zipUrl = URL.createObjectURL(zipBlob)
-
-            const a = document.createElement('a')
-            a.href = zipUrl
-            a.download = 'imagenes.zip'
-            document.body.appendChild(a)
-            a.click()
-            document.body.removeChild(a)
-            URL.revokeObjectURL(zipUrl)
-        } catch (error) {
-            console.error('Error al descargar imágenes:', error)
+            setRegiones(regionesFiltradas)
+            setSelectedRegion(null) // Reset región al cambiar establecimiento
         }
     }
 
@@ -157,12 +138,11 @@ const Photos = () => {
         })
 
         setFilteredClientes(filtered)
-
-        // Actualizar imageUrls inmediatamente después
-        const newImageUrls = filtered.flatMap((cliente) =>
-            cliente.photos.map((photo: any) => photo.imgUrl),
+        setImageUrls(
+            filtered.flatMap((cliente) =>
+                cliente.photos.map((photo: any) => photo.imgUrl),
+            ),
         )
-        setImageUrls(newImageUrls)
     }
 
     return (
@@ -171,7 +151,11 @@ const Photos = () => {
                 <Select
                     value={selectedCliente}
                     onChange={(newValue) =>
-                        handleSelectChange(newValue, setSelectedCliente)
+                        handleSelectChange(
+                            newValue,
+                            setSelectedCliente,
+                            'cliente',
+                        )
                     }
                     options={clientes}
                     placeholder="Seleccionar Cliente"
@@ -180,19 +164,23 @@ const Photos = () => {
                 <Select
                     value={selectedEstablecimiento}
                     onChange={(newValue) =>
-                        handleSelectChange(newValue, setSelectedEstablecimiento)
+                        handleSelectChange(
+                            newValue,
+                            setSelectedEstablecimiento,
+                            'establecimiento',
+                        )
                     }
                     options={establecimientos}
                     placeholder="Seleccionar Establecimiento"
+                    isDisabled={!selectedCliente} // Bloquea si no hay cliente seleccionado
                 />
 
                 <Select
                     value={selectedRegion}
-                    onChange={(newValue) =>
-                        handleSelectChange(newValue, setSelectedRegion)
-                    }
+                    onChange={(newValue) => setSelectedRegion(newValue)}
                     options={regiones}
                     placeholder="Seleccionar Región"
+                    isDisabled={!selectedEstablecimiento} // Bloquea si no hay establecimiento seleccionado
                 />
 
                 <DatePicker

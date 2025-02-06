@@ -1,7 +1,7 @@
 import { Button, Drawer, Select, Spinner } from '@/components/ui'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { addDoc, collection, getDocs } from 'firebase/firestore'
+import { addDoc, collection, GeoPoint, getDocs } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
@@ -27,7 +27,7 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
 }) => {
     const [regiones, setRegiones] = useState<string[]>([])
     const [clientes, setClientes] = useState<string[]>([])
-    const [ubicacion, setUbicacion] = useState<[number, number] | null>(null)
+    const [ubicacion, setUbicacion] = useState<GeoPoint | null>(null)
 
     const initialValues: FormValues = {
         nombre: '',
@@ -50,7 +50,7 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
         try {
             const newEstablecimiento = {
                 ...values,
-                ubicacion,
+                ubicacion: ubicacion, // Aquí ya está el GeoPoint
                 status: 'Disponible',
             }
             await addDoc(collection(db, 'establecimientos'), newEstablecimiento)
@@ -117,6 +117,14 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                             getClientes(values.region)
                         }
                     }, [values.region]) // Depende de `values.region`
+
+                    const handleLocationSelect = (
+                        location: [number, number],
+                    ) => {
+                        const geoPoint = new GeoPoint(location[0], location[1]) // Convertimos las coordenadas en un GeoPoint
+                        setUbicacion(geoPoint) // Actualizamos el estado con el GeoPoint
+                        setFieldValue('ubicacion', location) // Actualizamos el valor del campo en Formik
+                    }
 
                     return (
                         <Form className="flex flex-col space-y-6">
@@ -194,7 +202,9 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                             </div>
 
                             <div className="flex flex-col">
-                                <Mapcreate onLocationSelect={setUbicacion} />
+                                <Mapcreate
+                                    onLocationSelect={handleLocationSelect}
+                                />
                             </div>
 
                             <div className="text-right">
