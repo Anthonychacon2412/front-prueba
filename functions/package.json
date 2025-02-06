@@ -16,6 +16,8 @@
     "dotenv": "^16.4.7",
     "firebase-admin": "^13.0.2",
     "firebase-functions": "^6.3.0",
+    "jszip": "^3.10.1",
+    "node-fetch": "^3.3.2",
     "openai": "^4.80.1"
   },
   "devDependencies": {
