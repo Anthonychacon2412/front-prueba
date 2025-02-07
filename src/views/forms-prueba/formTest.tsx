@@ -82,11 +82,11 @@ const FormularioPrueba = () => {
                 accessorKey: 'fecha_sincronizacion',
                 cell: (props: any) => (
                     <span>
-                        {moment
+                        {/* {moment
                             .unix(
                                 props.row.original.fecha_sincronizacion.seconds,
                             )
-                            .format('DD/MM/YYYY hh:mm:ss')}
+                            .format('DD/MM/YYYY hh:mm:ss')} */}
                     </span>
                 ),
             },

@@ -84,10 +84,10 @@ const FormDetail = () => {
                                             openCategories,
                                         )
                                     }
-                                    className="w-full text-left flex justify-between items-center text-xl font-semibold text-gray-700"
+                                    className="w-full text-left flex justify-between items-center text-xl font-semibold text-gray-700 hover:text-blue-600 transition"
                                 >
                                     {category.name}
-                                    <span>
+                                    <span className="text-blue-600">
                                         {openCategories[catId] ? '−' : '+'}
                                     </span>
                                 </button>
@@ -110,10 +110,10 @@ const FormDetail = () => {
                                                                 openSubcategories,
                                                             )
                                                         }
-                                                        className="w-full text-left flex justify-between items-center text-lg font-medium text-gray-800"
+                                                        className="w-full text-left flex justify-between items-center text-lg font-medium text-gray-800 hover:text-blue-600 transition"
                                                     >
                                                         {subcategory.name}
-                                                        <span>
+                                                        <span className="text-blue-600">
                                                             {openSubcategories[
                                                                 subId
                                                             ]
@@ -146,12 +146,12 @@ const FormDetail = () => {
                                                                                         openBrands,
                                                                                     )
                                                                                 }
-                                                                                className="w-full text-left flex justify-between items-center text-blue-600 font-semibold"
+                                                                                className="w-full text-left flex justify-between items-center text-blue-600 font-semibold hover:text-blue-700 transition"
                                                                             >
                                                                                 {
                                                                                     brand.name
                                                                                 }
-                                                                                <span>
+                                                                                <span className="text-blue-600">
                                                                                     {openBrands[
                                                                                         brandId
                                                                                     ]
@@ -186,12 +186,12 @@ const FormDetail = () => {
                                                                                                                 openProducts,
                                                                                                             )
                                                                                                         }
-                                                                                                        className="w-full text-left flex justify-between items-center text-gray-900 font-medium"
+                                                                                                        className="w-full text-left flex justify-between items-center text-gray-900 font-medium hover:text-blue-600 transition"
                                                                                                     >
                                                                                                         {
                                                                                                             product.name
                                                                                                         }
-                                                                                                        <span>
+                                                                                                        <span className="text-blue-600">
                                                                                                             {openProducts[
                                                                                                                 prodId
                                                                                                             ]
