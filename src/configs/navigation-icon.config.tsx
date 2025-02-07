@@ -31,6 +31,7 @@ import {
 import { MdOutlineAddBusiness } from 'react-icons/md'
 import { FaRoadCircleCheck } from 'react-icons/fa6'
 import { RiMapPinTimeLine } from 'react-icons/ri'
+import { IoStatsChartSharp } from 'react-icons/io5'
 
 export type NavigationIcons = Record<string, JSX.Element>
 
@@ -68,6 +69,7 @@ const navigationIcon: NavigationIcons = {
     ruta: <HiOutlineMap />,
     business: <MdOutlineAddBusiness />,
     newroute: <FaRoadCircleCheck />,
+    statistic: <IoStatsChartSharp />,
 }
 
 export default navigationIcon

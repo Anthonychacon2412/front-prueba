@@ -136,7 +136,7 @@ const pagesNavigationConfig: NavigationTree[] = [
                 path: '',
                 title: 'Estadisticas',
                 translateKey: '',
-                icon: '',
+                icon: 'statistic',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [
