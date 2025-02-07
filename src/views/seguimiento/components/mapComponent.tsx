@@ -1,81 +1,68 @@
 import React from 'react'
-import L, { LatLngExpression } from 'leaflet'
-import markerIcon from 'leaflet/dist/images/marker-icon.png'
-import markerShadow from 'leaflet/dist/images/marker-shadow.png'
-import { MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Tooltip } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
 
-interface GeoPoint {
-    _lat: number
-    _long: number
+interface Establecimiento {
+    id: string
+    nombre: string
+    ubicacion: {
+        _lat: number
+        _long: number
+    }
 }
 
 interface MapComponentProps {
-    data: Array<{
-        id: string
-        nombre: string
-        coordenadas: {
-            [key: string]: GeoPoint // Clave dinámica para soportar cualquier cantidad de coordenadas
-        }
-    }>
+    establecimientos: Establecimiento[]
+    promotorUbicacion?: {
+        _lat: number
+        _long: number
+    }
 }
 
-const MapComponent: React.FC<MapComponentProps> = ({ data }) => {
-    const positionInit: LatLngExpression = [11.0698283, -63.9681467]
-
-    const customIcon = L.icon({
-        iconUrl: markerIcon,
-        shadowUrl: markerShadow,
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
-        shadowSize: [41, 41],
-    })
-
-    // Genera marcadores dinámicamente para todas las coordenadas
-    const markers = data.flatMap(({ id, nombre, coordenadas }) => {
-        if (!coordenadas) return [] // Evita generar marcadores si coordenadas es null o undefined
-
-        return Object.keys(coordenadas).map((key) => {
-            const coord = coordenadas[key]
-            console.log(
-                `Generando marcador para ${nombre} - ${key} con coordenadas:`,
-                coord,
-            )
-            return {
-                id: `${id}-${key}`,
-                position: [coord._lat, coord._long] as LatLngExpression,
-                name: `${nombre} - ${
-                    key.charAt(0).toUpperCase() + key.slice(1)
-                }`,
-            }
-        })
-    })
-
-    console.log('Marcadores generados:', markers)
-
-    console.log('Marcadores generados:', markers)
-
+const MapComponent: React.FC<MapComponentProps> = ({
+    establecimientos,
+    promotorUbicacion,
+}) => {
     return (
-        <div style={{ height: '400px', width: '100%' }} className="mt-4">
-            <MapContainer
-                center={positionInit}
-                zoom={13}
-                scrollWheelZoom={false}
-                style={{ height: '100%', width: '100%' }}
-            >
-                <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                {markers.map(({ id, position, name }) => (
-                    <Marker key={id} position={position} icon={customIcon}>
-                        <Popup>
-                            {name} <br /> ID: {id}
-                        </Popup>
+        <MapContainer
+            center={[10.500211, -66.922711]}
+            zoom={12}
+            className="h-96 w-full"
+        >
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+            {/* Marcadores de los establecimientos */}
+            {establecimientos
+                .filter(
+                    (est) =>
+                        est.ubicacion &&
+                        est.ubicacion._lat &&
+                        est.ubicacion._long,
+                )
+                .map((est) => (
+                    <Marker
+                        key={est.id}
+                        position={[est.ubicacion._lat, est.ubicacion._long]}
+                    >
+                        <Tooltip>{est.nombre}</Tooltip>{' '}
+                        {/* Tooltip para establecimientos */}
                     </Marker>
                 ))}
-            </MapContainer>
-        </div>
+
+            {/* Marcador para la ubicación del promotor */}
+            {promotorUbicacion &&
+                promotorUbicacion._lat &&
+                promotorUbicacion._long && (
+                    <Marker
+                        position={[
+                            promotorUbicacion._lat,
+                            promotorUbicacion._long,
+                        ]}
+                    >
+                        <Tooltip>Ubicación del Promotor</Tooltip>
+                    </Marker>
+                )}
+        </MapContainer>
     )
 }
 
