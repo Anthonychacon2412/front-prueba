@@ -1,68 +1,62 @@
-import { Button, DatePicker, Select } from '@/components/ui'
+import { Button, Select } from '@/components/ui'
 import React, { useEffect, useState } from 'react'
 import { HiOutlineSearch } from 'react-icons/hi'
-import MapComponent from './components/mapComponent'
-import { collection, getDocs, query, doc } from 'firebase/firestore'
+import { collection, getDocs, query } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
-
-import 'leaflet/dist/leaflet.css'
+import MapComponent from './components/mapComponent'
 
 const Seguimiento = () => {
-    const [cliente, setCliente] = useState<any>(null)
-    const [promotor, setPromotor] = useState<any>(null)
+    const [cliente, setCliente] = useState<string | null>(null)
+    const [region, setRegion] = useState<string | null>(null)
+
     const [rutas, setRutas] = useState<any[]>([])
-    const [region, setRegion] = useState<any>(null)
-    const [mapData, setMapData] = useState<any[]>([]) // Estado para datos del mapa
+    const [rutasFiltradas, setRutasFiltradas] = useState<any[]>([])
+    const [clientesOptions, setClientesOptions] = useState<any[]>([])
+    const [regionesOptions, setRegionesOptions] = useState<any[]>([])
+    const [establecimientos, setEstablecimientos] = useState<any[]>([]) // Estado para establecimientos
+    const [promotorUbicacion, setPromotorUbicacion] = useState<any>(null) // NUEVO ESTADO para la ubicación del promotor
 
     const getDataFromRutas = async () => {
         try {
             const q = query(collection(db, 'Plantilla_rutas'))
             const querySnapshot = await getDocs(q)
-            const rutasData: any[] = [] // Cambié rutas a rutasData para evitar confusión
+            const rutasData: any[] = []
 
             for (const docSnap of querySnapshot.docs) {
+                const data = docSnap.data()
+                const rutaId = docSnap.id
+
+                // Obtener la subcolección de establecimientos
                 const establecimientosRef = collection(
                     db,
-                    'Plantilla_rutas',
-                    docSnap.id,
-                    'Establecimientos',
+                    `Plantilla_rutas/${rutaId}/Establecimientos`,
                 )
                 const establecimientosSnap = await getDocs(establecimientosRef)
 
-                // Iteramos sobre los establecimientos en la subcolección
-                for (const establecimientoDoc of establecimientosSnap.docs) {
-                    const data = establecimientoDoc.data()
-                    const { uid, ubicacion, region, nombre_establecimiento } =
-                        data
+                const establecimientos = establecimientosSnap.docs.map(
+                    (estDoc) => ({
+                        id: estDoc.id,
+                        nombre:
+                            estDoc.data().nombre_establecimiento ||
+                            'Desconocido',
+                        ubicacion: estDoc.data().ubicacion || null,
+                    }),
+                )
 
-                    // Accediendo a las coordenadas
-                    const lat = ubicacion._lat
-                    const long = ubicacion._long
-
-                    // Mostrar las coordenadas y otros detalles
-                    console.log('Establecimiento:', nombre_establecimiento)
-                    console.log('ID:', uid)
-                    console.log('Región:', region)
-                    console.log('Ubicación:', `Lat: ${lat}, Long: ${long}`)
-
-                    // Agregar estos datos al estado del mapa
-                    setMapData((prevMapData) => [
-                        ...prevMapData,
-                        { lat, long, nombre_establecimiento, region },
-                    ])
-                }
+                // Extraer la ubicación del promotor de cada ruta
+                const ubicacionPromotor = data.ubicacion_promotor || null
 
                 rutasData.push({
-                    id: docSnap.id,
-                    ...docSnap.data(),
-                    hasEstablecimientos: !establecimientosSnap.empty,
+                    id: rutaId,
+                    ...data,
+                    establecimientos,
+                    ubicacion_promotor: ubicacionPromotor, // Guardar la ubicación del promotor
                 })
             }
 
-            console.log(rutasData)
             setRutas(rutasData)
         } catch (error) {
-            console.error(error)
+            console.error('Error obteniendo datos de rutas:', error)
         }
     }
 
@@ -70,56 +64,151 @@ const Seguimiento = () => {
         getDataFromRutas()
     }, [])
 
-    const handleSearch = () => {
-        // Lógica de búsqueda según cliente, región, etc.
-        console.log('Buscando...', { cliente, region })
+    useEffect(() => {
+        if (rutas.length > 0) {
+            const uniqueClientes = Array.from(
+                new Set(rutas.map((ruta) => ruta.cliente || 'Desconocido')),
+            )
+            setClientesOptions(
+                uniqueClientes.map((cliente) => ({
+                    label: cliente,
+                    value: cliente,
+                })),
+            )
+        }
+    }, [rutas])
+
+    const handleClienteChange = (selectedOption: {
+        label: string
+        value: string
+    }) => {
+        const value = selectedOption.value
+        setCliente(value)
+        setRegion(null)
+        setRutasFiltradas([])
+
+        const rutasFiltradas = rutas.filter((ruta) => ruta.cliente === value)
+
+        const uniqueRegiones = Array.from(
+            new Set(rutasFiltradas.map((ruta) => ruta.region || 'Desconocida')),
+        )
+
+        setRegionesOptions(
+            uniqueRegiones.map((reg) => ({ label: reg, value: reg })),
+        )
     }
 
-    // Mapear las opciones de cliente y región
-    const clientesOptions = rutas.map((ruta) => ({
-        label: ruta.cliente || 'Desconocido', // Ajusta según la estructura de cliente
-        value: ruta.cliente,
-    }))
-    const regionOptions = rutas.map((ruta) => ({
-        label: ruta.region || 'Desconocido', // Ajusta según la estructura de región
-        value: ruta.region,
-    }))
-    const promotorOptions = rutas.map((ruta) => ({
-        label: ruta.promotor || 'Desconocido', // Ajusta según la estructura de región
-        value: ruta.promotor,
-    }))
+    const handleRegionChange = (selectedOption: {
+        label: string
+        value: string
+    }) => {
+        setRegion(selectedOption.value)
+    }
+
+    const handleSearch = () => {
+        const resultados = rutas.filter(
+            (ruta) =>
+                (!cliente || ruta.cliente === cliente) &&
+                (!region || ruta.region === region),
+        )
+
+        setRutasFiltradas(resultados)
+
+        // Extraer los establecimientos de las rutas filtradas
+        const establecimientosFiltrados = resultados.flatMap(
+            (ruta) => ruta.establecimientos || [],
+        )
+        setEstablecimientos(establecimientosFiltrados)
+
+        // Obtener la ubicación del promotor de las rutas filtradas
+        const ubicacionPromotor = resultados[0]?.ubicacion_promotor || null
+        setPromotorUbicacion(ubicacionPromotor)
+
+        console.log('Resultados filtrados:', resultados)
+        console.log('Establecimientos filtrados:', establecimientosFiltrados)
+    }
 
     return (
         <div>
             <h1 className="text-2xl font-bold mb-6">Seguimiento</h1>
-            <div className="flex justify-between relative z-10 mb-4">
+            <div className="flex gap-4 mb-4">
                 <Select
-                    className="relative z-20 w-48"
+                    className="w-48"
                     placeholder="Clientes"
-                    options={clientesOptions} // Cambié a opciones de clientes
-                    onChange={(value) => setCliente(value)}
+                    options={clientesOptions}
+                    onChange={handleClienteChange}
                 />
+
                 <Select
-                    className="relative z-20 w-48"
-                    placeholder="Región"
-                    options={regionOptions} // Cambié a opciones de regiones
-                    onChange={(value) => setRegion(value)}
-                />
-                <Select
-                    className="relative z-20 w-48"
-                    placeholder="Promotor"
-                    options={promotorOptions}
-                    onChange={(value) => setPromotor(value)}
+                    className="w-48"
+                    placeholder="Regiones"
+                    options={regionesOptions}
+                    onChange={handleRegionChange}
+                    isDisabled={!cliente}
                 />
 
                 <Button variant="solid" onClick={handleSearch}>
                     <HiOutlineSearch />
                 </Button>
             </div>
-            <div className="relative z-0">
-                <MapComponent data={mapData} />{' '}
-                {/* Pasa los datos combinados al mapa */}
+
+            <div>
+                {rutasFiltradas.length > 0 ? (
+                    <ul className="border p-4 rounded-md">
+                        {rutasFiltradas.map((ruta) => (
+                            <li
+                                key={ruta.id}
+                                className="p-2 border-b last:border-0"
+                            >
+                                <p>
+                                    <strong>Ruta:</strong> {ruta.nombre_ruta}
+                                </p>
+                                <p>
+                                    <strong>Cliente:</strong> {ruta.cliente}
+                                </p>
+                                <p>
+                                    <strong>Región:</strong> {ruta.region}
+                                </p>
+                                <p>
+                                    <strong>Promotor:</strong> {ruta.promotor}
+                                </p>
+                                <p>
+                                    <strong>Establecimientos:</strong>
+                                </p>
+                                <ul className="ml-4 list-disc">
+                                    {ruta.establecimientos?.length > 0 ? (
+                                        ruta.establecimientos.map(
+                                            (est: any) => (
+                                                <li key={est.id}>
+                                                    <span className="font-bold">
+                                                        {est.nombre}
+                                                    </span>
+                                                    <br />
+                                                    📍 Ubicación:{' '}
+                                                    {est.ubicacion?._lat},{' '}
+                                                    {est.ubicacion?._long}
+                                                </li>
+                                            ),
+                                        )
+                                    ) : (
+                                        <li className="text-gray-500">
+                                            Sin establecimientos
+                                        </li>
+                                    )}
+                                </ul>
+                            </li>
+                        ))}
+                        <MapComponent
+                            establecimientos={establecimientos}
+                            promotorUbicacion={promotorUbicacion} // Pasamos la ubicación del promotor
+                        />
+                    </ul>
+                ) : (
+                    <p className="text-gray-500">No hay resultados</p>
+                )}
             </div>
+
+            {/* Pasamos los establecimientos y la ubicación del promotor al mapa */}
         </div>
     )
 }
