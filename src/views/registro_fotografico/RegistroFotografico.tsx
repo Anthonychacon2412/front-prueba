@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react'
 import { collection, getDocs, query } from 'firebase/firestore'
 import JSZip from 'jszip'
 import { Button, DatePicker, Card } from '@/components/ui'
-import { db } from '@/configs/firebaseAssets.config'
+import { db, functions } from '@/configs/firebaseAssets.config'
 import Select, { SingleValue } from 'react-select'
+import { httpsCallable } from 'firebase/functions'
 
 interface OptionType {
     label: string
@@ -145,6 +146,32 @@ const Photos = () => {
         )
     }
 
+    const downloadZip = async (imageUrls: any) => {
+        try {
+            const func = httpsCallable(functions, '	downloadImages')
+            const response = await func({ imageUrls }) // Enviar el objeto correctamente
+
+            const blob = await response?.blob()
+            const url = window.URL.createObjectURL(blob)
+
+            const a = document.createElement('a')
+            a.href = url
+            a.download = 'imagenes.zip'
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+
+            window.URL.revokeObjectURL(url)
+        } catch (error) {
+            console.error('Error:', error)
+        }
+    }
+
+    const urls = [
+        'https://picsum.photos/200/300',
+        'https://picsum.photos/200/300',
+    ]
+
     return (
         <div>
             <div className="grid grid-cols-5 gap-4 mb-3">
@@ -193,7 +220,7 @@ const Photos = () => {
 
             <div className="mb-4 flex items-center justify-between">
                 <h3>Visualización de Fotografías</h3>
-                <Button onClick={() => handleBatchDownload(imageUrls)}>
+                <Button onClick={() => downloadZip(imageUrls)}>
                     Descargar lote filtrado
                 </Button>
             </div>
@@ -219,7 +246,7 @@ const Photos = () => {
                                     </p>
                                 </div>
                                 <div className="w-full flex justify-end items-center">
-                                    <Button
+                                    {/* <Button
                                         size="xs"
                                         variant="twoTone"
                                         onClick={() =>
@@ -227,7 +254,7 @@ const Photos = () => {
                                         }
                                     >
                                         Descargar imagen
-                                    </Button>
+                                    </Button> */}
                                 </div>
                             </Card>
                         )),

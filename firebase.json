@@ -5,9 +5,9 @@
   },
   "functions": [
     {
-      "timeoutSeconds": 300,
       "source": "functions",
       "codebase": "default",
+      "runtime": "nodejs18",
       "ignore": [
         "node_modules",
         ".git",
