@@ -193,6 +193,13 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                                         )
                                     }
                                     className="mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                    menuPortalTarget={document.body}
+                                    styles={{
+                                        menuPortal: (base) => ({
+                                            ...base,
+                                            zIndex: 9999,
+                                        }), // Asegura que el menú se muestre por encima del mapa
+                                    }}
                                 />
                                 <ErrorMessage
                                     name="cliente"

@@ -1,9 +1,16 @@
 import { Button, Drawer, Select, Spinner } from '@/components/ui'
 import { ErrorMessage, Field, Form, Formik, FormikHelpers } from 'formik'
 import * as Yup from 'yup'
-import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore'
+import {
+    doc,
+    getDoc,
+    updateDoc,
+    collection,
+    getDocs,
+    GeoPoint,
+} from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { toast } from 'react-toastify'
 import EditMap from './EditMap'
 
@@ -61,7 +68,9 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
             )
             await updateDoc(establecimientoRef, {
                 ...values,
-                ubicacion: values.ubicacion || ubicacion, // Usa el valor de Formik o el estado local
+                ubicacion: values.ubicacion
+                    ? new GeoPoint(values.ubicacion[0], values.ubicacion[1])
+                    : null,
             })
 
             toast.success('Establecimiento actualizado exitosamente')
@@ -75,33 +84,39 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
         }
     }
 
-    const getRegiones = async () => {
+    const getRegiones = useCallback(async () => {
         try {
             const querySnapshot = await getDocs(collection(db, 'regiones'))
             const regionesList: string[] = []
             querySnapshot.forEach((doc) => {
-                regionesList.push(doc.data().nombre)
+                const data = doc.data()
+                if (data.nombre) {
+                    regionesList.push(data.nombre)
+                }
             })
             setRegiones(regionesList)
         } catch (error) {
             console.error('Error al obtener las regiones:', error)
         }
-    }
+    }, [])
 
-    const getClientes = async () => {
+    const getClientes = useCallback(async () => {
         try {
             const querySnapshot = await getDocs(collection(db, 'clientes'))
-            const clienteslist: string[] = []
+            const clientesList: string[] = []
             querySnapshot.forEach((doc) => {
-                clienteslist.push(doc.data().nombre)
+                const data = doc.data()
+                if (data.nombre) {
+                    clientesList.push(data.nombre)
+                }
             })
-            setClientes(clienteslist)
+            setClientes(clientesList)
         } catch (error) {
-            console.error('Error al obtener los clientes', error)
+            console.error('Error al obtener los clientes:', error)
         }
-    }
+    }, [])
 
-    const getEstablecimiento = async () => {
+    const getEstablecimiento = useCallback(async () => {
         try {
             const establecimientoRef = doc(
                 db,
@@ -112,13 +127,21 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
             if (docSnap.exists()) {
                 const data = docSnap.data()
                 setInitialValues({
-                    nombre: data.nombre,
-                    region: data.region,
-                    ubicacion: data.ubicacion || null,
-                    cliente: data.cliente || [], // Asegúrate de que cliente sea un array
+                    nombre: data.nombre || '',
+                    region: data.region || '',
+                    ubicacion: data.ubicacion
+                        ? [data.ubicacion._lat, data.ubicacion._long]
+                        : null,
+                    cliente: data.cliente
+                        ? data.cliente.map((c: { nombre: string }) => c.nombre)
+                        : [],
                 })
 
-                setUbicacion(data.ubicacion)
+                setUbicacion(
+                    data.ubicacion
+                        ? [data.ubicacion._lat, data.ubicacion._long]
+                        : null,
+                )
                 console.log('establecimientos data', data)
             } else {
                 console.error('No se encontró el establecimiento')
@@ -126,18 +149,18 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
         } catch (error) {
             console.error('Error al obtener el establecimiento:', error)
         }
-    }
+    }, [establecimientoId])
 
     useEffect(() => {
         getRegiones()
-    }, []) // Se ejecuta solo una vez
+    }, [getRegiones])
 
     useEffect(() => {
         if (establecimientoId) {
             getEstablecimiento()
             getClientes()
         }
-    }, [establecimientoId])
+    }, [establecimientoId, getEstablecimiento, getClientes])
 
     return (
         <Drawer isOpen={isOpen} onClose={onClose} className="rounded-md shadow">
@@ -211,6 +234,13 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                                 }}
                                 placeholder="Selecciona los clientes"
                                 className="mt-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                menuPortalTarget={document.body}
+                                styles={{
+                                    menuPortal: (base) => ({
+                                        ...base,
+                                        zIndex: 9999,
+                                    }), // Asegura que el menú se muestre por encima del mapa
+                                }}
                             />
 
                             <ErrorMessage
@@ -223,7 +253,9 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                             {ubicacion && (
                                 <EditMap
                                     initialLocation={ubicacion}
-                                    onLocationSelect={setUbicacion}
+                                    onLocationSelect={(location) =>
+                                        setUbicacion(location)
+                                    }
                                 />
                             )}
                         </div>
