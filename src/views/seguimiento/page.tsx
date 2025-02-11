@@ -172,30 +172,6 @@ const Seguimiento = () => {
                                 <p>
                                     <strong>Promotor:</strong> {ruta.promotor}
                                 </p>
-                                <p>
-                                    <strong>Establecimientos:</strong>
-                                </p>
-                                <ul className="ml-4 list-disc">
-                                    {ruta.establecimientos?.length > 0 ? (
-                                        ruta.establecimientos.map(
-                                            (est: any) => (
-                                                <li key={est.id}>
-                                                    <span className="font-bold">
-                                                        {est.nombre}
-                                                    </span>
-                                                    <br />
-                                                    📍 Ubicación:{' '}
-                                                    {est.ubicacion?._lat},{' '}
-                                                    {est.ubicacion?._long}
-                                                </li>
-                                            ),
-                                        )
-                                    ) : (
-                                        <li className="text-gray-500">
-                                            Sin establecimientos
-                                        </li>
-                                    )}
-                                </ul>
                             </li>
                         ))}
                         <MapComponent
