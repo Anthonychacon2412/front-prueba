@@ -1,3 +1,5 @@
+import { FirebaseError } from 'firebase/app'
+import { getAuth, sendPasswordResetEmail } from 'firebase/auth'
 import ApiService from './ApiService'
 import type {
     SignInCredential,
@@ -32,11 +34,32 @@ export async function apiSignOut() {
 }
 
 export async function apiForgotPassword(data: ForgotPassword) {
-    return ApiService.fetchData({
-        url: '/forgot-password',
-        method: 'post',
-        data,
-    })
+    const auth = getAuth()
+    const { email } = data
+
+    console.log('Email recibido en el backend:', email)
+
+    try {
+        await sendPasswordResetEmail(auth, email)
+        return { success: true }
+    } catch (error) {
+        console.error('Error al enviar el correo: ', error)
+
+        // Asegúrate de que el error es de tipo FirebaseError
+        if (error instanceof FirebaseError) {
+            switch (error.code) {
+                case 'auth/invalid-email':
+                    throw new Error('El correo electrónico no es válido.')
+                // Puedes agregar otros casos según sea necesario
+                default:
+                    throw new Error(
+                        'No se pudo enviar el correo de restablecimiento de contraseña. Por favor, verifica el correo electrónico e inténtalo de nuevo.',
+                    )
+            }
+        } else {
+            throw new Error('Se produjo un error inesperado.')
+        }
+    }
 }
 
 export async function apiResetPassword(data: ResetPassword) {

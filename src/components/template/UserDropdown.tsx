@@ -8,6 +8,7 @@ import classNames from 'classnames'
 import { HiOutlineUser, HiOutlineCog, HiOutlineLogout } from 'react-icons/hi'
 import { FiActivity } from 'react-icons/fi'
 import type { CommonProps } from '@/@types/common'
+import { FaUserCircle } from 'react-icons/fa'
 
 type DropdownList = {
     label: string
@@ -16,17 +17,15 @@ type DropdownList = {
 }
 
 const _UserDropdown = ({ className }: CommonProps) => {
-    const { avatar, userName, authority, email } = useAppSelector(
-        (state) => state.auth.user,
-    )
+    const { userName, email } = useAppSelector((state) => state.auth.user)
 
     const { signOut } = useAuth()
 
     const UserAvatar = (
         <div className={classNames(className, 'flex items-center gap-2')}>
-            <Avatar size={32} shape="circle" src={avatar} />
+            <FaUserCircle className="w-10 h-10" />
             <div className="hidden md:block">
-                <div className="font-bold">{email}</div>
+                <div className="font-bold">{userName}</div>
             </div>
         </div>
     )
@@ -42,12 +41,17 @@ const _UserDropdown = ({ className }: CommonProps) => {
             >
                 <Dropdown.Item variant="header">
                     <div className="py-2 px-3 flex items-center gap-2">
-                        <Avatar shape="circle" src={avatar} />
                         <div>
-                            <div className="font-bold text-gray-900 dark:text-gray-100">
-                                {userName}
-                            </div>
                             <div className="text-xs">{email}</div>
+                        </div>
+                    </div>
+                </Dropdown.Item>
+                <Dropdown.Item>
+                    <div className="py-2 px-3 flex items-center gap-2">
+                        <div>
+                            <div className="font-bold text-gray-900  hover:text-orange-600">
+                                Ver perfil
+                            </div>
                         </div>
                     </div>
                 </Dropdown.Item>

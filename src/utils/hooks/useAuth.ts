@@ -98,7 +98,7 @@ function useAuth() {
                             dispatch(
                                 setUser({
                                     avatar: '',
-                                    userName: info?.name,
+                                    userName: info?.nombre,
                                     email: info?.email,
                                     key: resp.id,
                                     status: info?.status,
