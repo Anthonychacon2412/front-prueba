@@ -289,6 +289,7 @@ const FormularioPrueba = () => {
             }
 
             generarPDF(json)
+            generarExcel(json)
         } catch (error) {
             console.error('Error al obtener la respuesta:', error)
         }
