@@ -11,14 +11,17 @@ interface SideProps extends CommonProps {
 const Side = ({ children, content, ...rest }: SideProps) => {
     return (
         <div className="grid lg:grid-cols-3 h-full">
-            <div className=" bg-orange-600 bg-no-repeat bg-cover py-6 px-16 flex-col justify-between hidden lg:flex">
-                <div className="flex items-center">
-                    <Logo className="" logoWidth={50}></Logo>
+            <div
+                className="hidden lg:flex flex-col justify-between bg-cover bg-center w-full h-full text-white p-6"
+                style={{ backgroundImage: "url('/img/Bg1.png')" }} // Asegúrate de que la ruta sea correcta
+            >
+                <div className="flex justify-items-center">
+                    <Logo logoWidth={50} />
                     <h2 className="text-white">Mobility</h2>
                 </div>
                 <span className="text-white">
                     Copyright &copy; {`${new Date().getFullYear()}`}{' '}
-                    <span className="font-semibold">{`${APP_NAME}`}</span>{' '}
+                    <span className="font-semibold">{APP_NAME}</span>
                 </span>
             </div>
             <div className="col-span-2 flex flex-col justify-center items-center bg-white dark:bg-gray-800">

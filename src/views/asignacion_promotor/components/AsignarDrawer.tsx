@@ -195,7 +195,7 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
                                 <Field
                                     as="select"
                                     name="promotor"
-                                    className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                    className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
                                 >
                                     <option value="">
                                         Seleccione un promotor

@@ -1,9 +1,9 @@
 import { ColumnDef, DataTable } from '@/components/shared'
-import { Button, Dialog, Spinner } from '@/components/ui'
+import { Button, Dialog, Input, Spinner } from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { HiOutlinePencil } from 'react-icons/hi'
+import { HiOutlinePencil, HiOutlineSearch } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -13,8 +13,8 @@ import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 
 const Clientes = () => {
     const [data, setData] = useState<any[]>([])
-    const [isLoading, setIsLoading] = useState(true) // Nuevo estado de carga
-
+    const [isLoading, setIsLoading] = useState(true)
+    const [searchTerm, setSearchTerm] = useState('')
     const [dialogIsOpen, setIsOpen] = useState(false)
     const [selectedRow, setSelectedRow] = useState<any | null>(null)
     const [drawerCreateIsOpen, setDrawerCreateIsOpen] = useState(false)
@@ -26,7 +26,7 @@ const Clientes = () => {
 
     const getDataClientes = async () => {
         try {
-            setIsLoading(true) // Inicia la carga
+            setIsLoading(true)
             const q = query(collection(db, 'clientes'))
             const querySnapshot = await getDocs(q)
             const clientes: any[] = []
@@ -40,7 +40,7 @@ const Clientes = () => {
             console.error('Error al obtener los clientes:', error)
             toast.error('Error al obtener los clientes')
         } finally {
-            setIsLoading(false) // Termina la carga
+            setIsLoading(false)
         }
     }
 
@@ -48,23 +48,25 @@ const Clientes = () => {
         getDataClientes()
     }, [])
 
+    // Filtra los datos basándose en el término de búsqueda
+    const filteredData = useMemo(() => {
+        return data.filter((item) =>
+            item.nombre.toLowerCase().includes(searchTerm.toLowerCase()),
+        )
+    }, [data, searchTerm])
+
+    // Paginación aplicada después de filtrar los datos
     const paginatedData = useMemo(() => {
         const startIndex = (currentPage - 1) * rowsPerPage
         const endIndex = startIndex + rowsPerPage
-        return data.slice(startIndex, endIndex)
-    }, [data, currentPage])
+        return filteredData.slice(startIndex, endIndex)
+    }, [filteredData, currentPage])
 
+    // Total de páginas después del filtrado
     const totalPages = useMemo(
-        () => (data ? Math.ceil(data.length / rowsPerPage) : 0),
-        [data, rowsPerPage],
+        () => Math.ceil(filteredData.length / rowsPerPage),
+        [filteredData],
     )
-
-    const onDetail = (row: any) => {
-        if (!isLoading) {
-            setSelectedRow(row)
-            setIsOpen(true)
-        }
-    }
 
     const onEdit = (row: any) => {
         setSelectedRow(row)
@@ -75,7 +77,7 @@ const Clientes = () => {
         return (
             <div className="flex justify-center text-lg space-x-2">
                 <span
-                    className="cursor-pointer p-2 hover:text-cyan-500"
+                    className="cursor-pointer p-2 hover:text-orange-500"
                     onClick={() => onEdit(row.original)}
                 >
                     <HiOutlinePencil />
@@ -138,14 +140,26 @@ const Clientes = () => {
         <>
             <div className="flex justify-between items-center mb-4">
                 <h1 className="text-2xl font-semibold mb-3">Clientes</h1>
-                <Button
-                    className="w-40 ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
-                    variant="solid"
-                    onClick={() => !isLoading && setDrawerCreateIsOpen(true)}
-                    disabled={isLoading} // Deshabilita el botón mientras carga
-                >
-                    Crear Cliente
-                </Button>
+                <div className="flex">
+                    <Input
+                        className="max-w-md md:w-52 md:mb-0 mb-4"
+                        size="sm"
+                        placeholder="Buscar Cliente"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        prefix={<HiOutlineSearch className="text-lg mb-2" />}
+                    />
+                    <Button
+                        className="w-40 ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
+                        variant="solid"
+                        onClick={() =>
+                            !isLoading && setDrawerCreateIsOpen(true)
+                        }
+                        disabled={isLoading}
+                    >
+                        Crear Cliente
+                    </Button>
+                </div>
             </div>
             {isLoading ? (
                 <div className="flex items-center justify-center h-full">

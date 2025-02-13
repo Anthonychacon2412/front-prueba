@@ -131,59 +131,65 @@ const SignUpForm = (props: SignUpFormProps) => {
                 {({ touched, errors, isSubmitting }) => (
                     <Form>
                         <FormContainer>
-                            <FormItem
-                                label="Nombre de Usuario"
-                                invalid={errors.userName && touched.userName}
-                                errorMessage={errors.userName}
-                            >
-                                <Field
-                                    type="text"
-                                    autoComplete="off"
-                                    name="userName"
-                                    placeholder="Nombre de usuario"
-                                    component={Input}
-                                />
-                            </FormItem>
-                            <FormItem
-                                label="Correo"
-                                invalid={errors.email && touched.email}
-                                errorMessage={errors.email}
-                            >
-                                <Field
-                                    type="email"
-                                    autoComplete="off"
-                                    name="email"
-                                    placeholder="Correo"
-                                    component={Input}
-                                />
-                            </FormItem>
-                            <FormItem
-                                label="Contraseña"
-                                invalid={errors.password && touched.password}
-                                errorMessage={errors.password}
-                            >
-                                <Field
-                                    autoComplete="off"
-                                    name="password"
-                                    placeholder="Contraseña"
-                                    component={PasswordInput}
-                                />
-                            </FormItem>
-                            <FormItem
-                                label="Confrimar Contraseña"
-                                invalid={
-                                    errors.confirmPassword &&
-                                    touched.confirmPassword
-                                }
-                                errorMessage={errors.confirmPassword}
-                            >
-                                <Field
-                                    autoComplete="off"
-                                    name="confirmPassword"
-                                    placeholder="Confrimar Contraseña"
-                                    component={PasswordInput}
-                                />
-                            </FormItem>
+                            <div className="grid grid-cols-2 gap-3">
+                                <FormItem
+                                    label="Nombre de Usuario"
+                                    invalid={
+                                        errors.userName && touched.userName
+                                    }
+                                    errorMessage={errors.userName}
+                                >
+                                    <Field
+                                        type="text"
+                                        autoComplete="off"
+                                        name="userName"
+                                        placeholder="Nombre de usuario"
+                                        component={Input}
+                                    />
+                                </FormItem>
+                                <FormItem
+                                    label="Correo"
+                                    invalid={errors.email && touched.email}
+                                    errorMessage={errors.email}
+                                >
+                                    <Field
+                                        type="email"
+                                        autoComplete="off"
+                                        name="email"
+                                        placeholder="Correo"
+                                        component={Input}
+                                    />
+                                </FormItem>
+                                <FormItem
+                                    label="Contraseña"
+                                    invalid={
+                                        errors.password && touched.password
+                                    }
+                                    errorMessage={errors.password}
+                                >
+                                    <Field
+                                        autoComplete="off"
+                                        name="password"
+                                        placeholder="Contraseña"
+                                        component={PasswordInput}
+                                    />
+                                </FormItem>
+                                <FormItem
+                                    label="Confrimar Contraseña"
+                                    invalid={
+                                        errors.confirmPassword &&
+                                        touched.confirmPassword
+                                    }
+                                    errorMessage={errors.confirmPassword}
+                                >
+                                    <Field
+                                        autoComplete="off"
+                                        name="confirmPassword"
+                                        placeholder="Confrimar Contraseña"
+                                        component={PasswordInput}
+                                    />
+                                </FormItem>
+                            </div>
                             <Button
                                 block
                                 loading={isSubmitting}

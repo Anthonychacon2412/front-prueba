@@ -110,7 +110,7 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
                             <Field
                                 type="text"
                                 name="nombre_ruta"
-                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
                             />
                             <ErrorMessage
                                 name="nombre_ruta"
@@ -137,7 +137,7 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
                                         clienteData?.region || [],
                                     )
                                 }}
-                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
                             >
                                 <option value="">Seleccione un cliente</option>
                                 {clientesData.map((cliente, index) => (
@@ -160,7 +160,7 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
                             <Field
                                 as="select"
                                 name="region"
-                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
                             >
                                 <option value="">Seleccione una región</option>
                                 {regionesCliente.map((region, index) => (
@@ -180,6 +180,7 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
                         {/* Botones */}
                         <div className="text-right mt-6">
                             <Button
+                                type="button"
                                 variant="default"
                                 onClick={onClose}
                                 className="mr-2"
@@ -188,8 +189,7 @@ const DrawerRutas: React.FC<DrawerRutasProps> = ({
                             </Button>
                             <Button
                                 type="submit"
-                                style={{ backgroundColor: '#000B7E' }}
-                                className="text-white hover:opacity-80"
+                                variant="solid"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? 'Guardando...' : 'Guardar'}

@@ -124,7 +124,7 @@ const SignInForm = (props: SignInFormProps) => {
                                     ? 'Iniciando sesión...'
                                     : 'Iniciar sesión'}
                             </Button>
-                            <div className="flex justify-between items-center mt-1">
+                            <div className="flex justify-between items-center mt-3">
                                 <div className="flex mt-0 justify-end  text-xs">
                                     <ActionLink
                                         to={forgotPasswordUrl}

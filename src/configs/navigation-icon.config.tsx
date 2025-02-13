@@ -32,6 +32,9 @@ import { MdOutlineAddBusiness } from 'react-icons/md'
 import { FaRoadCircleCheck } from 'react-icons/fa6'
 import { RiMapPinTimeLine } from 'react-icons/ri'
 import { IoStatsChartSharp } from 'react-icons/io5'
+import { GiPathDistance } from 'react-icons/gi'
+import { TbReport } from 'react-icons/tb'
+import { LucideMonitorCheck } from 'lucide-react'
 
 export type NavigationIcons = Record<string, JSX.Element>
 
@@ -70,6 +73,9 @@ const navigationIcon: NavigationIcons = {
     business: <MdOutlineAddBusiness />,
     newroute: <FaRoadCircleCheck />,
     statistic: <IoStatsChartSharp />,
+    rutas: <GiPathDistance />,
+    report: <TbReport />,
+    monitor: <LucideMonitorCheck />,
 }
 
 export default navigationIcon

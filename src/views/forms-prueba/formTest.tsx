@@ -142,56 +142,65 @@ const FormularioPrueba = () => {
 
     // Ajusta esta importación según tu proyecto
 
+    const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
+
     const generarPDF = (json) => {
         const { explicacion, data } = json
 
         if (!data || !data.mejor_promotor || !data.ranking) {
             console.error('Datos insuficientes para generar el PDF')
+            setIsGeneratingPDF(false)
             return
         }
 
         const { mejor_promotor, ranking } = data
-
-        // Crear una instancia de jsPDF
         const doc = new jsPDF()
 
         // Título del documento
         doc.setFontSize(18)
         doc.text('Análisis de Promotores', 10, 20)
 
-        // Explicación
+        // Explicación con mejor separación
         doc.setFontSize(12)
-        doc.text(`Explicación: ${explicacion}`, 10, 30, { maxWidth: 180 })
+        doc.text(`Explicación:`, 10, 30)
+        doc.setFontSize(10)
+        doc.text(explicacion, 10, 40, { maxWidth: 180 })
 
-        // Comprobar si la explicación es muy larga y hacer salto de página
-        const pageHeight = doc.internal.pageSize.height
-        const currentY = doc.lastAutoTable.finalY || 30 // Posición del último elemento añadido
-        if (currentY + 40 > pageHeight) {
-            doc.addPage() // Añadir una nueva página si el contenido es muy largo
-        }
+        let currentY = doc.lastAutoTable?.finalY || 50
 
-        // Mejor promotor
+        // Espaciado antes de la siguiente sección
+        currentY += 10
         doc.setFontSize(14)
-        doc.text('Mejor Promotor', 10, 50)
+        doc.text('Mejor Promotor', 10, currentY)
+
         doc.setFontSize(12)
-        doc.text(`Nombre: ${mejor_promotor.nombre_usuario}`, 10, 60)
+        currentY += 10
+        doc.text(`Nombre: ${mejor_promotor.nombre_usuario}`, 10, currentY)
+        currentY += 10
         doc.text(
             `Tiempo de Respuesta: ${mejor_promotor.tiempo_respuesta} segundos`,
             10,
-            70,
+            currentY,
         )
+        currentY += 10
         doc.text(
             `Formularios Completados: ${mejor_promotor.formularios_completados}`,
             10,
-            80,
+            currentY,
         )
-        doc.text(`Fotos Adjuntas: ${mejor_promotor.fotos_adjuntas}`, 10, 90)
+        currentY += 10
+        doc.text(
+            `Fotos Adjuntas: ${mejor_promotor.fotos_adjuntas}`,
+            10,
+            currentY,
+        )
 
-        // Ranking de promotores
+        // Espaciado antes del ranking
+        currentY += 15
         doc.setFontSize(14)
-        doc.text('Ranking de Promotores', 10, 100)
+        doc.text('Ranking de Promotores', 10, currentY)
 
-        // Estilos para la tabla
+        // Generar tabla con margen adecuado
         autoTable(doc, {
             head: [['Nombre', 'Tiempo de Respuesta', 'Formularios', 'Fotos']],
             body: ranking.map((promotor) => [
@@ -200,21 +209,21 @@ const FormularioPrueba = () => {
                 promotor.formularios_completados,
                 promotor.fotos_adjuntas,
             ]),
-            startY: 110, // Iniciar la tabla después del texto
-            theme: 'striped', // Estilo de fila alternada
-            headStyles: { fillColor: [35, 47, 62], textColor: [255, 255, 255] }, // Encabezado oscuro
-            bodyStyles: { fillColor: [255, 255, 255] }, // Celdas blancas
-            alternateRowStyles: { fillColor: [240, 240, 240] }, // Fila alternada gris
-            margin: { top: 10, left: 10, right: 10, bottom: 10 },
+            startY: currentY + 10,
+            theme: 'striped',
+            headStyles: { fillColor: [35, 47, 62], textColor: [255, 255, 255] },
+            alternateRowStyles: { fillColor: [240, 240, 240] },
+            margin: { top: 10, left: 10, right: 10 },
         })
 
         // Descargar el PDF
         doc.save('analisis_promotores.pdf')
+
+        setIsGeneratingPDF(false) // Desactivar el estado de carga
+        onDialogClose()
     }
 
     const realizarConsulta = async (datos: any) => {
-        setLoading(true)
-
         const jsonStrcuture = {
             explicacion: 'Aquí pones el análisis detallado...',
             data: {
@@ -301,6 +310,8 @@ const FormularioPrueba = () => {
         }
 
         try {
+            setIsGeneratingPDF(true) // Activar el estado de carga
+
             const q = query(
                 collection(db, 'forms-resp-prueba'),
                 where('cliente_uid', '==', clienteSeleccionado.value),
@@ -317,6 +328,7 @@ const FormularioPrueba = () => {
             realizarConsulta(datos)
         } catch (error) {
             console.error('Error al obtener los datos:', error)
+            setIsGeneratingPDF(false) // Desactivar el estado de carga en caso de error
         }
     }
 
@@ -335,7 +347,13 @@ const FormularioPrueba = () => {
                                 onClick={getFormData}
                                 icon={<HiRefresh />}
                             />
-                            <Button onClick={openDialog}>Reporte</Button>
+                            <Button
+                                variant="solid"
+                                color="orange-500"
+                                onClick={openDialog}
+                            >
+                                Reporte
+                            </Button>
                         </div>
                     </div>
                     <DataTable columns={columns} data={forms} />
@@ -353,7 +371,22 @@ const FormularioPrueba = () => {
                         }
                     />
                 </FormItem>
-                <Button onClick={buscarRegistros}>Generar reporte</Button>
+                {isGeneratingPDF ? (
+                    <div className="flex justify-center items-center my-4">
+                        <Spinner size={30} />
+                        <p className="ml-2">Generando PDF...</p>
+                    </div>
+                ) : (
+                    <div className="flex justify-center">
+                        <Button
+                            variant="solid"
+                            color="orange-500"
+                            onClick={buscarRegistros}
+                        >
+                            Generar reporte
+                        </Button>
+                    </div>
+                )}
             </Dialog>
         </div>
     )

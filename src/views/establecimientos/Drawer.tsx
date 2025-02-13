@@ -135,7 +135,7 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                                 <Field
                                     type="text"
                                     name="nombre"
-                                    className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                    className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
                                 />
                                 <ErrorMessage
                                     name="nombre"
@@ -151,7 +151,7 @@ const DrawerEstablecimiento: React.FC<DrawerEstablecimientoProps> = ({
                                 <Field
                                     as="select"
                                     name="region"
-                                    className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                    className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
                                 >
                                     <option value="">
                                         Seleccione una región

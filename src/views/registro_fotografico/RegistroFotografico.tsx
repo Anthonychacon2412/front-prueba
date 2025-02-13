@@ -174,6 +174,12 @@ const Photos = () => {
 
     return (
         <div>
+            <div className="mb-4 flex items-center justify-between">
+                <h3>Visualización de Fotografías</h3>
+                <Button onClick={() => downloadZip(imageUrls)}>
+                    Descargar lote filtrado
+                </Button>
+            </div>
             <div className="grid grid-cols-5 gap-4 mb-3">
                 <Select
                     value={selectedCliente}
@@ -215,13 +221,8 @@ const Photos = () => {
                     onChange={setSelectedFecha}
                     placeholder="Seleccionar Fecha"
                 />
-                <Button onClick={filterData}>Buscar</Button>
-            </div>
-
-            <div className="mb-4 flex items-center justify-between">
-                <h3>Visualización de Fotografías</h3>
-                <Button onClick={() => downloadZip(imageUrls)}>
-                    Descargar lote filtrado
+                <Button variant="solid" color="orange-500" onClick={filterData}>
+                    Buscar
                 </Button>
             </div>
 

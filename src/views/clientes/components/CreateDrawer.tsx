@@ -118,7 +118,7 @@ const CreateDrawer: React.FC<CreateDrawerProps> = ({
                                 type="text"
                                 name="nombre"
                                 placeholder="Ingrese nombre"
-                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
+                                className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
                             />
                             <ErrorMessage
                                 name="nombre"

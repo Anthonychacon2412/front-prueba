@@ -17,11 +17,11 @@ const pagesNavigationConfig: NavigationTree[] = [
         authority: [ADMIN, USER],
         subMenu: [
             {
-                key: 'Evidencias',
+                key: 'Monitoreo',
                 path: '',
-                title: 'Evidencias',
+                title: 'Monitoreo',
                 translateKey: '',
-                icon: '',
+                icon: 'monitor',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [
@@ -52,7 +52,7 @@ const pagesNavigationConfig: NavigationTree[] = [
                 path: '',
                 title: 'Gestion de rutas y Clientes',
                 translateKey: '',
-                icon: '',
+                icon: 'rutas',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [
@@ -104,7 +104,7 @@ const pagesNavigationConfig: NavigationTree[] = [
                 path: '',
                 title: 'Evaluacion y Resultados',
                 translateKey: '',
-                icon: '',
+                icon: 'report',
                 type: NAV_ITEM_TYPE_ITEM,
                 authority: [],
                 subMenu: [
@@ -114,17 +114,6 @@ const pagesNavigationConfig: NavigationTree[] = [
                         title: 'Supervisiones',
                         translateKey: 'nav.pages.supervisiones',
                         icon: 'crm',
-                        type: NAV_ITEM_TYPE_ITEM,
-                        authority: [ADMIN, USER],
-                        subMenu: [],
-                    },
-
-                    {
-                        key: 'pages.appReportes',
-                        path: `${APP_PREFIX_PATH}/reportes`,
-                        title: 'Reportes',
-                        translateKey: 'nav.pages.reportes',
-                        icon: 'ruta',
                         type: NAV_ITEM_TYPE_ITEM,
                         authority: [ADMIN, USER],
                         subMenu: [],
@@ -143,7 +132,7 @@ const pagesNavigationConfig: NavigationTree[] = [
                     {
                         key: 'pages.appformprueba',
                         path: `${APP_PREFIX_PATH}/pruebaForm`,
-                        title: 'Formulario Prueba',
+                        title: 'Formularios',
                         translateKey: 'nav.pages.appformprueba',
                         icon: 'eye',
                         type: NAV_ITEM_TYPE_ITEM,

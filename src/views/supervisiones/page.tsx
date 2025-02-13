@@ -77,13 +77,13 @@ const Supervisiones = () => {
         return (
             <div className="flex justify-end text-lg">
                 <span
-                    className="cursor-pointer p-2 hover:text-cyan-500"
+                    className="cursor-pointer p-2 hover:text-orange-500"
                     onClick={() => openDialog('respuestas', row)}
                 >
                     <HiOutlineEye />
                 </span>
                 <span
-                    className="cursor-pointer p-2 hover:text-cyan-500"
+                    className="cursor-pointer p-2 hover:text-orange-500"
                     onClick={() => openDialog('fotos', row)}
                 >
                     <HiOutlinePhotograph />

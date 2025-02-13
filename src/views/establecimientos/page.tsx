@@ -1,9 +1,9 @@
 import { ColumnDef, DataTable } from '@/components/shared'
-import { Button, Dialog } from '@/components/ui'
+import { Button, Dialog, Input } from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { HiOutlinePlusSm, HiOutlinePencil } from 'react-icons/hi'
+import { HiOutlinePencil, HiOutlineSearch } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -13,15 +13,13 @@ import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 
 const Establecimientos = () => {
     const [data, setData] = useState<any[]>([])
-
+    const [searchTerm, setSearchTerm] = useState('') // Estado del buscador
     const [dialogIsOpen, setIsOpen] = useState(false)
     const [selectedRow, setSelectedRow] = useState<any | null>(null)
     const [drawerCreateIsOpen, setDrawerCreateIsOpen] = useState(false)
     const [drawerEditIsOpen, setDrawerEditIsOpen] = useState(false)
     const [currentPage, setCurrentPage] = useState(1)
     const rowsPerPage = 4
-
-    const navigate = useNavigate()
 
     const getDataEstablecimientos = async () => {
         try {
@@ -44,22 +42,24 @@ const Establecimientos = () => {
         getDataEstablecimientos()
     }, [])
 
+    // 🔹 Filtrar los datos en base al término de búsqueda
+    const filteredData = useMemo(() => {
+        return data.filter((item) =>
+            item.nombre.toLowerCase().includes(searchTerm.toLowerCase()),
+        )
+    }, [data, searchTerm])
+
+    // 🔹 Paginación después del filtrado
     const paginatedData = useMemo(() => {
         const startIndex = (currentPage - 1) * rowsPerPage
         const endIndex = startIndex + rowsPerPage
-        return data.slice(startIndex, endIndex)
-    }, [data, currentPage])
+        return filteredData.slice(startIndex, endIndex)
+    }, [filteredData, currentPage])
 
-    // Calcula el número total de páginas
     const totalPages = useMemo(
-        () => (data ? Math.ceil(data.length / rowsPerPage) : 0),
-        [data, rowsPerPage],
+        () => Math.ceil(filteredData.length / rowsPerPage),
+        [filteredData],
     )
-
-    const onDetail = (row: any) => {
-        setSelectedRow(row)
-        setIsOpen(true)
-    }
 
     const onEdit = (row: any) => {
         setSelectedRow(row)
@@ -70,7 +70,7 @@ const Establecimientos = () => {
         return (
             <div className="flex justify-center text-lg space-x-2">
                 <span
-                    className="cursor-pointer p-2 hover:text-cyan-500"
+                    className="cursor-pointer p-2 hover:text-orange-500"
                     onClick={() => onEdit(row.original)}
                 >
                     <HiOutlinePencil />
@@ -87,7 +87,7 @@ const Establecimientos = () => {
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
-                header: 'Region',
+                header: 'Región',
                 accessorKey: 'region',
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
@@ -111,15 +111,31 @@ const Establecimientos = () => {
                 <h1 className="text-2xl font-semibold mb-3">
                     Establecimientos
                 </h1>
-                <Button
-                    className="ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
-                    onClick={() => setDrawerCreateIsOpen(true)}
-                    variant="solid"
-                >
-                    Crear Establecimiento
-                </Button>
+
+                <div className="flex">
+                    <Input
+                        className="max-w-md md:w-52 md:mb-0 mb-4"
+                        size="sm"
+                        placeholder="Buscar Establecimiento"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        prefix={<HiOutlineSearch className="text-lg mb-2" />}
+                    />
+
+                    <Button
+                        className="ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
+                        onClick={() => setDrawerCreateIsOpen(true)}
+                        variant="solid"
+                    >
+                        Crear Establecimiento
+                    </Button>
+                </div>
             </div>
+
+            {/* 🔹 Tabla con los resultados filtrados */}
             <DataTable columns={columns} data={paginatedData} />
+
+            {/* 🔹 Controles de Paginación */}
             <div className="flex justify-center items-center space-x-2 mt-4">
                 <Button
                     icon={<FaAngleLeft />}
@@ -137,11 +153,15 @@ const Establecimientos = () => {
                     onClick={() => setCurrentPage((prev) => prev + 1)}
                 />
             </div>
+
+            {/* 🔹 Drawer para crear */}
             <DrawerEstablecimiento
                 isOpen={drawerCreateIsOpen}
                 onClose={() => setDrawerCreateIsOpen(false)}
                 onEstablecimientoCreated={getDataEstablecimientos}
             />
+
+            {/* 🔹 Drawer para editar */}
             {selectedRow && (
                 <EditDrawer
                     isOpen={drawerEditIsOpen}
@@ -150,6 +170,7 @@ const Establecimientos = () => {
                     onEstablecimientoUpdated={getDataEstablecimientos}
                 />
             )}
+
             <ToastContainer />
         </>
     )
