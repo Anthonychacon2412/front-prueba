@@ -1,11 +1,12 @@
 import { ColumnDef, DataTable } from '@/components/shared'
-import { Button, Dialog } from '@/components/ui'
+import { Button, Dialog, Tooltip } from '@/components/ui'
 import { useAppDispatch } from '@/store'
 import { collection, getDocs, query } from 'firebase/firestore'
 import React, { useEffect, useMemo, useState } from 'react'
 import { HiOutlineEye, HiOutlinePhotograph } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import { db } from '@/configs/firebaseAssets.config'
+import { MdOutlineSupervisedUserCircle } from 'react-icons/md'
 
 interface SupervisionEntry {
     pregunta: string
@@ -76,18 +77,22 @@ const Supervisiones = () => {
 
         return (
             <div className="flex justify-end text-lg">
-                <span
-                    className="cursor-pointer p-2 hover:text-orange-500"
-                    onClick={() => openDialog('respuestas', row)}
-                >
-                    <HiOutlineEye />
-                </span>
-                <span
-                    className="cursor-pointer p-2 hover:text-orange-500"
-                    onClick={() => openDialog('fotos', row)}
-                >
-                    <HiOutlinePhotograph />
-                </span>
+                <Tooltip title="Ver respuestas">
+                    <span
+                        className="cursor-pointer p-2 hover:text-orange-500"
+                        onClick={() => openDialog('respuestas', row)}
+                    >
+                        <HiOutlineEye />
+                    </span>
+                </Tooltip>
+                <Tooltip title="Ver fotos">
+                    <span
+                        className="cursor-pointer p-2 hover:text-orange-500"
+                        onClick={() => openDialog('fotos', row)}
+                    >
+                        <HiOutlinePhotograph />
+                    </span>
+                </Tooltip>
             </div>
         )
     }
@@ -129,8 +134,22 @@ const Supervisiones = () => {
     )
 
     return (
-        <>
-            <h1 className="text-2xl font-semibold mb-3">Supervisiones</h1>
+        <div className="ml-3 p-2">
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                    <MdOutlineSupervisedUserCircle
+                        size={40}
+                        className="text-amber-600 mr-4"
+                    />
+                    <div>
+                        <h1 className="mb-0 pb-0 text-3xl">Supervisiones</h1>
+                        <span className="text-xs">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Optio quae ratione alias?
+                        </span>
+                    </div>
+                </div>
+            </div>
             <DataTable columns={columns} data={data} />
 
             {/* Modal para Ver Respuestas */}
@@ -181,7 +200,7 @@ const Supervisiones = () => {
                     <p>No hay fotos disponibles.</p>
                 )}
             </Dialog>
-        </>
+        </div>
     )
 }
 

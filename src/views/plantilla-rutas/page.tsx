@@ -3,7 +3,14 @@ import { useNavigate } from 'react-router-dom'
 import { collection, getDocs, query, doc } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import { ColumnDef, DataTable } from '@/components/shared'
-import { Button, Dialog, Input, Notification, toast } from '@/components/ui'
+import {
+    Button,
+    Dialog,
+    Input,
+    Notification,
+    toast,
+    Tooltip,
+} from '@/components/ui'
 import { HiOutlineRefresh, HiOutlineSearch } from 'react-icons/hi'
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
 import DrawerRutas from './drawer'
@@ -11,6 +18,7 @@ import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { MdOutlineAddBusiness } from 'react-icons/md'
 import { BsCalendar4Week } from 'react-icons/bs'
+import { TbRoute } from 'react-icons/tb'
 
 const Plantilla_rutas = () => {
     const [data, setData] = useState<any>([])
@@ -82,23 +90,27 @@ const Plantilla_rutas = () => {
     const ActionColumn = ({ row }: { row: any }) => {
         return (
             <div className="justify-center text-lg flex">
-                <span
-                    className="cursor-pointer p-2 hover:text-orange-500"
-                    onClick={() =>
-                        navigate(`/asignacion_ruta/${row.original.id}`)
-                    }
-                >
-                    <MdOutlineAddBusiness size={20} />
-                </span>
-                {row.original.hasEstablecimientos && (
+                <Tooltip title="Asignar Establecimientos">
                     <span
                         className="cursor-pointer p-2 hover:text-orange-500"
                         onClick={() =>
-                            navigate(`/asignacion_dias/${row.original.id}`)
+                            navigate(`/asignacion_ruta/${row.original.id}`)
                         }
                     >
-                        <BsCalendar4Week />
+                        <MdOutlineAddBusiness size={24} />
                     </span>
+                </Tooltip>
+                {row.original.hasEstablecimientos && (
+                    <Tooltip title="Asignar Dias">
+                        <span
+                            className="cursor-pointer p-2 hover:text-orange-500"
+                            onClick={() =>
+                                navigate(`/asignacion_dias/${row.original.id}`)
+                            }
+                        >
+                            <BsCalendar4Week size={20} className="font-bold" />
+                        </span>
+                    </Tooltip>
                 )}
             </div>
         )
@@ -131,25 +143,28 @@ const Plantilla_rutas = () => {
     )
 
     return (
-        <>
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-semibold mb-3">
-                    Visualización Rutas{' '}
-                    <button
-                        className="p-2 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 transition-all duration-200 shadow-md transform hover:scale-105 rounded-md"
-                        onClick={handleRefresh}
-                    >
-                        <HiOutlineRefresh className="w-5 h-5 text-gray-700 hover:text-orange-500 transition-colors duration-200" />
-                    </button>
-                </h1>
-                <div className="flex">
+        <div className="ml-3 p-2">
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                    <TbRoute size={40} className="text-amber-600 mr-4" />
+                    <div>
+                        <h1 className="mb-0 pb-0 text-3xl">
+                            Visualizacion de Rutas
+                        </h1>
+                        <span className="text-xs">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Optio quae ratione alias?
+                        </span>
+                    </div>
+                </div>
+                <div className="flex gap-2">
                     <Input
-                        className="max-w-md md:w-52 md:mb-0 mb-4"
-                        size="sm"
+                        // className="max-w-md md:w-52 md:mb-0 mb-4"
+                        // size="sm"
                         placeholder="Buscar Ruta"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        prefix={<HiOutlineSearch className="text-lg mb-2" />}
+                        prefix={<HiOutlineSearch className="text-lg" />}
                     />
 
                     <Button
@@ -190,7 +205,7 @@ const Plantilla_rutas = () => {
                 onRutaCreated={getDataFromPlantillaRutas}
             />
             <ToastContainer />
-        </>
+        </div>
     )
 }
 

@@ -1,6 +1,10 @@
-import { Button, Select } from '@/components/ui'
+import { Button, Card, Select } from '@/components/ui'
 import React, { useEffect, useState } from 'react'
-import { HiOutlineSearch } from 'react-icons/hi'
+import {
+    HiOutlineFilter,
+    HiOutlineGlobe,
+    HiOutlineSearch,
+} from 'react-icons/hi'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import MapComponent from './components/mapComponent'
@@ -129,27 +133,38 @@ const Seguimiento = () => {
     }
 
     return (
-        <div>
-            <h1 className="text-2xl font-bold mb-6">Seguimiento</h1>
-            <div className="flex gap-4 mb-4">
-                <Select
-                    className="w-48"
-                    placeholder="Clientes"
-                    options={clientesOptions}
-                    onChange={handleClienteChange}
-                />
+        <div className="ml-3 p-2">
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                    <HiOutlineGlobe size={40} className="text-amber-600 mr-4" />
+                    <div>
+                        <h1 className="mb-0 pb-0 text-3xl">Seguimiento</h1>
+                        <span className="text-xs">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Optio quae ratione alias?
+                        </span>
+                    </div>
+                </div>
+                <div className="flex gap-4">
+                    <Select
+                        className="w-48"
+                        placeholder="Clientes"
+                        options={clientesOptions}
+                        onChange={handleClienteChange}
+                    />
 
-                <Select
-                    className="w-48"
-                    placeholder="Regiones"
-                    options={regionesOptions}
-                    onChange={handleRegionChange}
-                    isDisabled={!cliente}
-                />
+                    <Select
+                        className="w-48"
+                        placeholder="Regiones"
+                        options={regionesOptions}
+                        onChange={handleRegionChange}
+                        isDisabled={!cliente}
+                    />
 
-                <Button variant="solid" onClick={handleSearch}>
-                    <HiOutlineSearch />
-                </Button>
+                    <Button variant="solid" onClick={handleSearch}>
+                        <HiOutlineSearch />
+                    </Button>
+                </div>
             </div>
 
             <div>
@@ -180,7 +195,17 @@ const Seguimiento = () => {
                         />
                     </ul>
                 ) : (
-                    <p className="text-gray-500">No hay resultados</p>
+                    <Card className="mt-32 p-2 border-none">
+                        <div className="flex justify-center items-center flex-col">
+                            <HiOutlineFilter
+                                size={90}
+                                className="text-gray-300"
+                            />
+                            <h4 className="text-gray-300">
+                                Debe seleccionar un cliente y una region
+                            </h4>
+                        </div>
+                    </Card>
                 )}
             </div>
 
