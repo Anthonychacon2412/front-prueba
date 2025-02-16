@@ -112,7 +112,7 @@ const FormularioPrueba = () => {
     )
     const generarExcel = (data: any) => {
         // Mapear datos para estructurar las filas del Excel
-        const filas = data.map((item: any) => ({
+        const filas = data?.map((item: any) => ({
             'Cliente UID': item.cliente_uid,
             'Nombre Cliente': item.nombre_cliente,
             Establecimiento: item.establecimiento,
