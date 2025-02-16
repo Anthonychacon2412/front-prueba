@@ -62,12 +62,13 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
             const rutaRef = doc(db, 'Plantilla_rutas', rutaId)
             const docSnap = await getDoc(rutaRef)
             if (docSnap.exists()) {
-                const data = docSnap.data() as FormValues
+                const ruta = docSnap.data() as FormValues
+                console.log(ruta)
                 setInitialValues({
-                    cliente: data.cliente,
-                    nombre_ruta: data.nombre_ruta,
-                    region: data.region,
-                    promotor: data.promotor || '',
+                    cliente: ruta.cliente,
+                    nombre_ruta: ruta.nombre_ruta,
+                    region: ruta.region,
+                    promotor: ruta.promotor || '',
                 })
             } else {
                 console.error('No se encontró la ruta')
@@ -89,6 +90,7 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
                     nombre: doc.data().nombre, // Asegúrate de que 'nombre' existe en Firestore
                 }))
                 setPromotores(data)
+                console.log(data)
             } else {
                 console.error("No se encontraron usuarios con rol 'promotor'")
             }
@@ -141,6 +143,7 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
         }
     }
 
+    console.log(promotores)
     return (
         <Drawer isOpen={isOpen} onClose={onClose} className="rounded-md shadow">
             <div className="flex justify-between">
@@ -192,22 +195,38 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
                                 <label className="font-semibold text-gray-700">
                                     Asignar Promotor:
                                 </label>
+
                                 <Select
                                     name="promotor"
-                                    className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
-                                >
-                                    <option value="">
-                                        Seleccione un promotor
-                                    </option>
-                                    {promotores.map((promotor) => (
-                                        <option
-                                            key={promotor.id}
-                                            value={promotor.nombre}
-                                        >
-                                            {promotor.nombre}
-                                        </option>
-                                    ))}
-                                </Select>
+                                    placeholder="Seleccione un promotor"
+                                    options={promotores.map((p) => ({
+                                        value: p.nombre, // Usamos 'id' como 'value'
+                                        label: p.nombre, // Usamos 'nombre' como 'label'
+                                    }))}
+                                    onChange={(option) =>
+                                        setFieldValue('promotor', option?.value)
+                                    } // Establece 'promotor' usando 'value'
+                                    value={
+                                        promotores.length > 0 &&
+                                        promotores.find(
+                                            (p) => p.nombre === values.promotor,
+                                        )
+                                            ? {
+                                                  value: promotores.find(
+                                                      (p) =>
+                                                          p.nombre ===
+                                                          values.promotor,
+                                                  )?.id,
+                                                  label: promotores.find(
+                                                      (p) =>
+                                                          p.nombre ===
+                                                          values.promotor,
+                                                  )?.nombre,
+                                              }
+                                            : null
+                                    } // Asegúrate de que el valor del 'promotor' sea el que corresponde en el Select
+                                />
+
                                 <ErrorMessage
                                     name="promotor"
                                     component="div"
