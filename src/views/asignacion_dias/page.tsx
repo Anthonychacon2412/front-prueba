@@ -16,6 +16,7 @@ import Checkbox from '@/components/ui/Checkbox'
 import { Button, Calendar, Card } from '@/components/ui'
 import { FaArrowLeft } from 'react-icons/fa'
 import { APP_PREFIX_PATH } from '@/constants/route.constant'
+import { HiChevronLeft } from 'react-icons/hi'
 
 const AsignacionDias = () => {
     const { id } = useParams<{ id: string }>()
@@ -164,48 +165,55 @@ const AsignacionDias = () => {
     ]
 
     return (
-        <div>
-            <div className="flex gap-3">
-                <button
+        <div className="ml-3 p-2">
+            <div className="flex mb-6">
+                <span
+                    className="cursor-pointer p-2 hover:text-red-500 text-2xl"
                     onClick={() =>
                         navigate(`${APP_PREFIX_PATH}/plantilla-rutas`)
                     }
-                    className="flex items-center text-white mb-3 ml-2 px-4 py-2 bg-orange-400 rounded-lg hover:bg-orange-500 transition duration-300"
                 >
-                    <FaArrowLeft className="mr-2" />
-                    <span>Volver</span>
-                </button>
-                <h1 className="mb-4">
-                    Asignación de Días para la Ruta {rutaData?.nombre_ruta}
-                </h1>
+                    <HiChevronLeft className="" />
+                </span>
+                <div>
+                    <h1 className="text-2xl font-bold text-gray-800">
+                        Asignación de días
+                    </h1>
+                    <span>
+                        Nombre de la ruta:{' '}
+                        <b className="text-black">{rutaData?.nombre_ruta}</b>
+                    </span>
+                </div>
             </div>
             {rutaData ? (
                 <div>
                     {establecimientos.length > 0 ? (
                         <>
-                            <div className="flex justify-center gap-6">
-                                <div className="mr-5 shadow-sm border border-gray-200 rounded-lg">
+                            <div className="flex justify- justify-between gap-4">
+                                <div className="border border-gray-200 rounded-lg w-[25vw]">
                                     <DataTable
                                         columns={columns}
                                         data={establecimientos}
                                     />
                                 </div>
 
-                                <Card>
+                                <Card className="w-[50vw] h-[50vh]">
                                     <Calendar
                                         locale="es"
                                         multipleSelection={true} // Habilita la selección múltiple
                                         onChange={handleDateSelect}
                                         value={selectedDates}
                                     />
-                                    <Button
-                                        onClick={assignDatesToEstablishments}
-                                        variant="solid"
-                                        className="ml-10 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
-                                    >
-                                        Asignar Fechas
-                                    </Button>
                                 </Card>
+                            </div>
+                            <div className="w-full mt-6 flex justify-end items-center">
+                                <Button
+                                    onClick={assignDatesToEstablishments}
+                                    variant="solid"
+                                    // className="ml-10 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
+                                >
+                                    Asignar Fechas
+                                </Button>
                             </div>
                         </>
                     ) : (

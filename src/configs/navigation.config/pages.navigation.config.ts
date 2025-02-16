@@ -8,11 +8,11 @@ import type { NavigationTree } from '@/@types/navigation'
 
 const pagesNavigationConfig: NavigationTree[] = [
     {
-        key: 'pages',
+        key: '',
         path: '',
-        title: 'PAGES',
-        translateKey: 'nav.pages.pages',
-        icon: 'pages',
+        title: '',
+        translateKey: '',
+        icon: '',
         type: NAV_ITEM_TYPE_TITLE,
         authority: [ADMIN, USER],
         subMenu: [

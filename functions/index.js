@@ -2,6 +2,8 @@ const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 const fetch = require('node-fetch')
 const { OpenAI } = require('openai')
+const axios = require('axios')
+const cors = require('cors')({ origin: true })
 require('dotenv').config()
 
 admin.initializeApp()
@@ -119,4 +121,51 @@ exports.downloadImages = functions.https.onRequest(async (req, res) => {
             error: error.message || 'Error desconocido',
         })
     }
+})
+
+exports.restoreBackup = functions.https.onRequest(async (req, res) => {
+    cors(req, res, async () => {
+        const { url } = req.body
+
+        if (!url) {
+            return res.status(400).send('URL no proporcionada')
+        }
+
+        try {
+            const response = await axios.get(url)
+            const data = response.data
+
+            if (typeof data !== 'object') {
+                return res
+                    .status(400)
+                    .send('El archivo de copia de seguridad no es válido')
+            }
+
+            const db = admin.firestore()
+
+            // Limpiar colecciones existentes antes de restaurar
+            for (const collectionId in data) {
+                const collectionRef = db.collection(collectionId)
+                const snapshot = await collectionRef.get()
+                snapshot.forEach(async (doc) => {
+                    await doc.ref.delete()
+                })
+            }
+
+            // Restaurar datos
+            for (const collectionId in data) {
+                for (const docId in data[collectionId]) {
+                    await db
+                        .collection(collectionId)
+                        .doc(docId)
+                        .set(data[collectionId][docId])
+                }
+            }
+
+            res.status(200).send('Restauración completada')
+        } catch (error) {
+            console.error('Error al restaurar la copia de seguridad:', error)
+            res.status(500).send('Error al restaurar la copia de seguridad')
+        }
+    })
 })
