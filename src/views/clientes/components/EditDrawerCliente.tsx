@@ -132,10 +132,12 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
     }
 
     return (
-        <Drawer isOpen={isOpen} onClose={onClose} className="rounded-md shadow">
-            <div className="flex justify-between">
-                <h2 className="mb-4 text-xl font-bold">Editar Cliente</h2>
-            </div>
+        <Drawer
+            isOpen={isOpen}
+            onClose={onClose}
+            className="rounded-md shadow"
+            title={'Editar Cliente'}
+        >
             <Formik
                 enableReinitialize
                 initialValues={initialValues}

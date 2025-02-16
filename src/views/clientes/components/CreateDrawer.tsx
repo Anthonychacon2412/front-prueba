@@ -101,8 +101,12 @@ const CreateDrawer: React.FC<CreateDrawerProps> = ({
     }, [])
 
     return (
-        <Drawer isOpen={isOpen} onClose={onClose} className="rounded-md shadow">
-            <h2 className="mb-4 text-xl font-bold">Crear Cliente</h2>
+        <Drawer
+            isOpen={isOpen}
+            onClose={onClose}
+            className="rounded-md shadow"
+            title={'Crear Cliente'}
+        >
             <Formik
                 initialValues={initialValues}
                 validationSchema={validationSchema}

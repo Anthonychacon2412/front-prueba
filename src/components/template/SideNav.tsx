@@ -95,8 +95,11 @@ const SideNav = () => {
                                     ? SIDE_NAV_CONTENT_GUTTER
                                     : LOGO_X_GUTTER
                             }
-                            style={{ fill: 'red' }}
-                            logoWidth="150px"
+                            style={{
+                                fill: 'red',
+                                marginTop: '20px',
+                                marginBottom: '20px',
+                            }}
                         />
                     </div>
                     {sideNavCollapse ? (

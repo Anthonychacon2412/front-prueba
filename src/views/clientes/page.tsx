@@ -155,7 +155,7 @@ const Clientes = () => {
                         placeholder="Buscar Cliente"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        prefix={<HiOutlineSearch className="text-lg mb-2" />}
+                        prefix={<HiOutlineSearch className="text-lg" />}
                     />
                     <Button
                         // className="w-40 ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
