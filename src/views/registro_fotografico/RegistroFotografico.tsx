@@ -5,6 +5,7 @@ import { Button, DatePicker, Card } from '@/components/ui'
 import { db, functions } from '@/configs/firebaseAssets.config'
 import Select, { SingleValue } from 'react-select'
 import { httpsCallable } from 'firebase/functions'
+import { HiOutlineFilter, HiOutlinePhotograph, HiSearch } from 'react-icons/hi'
 
 interface OptionType {
     label: string
@@ -173,81 +174,109 @@ const Photos = () => {
     ]
 
     return (
-        <div>
-            <div className="mb-4 flex items-center justify-between">
-                <h3>Visualización de Fotografías</h3>
+        <div className="ml-3 p-2">
+            <div className="mb-6 flex items-center justify-between">
+                <div className="flex items-center">
+                    <HiOutlinePhotograph
+                        size={40}
+                        className="text-amber-600 mr-4"
+                    />
+                    <div>
+                        <h1 className="mb-0 pb-0 text-3xl">
+                            Visualizacion de Fotos
+                        </h1>
+                        <span className="text-xs">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Optio quae ratione alias?
+                        </span>
+                    </div>
+                </div>
                 <Button onClick={() => downloadZip(imageUrls)}>
                     Descargar lote filtrado
                 </Button>
             </div>
-            <div className="grid grid-cols-5 gap-4 mb-3">
-                <Select
-                    value={selectedCliente}
-                    onChange={(newValue) =>
-                        handleSelectChange(
-                            newValue,
-                            setSelectedCliente,
-                            'cliente',
-                        )
-                    }
-                    options={clientes}
-                    placeholder="Seleccionar Cliente"
-                />
+            <div className="flex justify-between items-center mb-3">
+                <div>
+                    <Select
+                        value={selectedCliente}
+                        onChange={(newValue) =>
+                            handleSelectChange(
+                                newValue,
+                                setSelectedCliente,
+                                'cliente',
+                            )
+                        }
+                        options={clientes}
+                        placeholder="Seleccionar Cliente"
+                    />
+                </div>
 
-                <Select
-                    value={selectedEstablecimiento}
-                    onChange={(newValue) =>
-                        handleSelectChange(
-                            newValue,
-                            setSelectedEstablecimiento,
-                            'establecimiento',
-                        )
-                    }
-                    options={establecimientos}
-                    placeholder="Seleccionar Establecimiento"
-                    isDisabled={!selectedCliente} // Bloquea si no hay cliente seleccionado
-                />
+                <div>
+                    <Select
+                        value={selectedEstablecimiento}
+                        onChange={(newValue) =>
+                            handleSelectChange(
+                                newValue,
+                                setSelectedEstablecimiento,
+                                'establecimiento',
+                            )
+                        }
+                        options={establecimientos}
+                        placeholder="Seleccionar Establecimiento"
+                        isDisabled={!selectedCliente} // Bloquea si no hay cliente seleccionado
+                    />
+                </div>
 
-                <Select
-                    value={selectedRegion}
-                    onChange={(newValue) => setSelectedRegion(newValue)}
-                    options={regiones}
-                    placeholder="Seleccionar Región"
-                    isDisabled={!selectedEstablecimiento} // Bloquea si no hay establecimiento seleccionado
-                />
+                <div>
+                    <Select
+                        value={selectedRegion}
+                        onChange={(newValue) => setSelectedRegion(newValue)}
+                        options={regiones}
+                        placeholder="Seleccionar Región"
+                        isDisabled={!selectedEstablecimiento} // Bloquea si no hay establecimiento seleccionado
+                    />
+                </div>
 
-                <DatePicker
-                    value={selectedFecha}
-                    onChange={setSelectedFecha}
-                    placeholder="Seleccionar Fecha"
+                <div>
+                    <DatePicker
+                        value={selectedFecha}
+                        onChange={setSelectedFecha}
+                        placeholder="Seleccionar Fecha"
+                    />
+                </div>
+                <Button
+                    variant="solid"
+                    color="orange-500"
+                    onClick={filterData}
+                    icon={<HiSearch />}
                 />
-                <Button variant="solid" color="orange-500" onClick={filterData}>
-                    Buscar
-                </Button>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div>
                 {filteredClientes.length > 0 ? (
-                    filteredClientes.map((cliente) =>
-                        cliente.photos.map((photo: any) => (
-                            <Card key={photo.imgUrl}>
-                                <img
-                                    src={photo.imgUrl}
-                                    alt={photo.tag}
-                                    className="w-full h-[35vh] object-cover"
-                                />
-                                <div className="pt-4 px-4 w-full h-[15vh]">
-                                    <p className="font-black">{photo.tag}</p>
-                                    <p>{cliente.nombre_usuario}</p>
-                                    <p>
-                                        {new Date(
-                                            cliente.fecha_llenado.seconds *
-                                                1000,
-                                        ).toLocaleDateString()}
-                                    </p>
-                                </div>
-                                <div className="w-full flex justify-end items-center">
-                                    {/* <Button
+                    <div className="grid grid-cols-3 gap-4">
+                        {filteredClientes.map((cliente) =>
+                            cliente.photos.map((photo: any) => (
+                                <Card key={photo.imgUrl}>
+                                    <img
+                                        src={photo.imgUrl}
+                                        alt={photo.tag}
+                                        className="w-full h-[35vh] object-cover"
+                                    />
+                                    <div className="pt-4 px-4 w-full h-[15vh]">
+                                        <p className="font-black">
+                                            {photo.tag}
+                                        </p>
+                                        <p>{cliente.nombre_usuario}</p>
+                                        <p>
+                                            {new Date(
+                                                cliente.fecha_llenado.seconds *
+                                                    1000,
+                                            ).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div className="w-full flex justify-end items-center">
+                                        {/* <Button
                                         size="xs"
                                         variant="twoTone"
                                         onClick={() =>
@@ -256,12 +285,23 @@ const Photos = () => {
                                     >
                                         Descargar imagen
                                     </Button> */}
-                                </div>
-                            </Card>
-                        )),
-                    )
+                                    </div>
+                                </Card>
+                            )),
+                        )}
+                    </div>
                 ) : (
-                    <p>No hay imágenes para mostrar</p>
+                    <Card className="w-full h-full mt-32 border-none">
+                        <div className="flex justify-center items-center flex-col">
+                            <HiOutlineFilter
+                                size={90}
+                                className="text-gray-300"
+                            />
+                            <h4 className="text-gray-300">
+                                Debe seleccionar un cliente y una region
+                            </h4>
+                        </div>
+                    </Card>
                 )}
             </div>
         </div>

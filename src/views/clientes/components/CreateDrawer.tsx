@@ -148,6 +148,7 @@ const CreateDrawer: React.FC<CreateDrawerProps> = ({
                                 </div>
                                 <Input
                                     value={values.rif}
+                                    type="number"
                                     onChange={(e) =>
                                         setFieldValue('rif', e.target.value)
                                     }
@@ -191,7 +192,7 @@ const CreateDrawer: React.FC<CreateDrawerProps> = ({
                             />
                         </div>
 
-                        <div className="text-right mt-6">
+                        <div className="text-right mt-6 flex justify-end">
                             <Button
                                 variant="default"
                                 onClick={onClose}

@@ -1,15 +1,23 @@
-import { Button, Dialog, FormItem, Select, Spinner } from '@/components/ui'
+import {
+    Button,
+    Dialog,
+    FormItem,
+    Select,
+    Spinner,
+    Tooltip,
+} from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
 import { ColumnDef } from '@tanstack/react-table'
 import { useEffect, useMemo, useState } from 'react'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { DataTable } from '@/components/shared'
 import { useNavigate } from 'react-router-dom'
-import { HiRefresh } from 'react-icons/hi'
+import { HiOutlineEye, HiRefresh } from 'react-icons/hi'
 import * as XLSX from 'xlsx'
 import { getFunctions, httpsCallable } from 'firebase/functions'
 import jsPDF from 'jspdf'
 import autoTable from 'jspdf-autotable'
+import { TbChecklist } from 'react-icons/tb'
 
 const functions = getFunctions()
 const getOpenAIResponse = httpsCallable(functions, 'getOpenAIResponse')
@@ -79,11 +87,25 @@ const FormularioPrueba = () => {
         setFormularios(selectedCliente ? selectedCliente.formularios : [])
     }
 
-    const ActionColumn = ({ row }: { row: any }) => (
-        <Button size="sm" onClick={() => navigate(`/forms/${row.original.id}`)}>
-            Ver detalle
-        </Button>
-    )
+    const ActionColumn = ({ row }: { row: any }) => {
+        // <Button size="sm" onClick={() => navigate(`/forms/${row.original.id}`)}>
+        //     Ver detalle
+        // </Button>
+        const navigate = useNavigate()
+
+        return (
+            <div className="flex justify-end text-lg">
+                <Tooltip title="Ver detalle">
+                    <span
+                        className="cursor-pointer p-2 hover:text-orange-500"
+                        onClick={() => navigate(`/forms/${row.original.id}`)}
+                    >
+                        <HiOutlineEye />
+                    </span>
+                </Tooltip>
+            </div>
+        )
+    }
 
     const columns: ColumnDef<any>[] = useMemo(
         () => [
@@ -340,9 +362,23 @@ const FormularioPrueba = () => {
                     <Spinner size={40} />
                 </div>
             ) : (
-                <>
-                    <div className="flex justify-between items-center mb-4">
-                        <h2>Formularios</h2>
+                <div className="ml-3 p-2">
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="flex items-center">
+                            <TbChecklist
+                                size={40}
+                                className="text-amber-600 mr-4"
+                            />
+                            <div>
+                                <h1 className="mb-0 pb-0 text-3xl">
+                                    Formularios
+                                </h1>
+                                <span className="text-xs">
+                                    Lorem ipsum dolor sit amet consectetur
+                                    adipisicing elit. Optio quae ratione alias?
+                                </span>
+                            </div>
+                        </div>
                         <div className="flex space-x-2">
                             <Button
                                 onClick={getFormData}
@@ -358,7 +394,7 @@ const FormularioPrueba = () => {
                         </div>
                     </div>
                     <DataTable columns={columns} data={forms} />
-                </>
+                </div>
             )}
             <Dialog isOpen={dialogIsOpen} onClose={onDialogClose}>
                 <FormItem label="Seleccione un Cliente">

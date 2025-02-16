@@ -1,9 +1,13 @@
 import { ColumnDef, DataTable } from '@/components/shared'
-import { Button, Dialog, Input, Spinner } from '@/components/ui'
+import { Badge, Button, Dialog, Input, Spinner, Tooltip } from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { HiOutlinePencil, HiOutlineSearch } from 'react-icons/hi'
+import {
+    HiOutlinePencil,
+    HiOutlineSearch,
+    HiOutlineUsers,
+} from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import { ToastContainer, toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -76,12 +80,14 @@ const Clientes = () => {
     const ActionColumn = ({ row }: { row: any }) => {
         return (
             <div className="flex justify-center text-lg space-x-2">
-                <span
-                    className="cursor-pointer p-2 hover:text-orange-500"
-                    onClick={() => onEdit(row.original)}
-                >
-                    <HiOutlinePencil />
-                </span>
+                <Tooltip title={'Editar cliente'}>
+                    <span
+                        className="cursor-pointer p-2 hover:text-orange-500"
+                        onClick={() => onEdit(row.original)}
+                    >
+                        <HiOutlinePencil />
+                    </span>
+                </Tooltip>
             </div>
         )
     }
@@ -104,26 +110,20 @@ const Clientes = () => {
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
-                header: 'Status',
+                header: 'Estatus',
                 accessorKey: 'status',
                 cell: (props: any) => {
                     const value = props.getValue()
                     const label = value ? 'Activo' : 'Inactivo'
-                    const backgroundColor = value
-                        ? 'rgba(144, 238, 144, 0.2)'
-                        : 'rgba(255, 99, 71, 0.2)'
                     const color = value ? 'green' : 'red'
                     return (
-                        <span
-                            style={{
-                                color,
-                                backgroundColor,
-                                padding: '4px 8px',
-                                borderRadius: '10px',
-                            }}
-                        >
-                            {label}
-                        </span>
+                        <div className="flex items-center">
+                            <Badge
+                                className="mr-2"
+                                innerClass={`bg-${color}-500`}
+                            />
+                            <span>{label}</span>
+                        </div>
                     )
                 },
             },
@@ -137,20 +137,28 @@ const Clientes = () => {
     )
 
     return (
-        <>
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-semibold mb-3">Clientes</h1>
-                <div className="flex">
+        <div className="ml-3 p-2">
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                    <HiOutlineUsers size={40} className="text-amber-600 mr-4" />
+                    <div>
+                        <h1 className="mb-0 pb-0 text-3xl">Clientes</h1>
+                        <span className="text-xs">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Optio quae ratione alias?
+                        </span>
+                    </div>
+                </div>
+                <div className="flex gap-2">
                     <Input
-                        className="max-w-md md:w-52 md:mb-0 mb-4"
-                        size="sm"
+                        className=""
                         placeholder="Buscar Cliente"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         prefix={<HiOutlineSearch className="text-lg mb-2" />}
                     />
                     <Button
-                        className="w-40 ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
+                        // className="w-40 ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
                         variant="solid"
                         onClick={() =>
                             !isLoading && setDrawerCreateIsOpen(true)
@@ -201,7 +209,7 @@ const Clientes = () => {
                 />
             )}
             <ToastContainer />
-        </>
+        </div>
     )
 }
 

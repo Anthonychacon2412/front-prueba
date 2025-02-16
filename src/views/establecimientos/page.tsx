@@ -1,5 +1,5 @@
 import { ColumnDef, DataTable } from '@/components/shared'
-import { Button, Dialog, Input } from '@/components/ui'
+import { Badge, Button, Dialog, Input, Tooltip } from '@/components/ui'
 import { db } from '@/configs/firebaseAssets.config'
 import { collection, getDocs, query } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
@@ -10,6 +10,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import DrawerEstablecimiento from './Drawer'
 import EditDrawer from './EditDrawer'
 import { FaAngleLeft, FaAngleRight } from 'react-icons/fa'
+import { MdOutlineStore, MdOutlineStorefront } from 'react-icons/md'
 
 const Establecimientos = () => {
     const [data, setData] = useState<any[]>([])
@@ -69,12 +70,14 @@ const Establecimientos = () => {
     const ActionColumn = ({ row }: { row: any }) => {
         return (
             <div className="flex justify-center text-lg space-x-2">
-                <span
-                    className="cursor-pointer p-2 hover:text-orange-500"
-                    onClick={() => onEdit(row.original)}
-                >
-                    <HiOutlinePencil />
-                </span>
+                <Tooltip title={'Editar Establecimiento'}>
+                    <span
+                        className="cursor-pointer p-2 hover:text-orange-500"
+                        onClick={() => onEdit(row.original)}
+                    >
+                        <HiOutlinePencil />
+                    </span>
+                </Tooltip>
             </div>
         )
     }
@@ -92,9 +95,22 @@ const Establecimientos = () => {
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
-                header: 'Status',
+                header: 'Estatus',
                 accessorKey: 'status',
-                cell: (props: any) => <span>{props.getValue()}</span>,
+                cell: (props: any) => {
+                    const value = props.getValue()
+                    const label = value ? 'Disponible' : 'Inactivo'
+                    const color = value ? 'green' : 'red'
+                    return (
+                        <div className="flex items-center">
+                            <Badge
+                                className="mr-2"
+                                innerClass={`bg-${color}-500`}
+                            />
+                            <span>{label}</span>
+                        </div>
+                    )
+                },
             },
             {
                 header: '',
@@ -106,24 +122,34 @@ const Establecimientos = () => {
     )
 
     return (
-        <>
-            <div className="flex justify-between items-center mb-4">
-                <h1 className="text-2xl font-semibold mb-3">
-                    Establecimientos
-                </h1>
+        <div className="ml-3 p-2">
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                    <MdOutlineStorefront
+                        size={40}
+                        className="text-amber-600 mr-4"
+                    />
+                    <div>
+                        <h1 className="mb-0 pb-0 text-3xl">Establecimientos</h1>
+                        <span className="text-xs">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Optio quae ratione alias?
+                        </span>
+                    </div>
+                </div>
 
-                <div className="flex">
+                <div className="flex gap-2">
                     <Input
-                        className="max-w-md md:w-52 md:mb-0 mb-4"
-                        size="sm"
+                        // className="max-w-md md:w-52 md:mb-0 mb-4"
+                        // size="sm"
                         placeholder="Buscar Establecimiento"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        prefix={<HiOutlineSearch className="text-lg mb-2" />}
+                        prefix={<HiOutlineSearch className="text-lg" />}
                     />
 
                     <Button
-                        className="ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
+                        // className="ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
                         onClick={() => setDrawerCreateIsOpen(true)}
                         variant="solid"
                     >
@@ -172,7 +198,7 @@ const Establecimientos = () => {
             )}
 
             <ToastContainer />
-        </>
+        </div>
     )
 }
 

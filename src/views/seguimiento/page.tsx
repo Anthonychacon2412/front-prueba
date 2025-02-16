@@ -138,7 +138,7 @@ const Seguimiento = () => {
                 <div className="flex items-center">
                     <HiOutlineGlobe size={40} className="text-amber-600 mr-4" />
                     <div>
-                        <h1 className="mb-0 pb-0">Seguimiento</h1>
+                        <h1 className="mb-0 pb-0 text-3xl">Seguimiento</h1>
                         <span className="text-xs">
                             Lorem ipsum dolor sit amet consectetur adipisicing
                             elit. Optio quae ratione alias?
