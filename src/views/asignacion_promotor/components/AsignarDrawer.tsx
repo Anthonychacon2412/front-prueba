@@ -192,8 +192,7 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
                                 <label className="font-semibold text-gray-700">
                                     Asignar Promotor:
                                 </label>
-                                <Field
-                                    as="select"
+                                <Select
                                     name="promotor"
                                     className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
                                 >
@@ -208,7 +207,7 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
                                             {promotor.nombre}
                                         </option>
                                     ))}
-                                </Field>
+                                </Select>
                                 <ErrorMessage
                                     name="promotor"
                                     component="div"
@@ -234,7 +233,7 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
                                 {isSubmitting ? (
                                     <Spinner color="white" />
                                 ) : (
-                                    'Guardar'
+                                    'Asignar'
                                 )}
                             </Button>
                         </div>

@@ -165,16 +165,20 @@ const AsignacionDias = () => {
 
     return (
         <div>
-            <button
-                onClick={() => navigate(`${APP_PREFIX_PATH}/plantilla-rutas`)}
-                className="flex items-center text-white mb-3 ml-2 px-4 py-2 bg-orange-400 rounded-lg hover:bg-orange-500 transition duration-300"
-            >
-                <FaArrowLeft className="mr-2" />
-                <span>Volver</span>
-            </button>
-            <h1 className="mb-4">
-                Asignación de Días para la Ruta {rutaData?.nombre_ruta}
-            </h1>
+            <div className="flex gap-3">
+                <button
+                    onClick={() =>
+                        navigate(`${APP_PREFIX_PATH}/plantilla-rutas`)
+                    }
+                    className="flex items-center text-white mb-3 ml-2 px-4 py-2 bg-orange-400 rounded-lg hover:bg-orange-500 transition duration-300"
+                >
+                    <FaArrowLeft className="mr-2" />
+                    <span>Volver</span>
+                </button>
+                <h1 className="mb-4">
+                    Asignación de Días para la Ruta {rutaData?.nombre_ruta}
+                </h1>
+            </div>
             {rutaData ? (
                 <div>
                     {establecimientos.length > 0 ? (
