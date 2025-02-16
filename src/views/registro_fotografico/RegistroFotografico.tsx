@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { collection, getDocs, query } from 'firebase/firestore'
 import JSZip from 'jszip'
-import { Button, DatePicker, Card } from '@/components/ui'
+import { Button, DatePicker, Card, Select } from '@/components/ui'
 import { db, functions } from '@/configs/firebaseAssets.config'
-import Select, { SingleValue } from 'react-select'
+import { SingleValue } from 'react-select'
 import { httpsCallable } from 'firebase/functions'
 import { HiOutlineFilter, HiOutlinePhotograph, HiSearch } from 'react-icons/hi'
 
@@ -195,7 +195,7 @@ const Photos = () => {
                     Descargar lote filtrado
                 </Button>
             </div>
-            <div className="flex justify-between items-center mb-3">
+            <div className="grid grid-cols-5 gap-4  mb-3">
                 <div>
                     <Select
                         value={selectedCliente}
