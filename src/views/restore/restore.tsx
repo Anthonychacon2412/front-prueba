@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo } from 'react'
 import { getFirestore, collection, getDocs } from 'firebase/firestore'
 import {
     getStorage,
@@ -26,6 +26,9 @@ import { db, storage } from '@/configs/firebaseAssets.config'
 import { FaSave, FaCloudUploadAlt, FaTrash } from 'react-icons/fa' // Importar iconos de React Icons
 import { Button } from '@/components/ui'
 import Tooltip from '@/components/ui/Tooltip'
+import { LucideTrash2, LucideUploadCloud } from 'lucide-react'
+import { ColumnDef } from '@tanstack/react-table'
+import { DataTable } from '@/components/shared'
 
 const Restore = () => {
     const [backups, setBackups] = useState<{ name: string; url: string }[]>([])
@@ -136,16 +139,83 @@ const Restore = () => {
         }
     }
 
+    const ActionColumn = ({ row }: { row: any }) => {
+        return (
+            <div className="flex justify-center text-lg space-x-2">
+                <Tooltip title={'Restaurar copia de seguridad'}>
+                    <span
+                        className="cursor-pointer p-2 hover:text-orange-500"
+                        onClick={() => handleRestore(row.original.url)}
+                    >
+                        <LucideUploadCloud />
+                    </span>
+                </Tooltip>
+                <Tooltip title={'Eliminar copia de seguridad'}>
+                    <span
+                        className="cursor-pointer p-2 hover:text-orange-500"
+                        onClick={() => handleDelete(row.original.name)}
+                    >
+                        <LucideTrash2 />
+                    </span>
+                </Tooltip>
+            </div>
+        )
+    }
+
+    const columns: ColumnDef<any>[] = useMemo(
+        () => [
+            {
+                header: 'Nombre',
+                accessorKey: 'name',
+                cell: (props: any) => <span>{props.getValue()}</span>,
+            },
+
+            {
+                header: '',
+                id: 'action',
+                cell: (props) => <ActionColumn row={props.row} />,
+            },
+        ],
+        [],
+    )
+
     return (
-        <Box sx={{ padding: 3 }}>
-            <h2 className="mb-6 mt-6 flex justify-start items-center space-x-4">
+        <div className="ml-3 p-2">
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                    <LucideUploadCloud
+                        size={40}
+                        className="text-amber-600 mr-4"
+                    />
+                    <div>
+                        <h1 className="mb-0 pb-0 text-3xl">
+                            Copia de Seguridad y Restauracion
+                        </h1>
+                        <span className="text-xs">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Optio quae ratione alias?
+                        </span>
+                    </div>
+                </div>
+
+                <div className="flex gap-2">
+                    <Button
+                        // className="ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
+                        onClick={() => handleBackup}
+                        variant="solid"
+                    >
+                        Guardar copia de seguridad
+                    </Button>
+                </div>
+            </div>
+            {/* <h2 className="mb-6 mt-6 flex justify-start items-center space-x-4">
                 <span className="font-bold dark:text-gray-200 text-gray-800 flex items-center">
                     <FaCloudUploadAlt className="mx-4 text-blue-600" />
                     Copia de seguridad / Restauración
                 </span>
-            </h2>
+            </h2> */}
 
-            <div className="flex mt-6 justify-end">
+            {/* <div className="flex mt-6 justify-end">
                 <Button
                     color="sky"
                     style={{ backgroundColor: '#3B82F6' }}
@@ -155,10 +225,10 @@ const Restore = () => {
                     <FaSave className="w-5 h-5 mr-4" />
                     Guardar copia de seguridad
                 </Button>
-            </div>
+            </div> */}
 
             {/* Tabla de backups */}
-            <TableContainer component={Paper}>
+            {/* <TableContainer component={Paper}>
                 <Table>
                     <TableHead>
                         <TableRow className="bg-gray-200 dark:bg-gray-800 p-4">
@@ -201,7 +271,9 @@ const Restore = () => {
                         ))}
                     </TableBody>
                 </Table>
-            </TableContainer>
+            </TableContainer> */}
+
+            <DataTable data={backups} columns={columns} />
 
             {/* Snackbar para mensajes */}
             <Snackbar
@@ -210,7 +282,7 @@ const Restore = () => {
                 onClose={() => setSnackbarOpen(false)}
                 message={snackbarMessage}
             />
-        </Box>
+        </div>
     )
 }
 

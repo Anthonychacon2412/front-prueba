@@ -144,6 +144,17 @@ const pagesNavigationConfig: NavigationTree[] = [
             },
         ],
     },
+    {
+        key: 'appsProject.Restore',
+        path: `${APP_PREFIX_PATH}/restore`,
+        title: 'Copia de seguridad',
+        translateKey: '',
+        icon: '',
+        type: NAV_ITEM_TYPE_ITEM,
+        authority: [USER, ADMIN],
+        subMenu: [],
+
+    }
 ]
 
 export default pagesNavigationConfig

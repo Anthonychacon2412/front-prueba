@@ -11,6 +11,12 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'appsProject.restore',
+        path: `${APP_PREFIX_PATH}/restore`,
+        component: lazy(() => import('@/views/restore/index')),
+        authority: [ADMIN, USER],
+    },
+    {
         key: 'appformularios',
         path: `${APP_PREFIX_PATH}/formularios`,
         component: lazy(() => import('@/views/formularios/index')),
