@@ -88,18 +88,13 @@ const SideNav = () => {
                 >
                     <div className="side-nav-header">
                         <Logo
-                            mode={'light'}
-                            type={'full'}
+                            mode={logoMode()}
+                            type={sideNavCollapse ? 'streamline' : 'full'}
                             className={
                                 sideNavCollapse
                                     ? SIDE_NAV_CONTENT_GUTTER
                                     : LOGO_X_GUTTER
                             }
-                            style={{
-                                fill: 'red',
-                                marginTop: '20px',
-                                marginBottom: '20px',
-                            }}
                         />
                     </div>
                     {sideNavCollapse ? (

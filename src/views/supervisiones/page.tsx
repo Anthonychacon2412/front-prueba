@@ -1,5 +1,5 @@
 import { ColumnDef, DataTable } from '@/components/shared'
-import { Button, Dialog, Tooltip } from '@/components/ui'
+import { Button, Dialog, Spinner, Tooltip } from '@/components/ui'
 import { useAppDispatch } from '@/store'
 import { collection, getDocs, query } from 'firebase/firestore'
 import React, { useEffect, useMemo, useState } from 'react'
@@ -7,6 +7,11 @@ import { HiOutlineEye, HiOutlinePhotograph } from 'react-icons/hi'
 import { useNavigate } from 'react-router-dom'
 import { db } from '@/configs/firebaseAssets.config'
 import { MdOutlineSupervisedUserCircle } from 'react-icons/md'
+import { Swiper, SwiperSlide } from 'swiper/react'
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
+import { Navigation, Pagination } from 'swiper/modules'
 
 interface SupervisionEntry {
     pregunta: string
@@ -34,9 +39,11 @@ const Supervisiones = () => {
         fotos: false,
     })
     const [selectedRow, setSelectedRow] = useState<Supervisiones | null>(null)
+    const [loading, setLoading] = useState<boolean>(false)
 
     const getData = async () => {
         try {
+            setLoading(true)
             const q = query(collection(db, 'supervisiones'))
             const querySnapshot = await getDocs(q)
             const dataDocs: Supervisiones[] = []
@@ -48,6 +55,8 @@ const Supervisiones = () => {
             setData(dataDocs)
         } catch (error) {
             console.log(error)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -82,7 +91,7 @@ const Supervisiones = () => {
                         className="cursor-pointer p-2 hover:text-orange-500"
                         onClick={() => openDialog('respuestas', row)}
                     >
-                        <HiOutlineEye />
+                        {loading ? <Spinner /> : <HiOutlineEye />}
                     </span>
                 </Tooltip>
                 <Tooltip title="Ver fotos">
@@ -90,7 +99,7 @@ const Supervisiones = () => {
                         className="cursor-pointer p-2 hover:text-orange-500"
                         onClick={() => openDialog('fotos', row)}
                     >
-                        <HiOutlinePhotograph />
+                        {loading ? <Spinner /> : <HiOutlinePhotograph />}
                     </span>
                 </Tooltip>
             </div>
@@ -163,11 +172,9 @@ const Supervisiones = () => {
                     <div>
                         {selectedRow.supervision.map((entry, index) => (
                             <div key={index} className="mb-3">
-                                <strong className="block">Pregunta:</strong>
+                                <div className="font-semibold">Pregunta:</div>
                                 <p>{entry.pregunta}</p>
-                                <strong className="block mt-2">
-                                    Respuesta:
-                                </strong>
+                                <div className="font-semibold mt-2">Respuesta:</div>
                                 <p>{formatRespuesta(entry.respuesta)}</p>
                             </div>
                         ))}
@@ -177,7 +184,7 @@ const Supervisiones = () => {
                 )}
             </Dialog>
 
-            {/* Modal para Ver Fotos */}
+            {/* Modal para Ver Fotos como Carrusel */}
             <Dialog
                 isOpen={dialogIsOpen.fotos}
                 onClose={() => onDialogClose('fotos')}
@@ -185,17 +192,30 @@ const Supervisiones = () => {
             >
                 <h5 className="mb-4">Fotos para {selectedRow?.cliente}</h5>
                 {selectedRow?.fotos.length ? (
-                    <div className="grid grid-cols-2 gap-4">
+                    <Swiper
+                        spaceBetween={10}
+                        navigation
+                        pagination={{ clickable: true }}
+                        modules={[Navigation, Pagination]}
+                        className="mySwiper"
+                    >
                         {selectedRow.fotos.map((entry, index) => (
-                            <div key={index} className="flex justify-center">
-                                <img
-                                    src={entry.foto}
-                                    alt={`Foto ${index}`}
-                                    className="max-w-full h-auto"
-                                />
-                            </div>
+                            <SwiperSlide key={index}>
+                                <div className="relative group cursor-pointer">
+                                    <img
+                                        src={entry.foto}
+                                        alt={`Foto ${index}`}
+                                        className="w-full h-auto transition-transform duration-200 transform group-hover:scale-105"
+                                    />
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <span className="text-xl font-bold">
+                                            Ver en pantalla completa
+                                        </span>
+                                    </div>
+                                </div>
+                            </SwiperSlide>
                         ))}
-                    </div>
+                    </Swiper>
                 ) : (
                     <p>No hay fotos disponibles.</p>
                 )}
