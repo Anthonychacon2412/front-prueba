@@ -39,6 +39,12 @@ const appsRoute: Routes = [
         authority: [ADMIN, USER],
     },
     {
+        key: 'perfil',
+        path: `${APP_PREFIX_PATH}/perfil`,
+        component: lazy(() => import('@/views/profile')),
+        authority: [ADMIN, USER],
+    },
+    {
         key: 'appasignaciondias',
         path: `/asignacion_dias/:id`,
         component: lazy(() => import('@/views/asignacion_dias/index')),

@@ -3,12 +3,13 @@ import Dropdown from '@/components/ui/Dropdown'
 import withHeaderItem from '@/utils/hoc/withHeaderItem'
 import useAuth from '@/utils/hooks/useAuth'
 import { useAppSelector } from '@/store'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import classNames from 'classnames'
 import { HiOutlineUser, HiOutlineCog, HiOutlineLogout } from 'react-icons/hi'
 import { FiActivity } from 'react-icons/fi'
 import type { CommonProps } from '@/@types/common'
 import { FaUserCircle } from 'react-icons/fa'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
 
 type DropdownList = {
     label: string
@@ -18,6 +19,7 @@ type DropdownList = {
 
 const _UserDropdown = ({ className }: CommonProps) => {
     const { userName, email } = useAppSelector((state) => state.auth.user)
+    const navigate = useNavigate()
 
     const { signOut } = useAuth()
 
@@ -46,7 +48,9 @@ const _UserDropdown = ({ className }: CommonProps) => {
                         </div>
                     </div>
                 </Dropdown.Item>
-                <Dropdown.Item>
+                <Dropdown.Item
+                    onClick={() => navigate(`${APP_PREFIX_PATH}/perfil`)}
+                >
                     <div className="py-2 px-3 flex items-center gap-2">
                         <div>
                             <div className="font-bold text-gray-900  hover:text-orange-600">
