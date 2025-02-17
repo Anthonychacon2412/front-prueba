@@ -8,22 +8,9 @@ import {
     getDownloadURL,
     deleteObject,
 } from 'firebase/storage'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    CircularProgress,
-    Snackbar,
-    IconButton,
-    Typography,
-    Box,
-} from '@mui/material'
+
 import { db, storage } from '@/configs/firebaseAssets.config'
-import { FaSave, FaCloudUploadAlt, FaTrash } from 'react-icons/fa' // Importar iconos de React Icons
+
 import { Button } from '@/components/ui'
 import Tooltip from '@/components/ui/Tooltip'
 import { LucideTrash2, LucideUploadCloud } from 'lucide-react'
@@ -275,13 +262,13 @@ const Restore = () => {
 
             <DataTable data={backups} columns={columns} />
 
-            {/* Snackbar para mensajes */}
+            {/* Snackbar para mensajes
             <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}
                 onClose={() => setSnackbarOpen(false)}
                 message={snackbarMessage}
-            />
+            /> */}
         </div>
     )
 }
