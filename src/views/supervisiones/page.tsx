@@ -142,6 +142,23 @@ const Supervisiones = () => {
         [],
     )
 
+    const handleFullScreen = (imageUrl: string) => {
+        const elem = document.createElement('img')
+        elem.src = imageUrl
+        elem.style.position = 'fixed'
+        elem.style.top = '0'
+        elem.style.left = '0'
+        elem.style.width = '100vw'
+        elem.style.height = '100vh'
+        elem.style.objectFit = 'contain'
+        elem.style.zIndex = '9999'
+        elem.style.cursor = 'pointer'
+        elem.onclick = () => {
+            document.body.removeChild(elem)
+        }
+        document.body.appendChild(elem)
+    }
+
     return (
         <div className="ml-3 p-2">
             <div className="flex justify-between items-center mb-6">
@@ -161,29 +178,6 @@ const Supervisiones = () => {
             </div>
             <DataTable columns={columns} data={data} />
 
-            {/* Modal para Ver Respuestas */}
-            <Dialog
-                isOpen={dialogIsOpen.respuestas}
-                onClose={() => onDialogClose('respuestas')}
-                onRequestClose={() => onDialogClose('respuestas')}
-            >
-                <h5 className="mb-4">Supervision de {selectedRow?.promotor}</h5>
-                {selectedRow?.supervision.length ? (
-                    <div>
-                        {selectedRow.supervision.map((entry, index) => (
-                            <div key={index} className="mb-3">
-                                <div className="font-semibold">Pregunta:</div>
-                                <p>{entry.pregunta}</p>
-                                <div className="font-semibold mt-2">Respuesta:</div>
-                                <p>{formatRespuesta(entry.respuesta)}</p>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <p>No hay respuestas disponibles.</p>
-                )}
-            </Dialog>
-
             {/* Modal para Ver Fotos como Carrusel */}
             <Dialog
                 isOpen={dialogIsOpen.fotos}
@@ -201,11 +195,14 @@ const Supervisiones = () => {
                     >
                         {selectedRow.fotos.map((entry, index) => (
                             <SwiperSlide key={index}>
-                                <div className="relative group cursor-pointer">
+                                <div
+                                    className="relative group cursor-pointer"
+                                    onClick={() => handleFullScreen(entry.foto)} // Llamada para mostrar la imagen en pantalla completa
+                                >
                                     <img
                                         src={entry.foto}
                                         alt={`Foto ${index}`}
-                                        className="w-full h-auto transition-transform duration-200 transform group-hover:scale-105"
+                                        className="transition-transform duration-200 transform group-hover:scale-105"
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                         <span className="text-xl font-bold">
