@@ -100,7 +100,7 @@ const Clientes = () => {
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
-                header: 'Region',
+                header: 'Región',
                 accessorKey: 'region',
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },

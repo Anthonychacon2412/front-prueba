@@ -4,6 +4,10 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { doc, getDoc } from 'firebase/firestore'
 import { Button, Card } from '@/components/ui'
 import { ChevronRightIcon } from 'lucide-react'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
+import { HiChevronLeft, HiOutlineEye } from 'react-icons/hi'
+import ProfileDetail from './components/MetadataDetail'
+import { AdaptableCard } from '@/components/shared'
 
 const FormDetail = () => {
     const { id } = useParams()
@@ -29,6 +33,7 @@ const FormDetail = () => {
 
                 if (docSnap.exists()) {
                     setData(docSnap.data())
+                    console.log('Document data:', docSnap.data())
                 } else {
                     console.log('No such document!')
                     setData(null)
@@ -53,237 +58,256 @@ const FormDetail = () => {
     }
 
     return (
-        <div>
+        <div className="ml-3 p-2">
             {/* Botón de Volver */}
-            <div className="flex mb-6">
-                <Button
-                    variant="solid"
-                    size="sm"
-                    color="orange-500"
-                    onClick={() => navigate(-1)}
+            <div className="flex items-center mb-6">
+                <span
+                    className="cursor-pointer hover:text-red-500 text-2xl"
+                    onClick={() => navigate(`${APP_PREFIX_PATH}/pruebaForm`)}
                 >
-                    ← Volver
-                </Button>
-
-                <h2 className="ml-4">Formulario de Productos</h2>
+                    <HiChevronLeft className="" />
+                </span>
+                <h1 className="text-2xl font-bold text-gray-800">
+                    Formulario de productos
+                </h1>
             </div>
-
-            {loading ? (
-                <div className="flex justify-center items-center min-h-[200px]">
-                    <div className="w-8 h-8 border-4  rounded-full animate-spin"></div>
+            <div className="flex flex-col xl:flex-row gap-4">
+                <div className="">
+                    <ProfileDetail data={data} />
                 </div>
-            ) : data?.form_structure?.categories ? (
-                <Card>
-                    <ul className="border-l-2  pl-4">
-                        {Object.entries(data.form_structure.categories).map(
-                            ([catId, category]) => (
-                                <li key={catId} className="mb-2">
-                                    <button
-                                        onClick={() =>
-                                            toggleDropdown(
-                                                catId,
-                                                setOpenCategories,
-                                                openCategories,
-                                            )
-                                        }
-                                        className="flex items-center gap-2 text-lg font-semibold  hover:text-orange-500 transition"
-                                    >
-                                        <ChevronRightIcon
-                                            className={`transform ${
-                                                openCategories[catId]
-                                                    ? 'rotate-90'
-                                                    : ''
-                                            }`}
-                                        />
+                <div className="w-full">
+                    <AdaptableCard>
+                        <div className="flex items-center mb-2">
+                            <HiOutlineEye
+                                className="text-amber-500 mr-3"
+                                size={25}
+                            />
+                            <h1 className="text-xl font-bold text-gray-800">
+                                Detalle del formulario
+                            </h1>
+                        </div>
+                        {loading ? (
+                            <div className="flex justify-center items-center min-h-[200px]">
+                                <div className="w-8 h-8 border-4  rounded-full animate-spin"></div>
+                            </div>
+                        ) : data?.form_structure?.categories ? (
+                            <Card>
+                                <ul className="border-l-2  pl-4">
+                                    {Object.entries(
+                                        data.form_structure.categories,
+                                    ).map(([catId, category]) => (
+                                        <li key={catId} className="mb-2">
+                                            <button
+                                                onClick={() =>
+                                                    toggleDropdown(
+                                                        catId,
+                                                        setOpenCategories,
+                                                        openCategories,
+                                                    )
+                                                }
+                                                className="flex items-center gap-2 text-lg font-semibold  hover:text-orange-500 transition"
+                                            >
+                                                <ChevronRightIcon
+                                                    className={`transform ${
+                                                        openCategories[catId]
+                                                            ? 'rotate-90'
+                                                            : ''
+                                                    }`}
+                                                />
 
-                                        {category.name}
-                                    </button>
+                                                {category.name}
+                                            </button>
 
-                                    {openCategories[catId] &&
-                                        category.subcategories && (
-                                            <ul className="pl-6 mt-2 border-l-2 ">
-                                                {Object.entries(
-                                                    category.subcategories,
-                                                ).map(
-                                                    ([subId, subcategory]) => (
-                                                        <li
-                                                            key={subId}
-                                                            className="mb-1"
-                                                        >
-                                                            <button
-                                                                onClick={() =>
-                                                                    toggleDropdown(
-                                                                        subId,
-                                                                        setOpenSubcategories,
-                                                                        openSubcategories,
-                                                                    )
-                                                                }
-                                                                className="flex items-center gap-2  hover:text-orange-500 transition"
-                                                            >
-                                                                <ChevronRightIcon
-                                                                    className={`transform ${
-                                                                        openSubcategories[
-                                                                            subId
-                                                                        ]
-                                                                            ? 'rotate-90'
-                                                                            : ''
-                                                                    }`}
-                                                                />
+                                            {openCategories[catId] &&
+                                                category.subcategories && (
+                                                    <ul className="pl-6 mt-2 border-l-2 ">
+                                                        {Object.entries(
+                                                            category.subcategories,
+                                                        ).map(
+                                                            ([
+                                                                subId,
+                                                                subcategory,
+                                                            ]) => (
+                                                                <li
+                                                                    key={subId}
+                                                                    className="mb-1"
+                                                                >
+                                                                    <button
+                                                                        onClick={() =>
+                                                                            toggleDropdown(
+                                                                                subId,
+                                                                                setOpenSubcategories,
+                                                                                openSubcategories,
+                                                                            )
+                                                                        }
+                                                                        className="flex items-center gap-2  hover:text-orange-500 transition"
+                                                                    >
+                                                                        <ChevronRightIcon
+                                                                            className={`transform ${
+                                                                                openSubcategories[
+                                                                                    subId
+                                                                                ]
+                                                                                    ? 'rotate-90'
+                                                                                    : ''
+                                                                            }`}
+                                                                        />
 
-                                                                {
-                                                                    subcategory.name
-                                                                }
-                                                            </button>
+                                                                        {
+                                                                            subcategory.name
+                                                                        }
+                                                                    </button>
 
-                                                            {openSubcategories[
-                                                                subId
-                                                            ] &&
-                                                                subcategory.brands && (
-                                                                    <ul className="pl-6 mt-1 border-l-2">
-                                                                        {Object.entries(
-                                                                            subcategory.brands,
-                                                                        ).map(
-                                                                            ([
-                                                                                brandId,
-                                                                                brand,
-                                                                            ]) => (
-                                                                                <li
-                                                                                    key={
-                                                                                        brandId
-                                                                                    }
-                                                                                >
-                                                                                    <button
-                                                                                        onClick={() =>
-                                                                                            toggleDropdown(
-                                                                                                brandId,
-                                                                                                setOpenBrands,
-                                                                                                openBrands,
-                                                                                            )
-                                                                                        }
-                                                                                        className="flex items-center gap-2 hover:text-orange-500 transition focus:outline-none bg-transparent p-0"
-                                                                                    >
-                                                                                        <ChevronRightIcon
-                                                                                            className={`w-5 h-5 transform ${
-                                                                                                openBrands[
-                                                                                                    brandId
-                                                                                                ]
-                                                                                                    ? 'rotate-90'
-                                                                                                    : ''
-                                                                                            } `}
-                                                                                        />
-                                                                                        {
-                                                                                            brand.name
-                                                                                        }
-                                                                                    </button>
+                                                                    {openSubcategories[
+                                                                        subId
+                                                                    ] &&
+                                                                        subcategory.brands && (
+                                                                            <ul className="pl-6 mt-1 border-l-2">
+                                                                                {Object.entries(
+                                                                                    subcategory.brands,
+                                                                                ).map(
+                                                                                    ([
+                                                                                        brandId,
+                                                                                        brand,
+                                                                                    ]) => (
+                                                                                        <li
+                                                                                            key={
+                                                                                                brandId
+                                                                                            }
+                                                                                        >
+                                                                                            <button
+                                                                                                onClick={() =>
+                                                                                                    toggleDropdown(
+                                                                                                        brandId,
+                                                                                                        setOpenBrands,
+                                                                                                        openBrands,
+                                                                                                    )
+                                                                                                }
+                                                                                                className="flex items-center gap-2 hover:text-orange-500 transition focus:outline-none bg-transparent p-0"
+                                                                                            >
+                                                                                                <ChevronRightIcon
+                                                                                                    className={`w-5 h-5 transform ${
+                                                                                                        openBrands[
+                                                                                                            brandId
+                                                                                                        ]
+                                                                                                            ? 'rotate-90'
+                                                                                                            : ''
+                                                                                                    } `}
+                                                                                                />
+                                                                                                {
+                                                                                                    brand.name
+                                                                                                }
+                                                                                            </button>
 
-                                                                                    {openBrands[
-                                                                                        brandId
-                                                                                    ] &&
-                                                                                        brand.products && (
-                                                                                            <ul className="pl-6 mt-1 border-l-2 ">
-                                                                                                {Object.entries(
-                                                                                                    brand.products,
-                                                                                                ).map(
-                                                                                                    ([
-                                                                                                        prodId,
-                                                                                                        product,
-                                                                                                    ]) => (
-                                                                                                        <li
-                                                                                                            key={
-                                                                                                                prodId
-                                                                                                            }
-                                                                                                        >
-                                                                                                            <button
-                                                                                                                onClick={() =>
-                                                                                                                    toggleDropdown(
-                                                                                                                        prodId,
-                                                                                                                        setOpenProducts,
-                                                                                                                        openProducts,
-                                                                                                                    )
-                                                                                                                }
-                                                                                                                className="flex items-center gap-2 text-gray-600 hover:text-orange-500 transition"
-                                                                                                            >
-                                                                                                                <ChevronRightIcon
-                                                                                                                    className={`transform ${
-                                                                                                                        openProducts[
-                                                                                                                            prodId
-                                                                                                                        ]
-                                                                                                                            ? 'rotate-90'
-                                                                                                                            : ''
-                                                                                                                    }`}
-                                                                                                                />
+                                                                                            {openBrands[
+                                                                                                brandId
+                                                                                            ] &&
+                                                                                                brand.products && (
+                                                                                                    <ul className="pl-6 mt-1 border-l-2 ">
+                                                                                                        {Object.entries(
+                                                                                                            brand.products,
+                                                                                                        ).map(
+                                                                                                            ([
+                                                                                                                prodId,
+                                                                                                                product,
+                                                                                                            ]) => (
+                                                                                                                <li
+                                                                                                                    key={
+                                                                                                                        prodId
+                                                                                                                    }
+                                                                                                                >
+                                                                                                                    <button
+                                                                                                                        onClick={() =>
+                                                                                                                            toggleDropdown(
+                                                                                                                                prodId,
+                                                                                                                                setOpenProducts,
+                                                                                                                                openProducts,
+                                                                                                                            )
+                                                                                                                        }
+                                                                                                                        className="flex items-center gap-2 text-gray-600 hover:text-orange-500 transition"
+                                                                                                                    >
+                                                                                                                        <ChevronRightIcon
+                                                                                                                            className={`transform ${
+                                                                                                                                openProducts[
+                                                                                                                                    prodId
+                                                                                                                                ]
+                                                                                                                                    ? 'rotate-90'
+                                                                                                                                    : ''
+                                                                                                                            }`}
+                                                                                                                        />
 
-                                                                                                                {
-                                                                                                                    product.name
-                                                                                                                }
-                                                                                                            </button>
+                                                                                                                        {
+                                                                                                                            product.name
+                                                                                                                        }
+                                                                                                                    </button>
 
-                                                                                                            {openProducts[
-                                                                                                                prodId
-                                                                                                            ] &&
-                                                                                                                product.questions && (
-                                                                                                                    <ul className="pl-6 text-gray-500 text-sm mt-1">
-                                                                                                                        {Object.entries(
-                                                                                                                            product.questions,
-                                                                                                                        ).map(
-                                                                                                                            ([
-                                                                                                                                qId,
-                                                                                                                                qValue,
-                                                                                                                            ]) => (
-                                                                                                                                <li
-                                                                                                                                    key={
-                                                                                                                                        qId
-                                                                                                                                    }
-                                                                                                                                    className="mt-1"
-                                                                                                                                >
-                                                                                                                                    <span className="font-semibold">
-                                                                                                                                        Pregunta{' '}
-                                                                                                                                        {
-                                                                                                                                            qId
-                                                                                                                                        }
+                                                                                                                    {openProducts[
+                                                                                                                        prodId
+                                                                                                                    ] &&
+                                                                                                                        product.questions && (
+                                                                                                                            <ul className="pl-6 text-gray-500 text-sm mt-1">
+                                                                                                                                {Object.entries(
+                                                                                                                                    product.questions,
+                                                                                                                                ).map(
+                                                                                                                                    ([
+                                                                                                                                        qId,
+                                                                                                                                        qValue,
+                                                                                                                                    ]) => (
+                                                                                                                                        <li
+                                                                                                                                            key={
+                                                                                                                                                qId
+                                                                                                                                            }
+                                                                                                                                            className="mt-1"
+                                                                                                                                        >
+                                                                                                                                            <span className="font-semibold">
+                                                                                                                                                Pregunta{' '}
+                                                                                                                                                {
+                                                                                                                                                    qId
+                                                                                                                                                }
 
-                                                                                                                                        :{' '}
-                                                                                                                                    </span>
-                                                                                                                                    {
-                                                                                                                                        qValue.question
-                                                                                                                                    }
-                                                                                                                                    <span className="text-orange-500">
-                                                                                                                                        {' '}
-                                                                                                                                        -{' '}
-                                                                                                                                        {
-                                                                                                                                            qValue.answer
-                                                                                                                                        }
-                                                                                                                                    </span>
-                                                                                                                                </li>
-                                                                                                                            ),
+                                                                                                                                                :{' '}
+                                                                                                                                            </span>
+                                                                                                                                            {
+                                                                                                                                                qValue.question
+                                                                                                                                            }
+                                                                                                                                            <span className="text-orange-500">
+                                                                                                                                                {' '}
+                                                                                                                                                -{' '}
+                                                                                                                                                {
+                                                                                                                                                    qValue.answer
+                                                                                                                                                }
+                                                                                                                                            </span>
+                                                                                                                                        </li>
+                                                                                                                                    ),
+                                                                                                                                )}
+                                                                                                                            </ul>
                                                                                                                         )}
-                                                                                                                    </ul>
-                                                                                                                )}
-                                                                                                        </li>
-                                                                                                    ),
+                                                                                                                </li>
+                                                                                                            ),
+                                                                                                        )}
+                                                                                                    </ul>
                                                                                                 )}
-                                                                                            </ul>
-                                                                                        )}
-                                                                                </li>
-                                                                            ),
+                                                                                        </li>
+                                                                                    ),
+                                                                                )}
+                                                                            </ul>
                                                                         )}
-                                                                    </ul>
-                                                                )}
-                                                        </li>
-                                                    ),
+                                                                </li>
+                                                            ),
+                                                        )}
+                                                    </ul>
                                                 )}
-                                            </ul>
-                                        )}
-                                </li>
-                            ),
+                                        </li>
+                                    ))}
+                                </ul>
+                            </Card>
+                        ) : (
+                            <p className="text-center text-gray-600 text-lg">
+                                No hay datos disponibles.
+                            </p>
                         )}
-                    </ul>
-                </Card>
-            ) : (
-                <p className="text-center text-gray-600 text-lg">
-                    No hay datos disponibles.
-                </p>
-            )}
+                    </AdaptableCard>
+                </div>
+            </div>
         </div>
     )
 }

@@ -97,7 +97,7 @@ const AsignacionPromotor = () => {
                     />
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">
-                            Asignacion de Promotor
+                            Asignación de Promotor
                         </h1>
                         <span className="text-xs">
                             Lorem ipsum dolor sit amet consectetur adipisicing

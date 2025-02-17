@@ -9,8 +9,9 @@ import {
     query,
     where,
 } from 'firebase/firestore'
-import { Card } from '@/components/ui'
+import { Avatar, Card, FormItem, Input } from '@/components/ui'
 import { CgProfile } from 'react-icons/cg'
+import { HiOutlineUserCircle } from 'react-icons/hi'
 
 const Perfil = () => {
     const { userName, email } = useAppSelector((state: any) => state.auth.user)
@@ -53,75 +54,96 @@ const Perfil = () => {
         }
 
         fetchUserData()
-    }, [email]) // Se ejecuta solo cuando `email` cambia
+    }, [email])
+
+    function getInitials(name: string): string {
+        return name.match(/(\b\S)?/g)?.join('') ?? ''
+    }
+
+    const initials = userData?.nombre ? getInitials(userData?.nombre) : '' // Se ejecuta solo cuando `email` cambia
 
     return (
-        <div className="bg-white min-h-screen flex flex-col">
-            <div className="container mx-auto p-4 flex-1">
-                <div className="flex-1">
-                    <h2 className="font-bold flex items-center mb-8">
-                        <CgProfile className="mx-8 h-10 w-10" color="#3B82F6" />
-                        Mi perfil
-                    </h2>
-                    <div className="flex gap-4 justify-center items-center p-6">
-                        <Card className="w-full max-w-xl p-6 shadow-lg rounded-lg">
-                            {userData ? (
-                                <>
-                                    {/* Tipo de Usuario */}
-                                    <h2 className="text-2xl font-bold text-center mb-2 capitalize">
-                                        <strong>Tipo de Usuario:</strong>{' '}
-                                        {userData.typeUser === 'admin'
-                                            ? 'Administrador'
-                                            : userData.typeUser === 'Odontologo'
-                                              ? 'Odontólogo'
-                                              : userData.typeUser}
-                                    </h2>
-
-                                    {/* Información del Perfil */}
-                                    <p className="text-center text-gray-600 mb-4">
-                                        Información del perfil
-                                    </p>
-
-                                    <div className="grid grid-cols-2">
-                                        {/* Datos Personales */}
-                                        <div className="mb-4">
-                                            <h3 className="text-lg font-semibold text-gray-700 border-b pb-1 mb-4">
-                                                Datos Personales:
-                                            </h3>
-                                            <p className="mb-2">
-                                                <strong>Nombre:</strong>{' '}
-                                                {userData.nombre}
-                                            </p>
-                                            <p>
-                                                <strong>Apellido:</strong>{' '}
-                                                {userData.apellido}
-                                            </p>
-                                        </div>
-
-                                        {/* Datos de Contacto */}
-                                        <div>
-                                            <h3 className="text-lg font-semibold text-gray-700 border-b pb-1 mb-4">
-                                                Datos de Contacto:
-                                            </h3>
-                                            <p className="mb-2">
-                                                <strong>Email:</strong>{' '}
-                                                {userData.email}
-                                            </p>
-                                            <p>
-                                                <strong>Teléfono:</strong>{' '}
-                                                {userData.telefono}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="text-center text-gray-500">
-                                    Cargando datos...
-                                </p>
-                            )}
-                        </Card>
+        <div className="ml-3 p-2">
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center">
+                    <HiOutlineUserCircle
+                        size={40}
+                        className="text-amber-600 mr-4"
+                    />
+                    <div>
+                        <h1 className="mb-0 pb-0 text-3xl">Mi perfil</h1>
+                        <span className="text-xs">
+                            Lorem ipsum dolor sit amet consectetur adipisicing
+                            elit. Optio quae ratione alias?
+                        </span>
                     </div>
                 </div>
+            </div>
+            <div className="flex gap-4  items-center p-6">
+                <div
+                    className="relative inline-block"
+                    style={{
+                        width: '90px',
+                        height: '90px',
+                        padding: '2px',
+                        background:
+                            'linear-gradient(45deg, #f1c40f, #f39c12, #e67e22, #d35400)',
+                        borderRadius: '50%',
+                    }}
+                >
+                    <div
+                        className="w-full h-full rounded-full bg-white flex items-center justify-center"
+                        style={{
+                            width: 'calc(100% - 4px)',
+                            height: 'calc(100% - 4px)',
+                            margin: '2px',
+                        }}
+                    >
+                        <span className="text-xl font-bold text-[#af601a]">
+                            {initials}
+                        </span>
+                    </div>
+                </div>
+
+                <div>
+                    <h2>{userData?.nombre}</h2>
+                    <p className="text-xl">
+                        Rol:{' '}
+                        <span className="font-bold capitalize">
+                            {userData?.rol}
+                        </span>
+                    </p>
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mx-20">
+                <FormItem label="Correo electrónico">
+                    <Input
+                        readOnly
+                        value={userData?.email}
+                        className="cursor-not-allowed"
+                    />
+                </FormItem>
+                <FormItem label="Cliente">
+                    <Input
+                        readOnly
+                        value={userData?.cliente}
+                        className="cursor-not-allowed"
+                    />
+                </FormItem>
+                <FormItem label="Región">
+                    <Input
+                        readOnly
+                        value={userData?.region}
+                        className="cursor-not-allowed"
+                    />
+                </FormItem>
+                <FormItem label="Teléfono">
+                    <Input
+                        readOnly
+                        value={userData?.telefono}
+                        className="cursor-not-allowed"
+                    />
+                </FormItem>
             </div>
         </div>
     )

@@ -183,7 +183,7 @@ const Photos = () => {
                     />
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">
-                            Visualizacion de Fotos
+                            Visualización de Fotos
                         </h1>
                         <span className="text-xs">
                             Lorem ipsum dolor sit amet consectetur adipisicing

@@ -101,7 +101,7 @@ const Plantilla_rutas = () => {
                     </span>
                 </Tooltip>
                 {row.original.hasEstablecimientos && (
-                    <Tooltip title="Asignar Dias">
+                    <Tooltip title="Asignar Días">
                         <span
                             className="cursor-pointer p-2 hover:text-orange-500"
                             onClick={() =>
@@ -119,7 +119,7 @@ const Plantilla_rutas = () => {
     const columns: ColumnDef<any>[] = useMemo(
         () => [
             {
-                header: 'Nombre Rutas',
+                header: 'Nombre rutas',
                 accessorKey: 'nombre_ruta',
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
@@ -129,7 +129,7 @@ const Plantilla_rutas = () => {
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
-                header: 'Region',
+                header: 'Región',
                 accessorKey: 'region',
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
@@ -149,7 +149,7 @@ const Plantilla_rutas = () => {
                     <TbRoute size={40} className="text-amber-600 mr-4" />
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">
-                            Visualizacion de Rutas
+                            Visualización de Rutas
                         </h1>
                         <span className="text-xs">
                             Lorem ipsum dolor sit amet consectetur adipisicing
