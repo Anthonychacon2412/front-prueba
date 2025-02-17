@@ -1,5 +1,5 @@
 import { DataTable } from '@/components/shared'
-import { Button, Notification, Tabs, toast } from '@/components/ui'
+import { Button, Notification, Tabs, toast, Tooltip } from '@/components/ui'
 import TabContent from '@/components/ui/Tabs/TabContent'
 import TabList from '@/components/ui/Tabs/TabList'
 import TabNav from '@/components/ui/Tabs/TabNav'
@@ -14,22 +14,18 @@ import {
     doc,
     getDoc,
     getDocs,
-    query,
     updateDoc,
+    query,
     where,
 } from 'firebase/firestore'
 import { useEffect, useMemo, useState } from 'react'
-import { FaArrowLeft, FaRegEye } from 'react-icons/fa'
-import { HiChevronLeft, HiOutlineTrash, HiTrash } from 'react-icons/hi'
-import { Navigate, useNavigate, useParams } from 'react-router-dom'
+import { HiChevronLeft, HiOutlineTrash } from 'react-icons/hi'
+import { useNavigate, useParams } from 'react-router-dom'
 
 const AsignacionRuta = () => {
-    const { id } = useParams<{ id: string }>() // Obtén el id de la URL
-    const [rutaData, setRutaData] = useState<{
-        nombre: string
-        region: string
-        cliente: string
-    } | null>(null)
+    const { id } = useParams<{ id: string }>()
+    const navigate = useNavigate()
+    const [rutaData, setRutaData] = useState<any>(null)
     const [establecimientosAsignados, setEstablecimientosAsignados] = useState<
         any[]
     >([])
@@ -38,312 +34,168 @@ const AsignacionRuta = () => {
     const [selectedEstablecimientos, setSelectedEstablecimientos] = useState<
         any[]
     >([])
-    const navigate = useNavigate()
 
-    // Obtén los datos de la ruta
-    const getRutaData = async () => {
+    // Obtiene los datos de la ruta y sus establecimientos asignados
+    const fetchRutaData = async () => {
+        if (!id) return
         try {
-            const docRef = doc(db, 'Plantilla_rutas', `${id}`)
+            const docRef = doc(db, 'Plantilla_rutas', id)
             const docSnap = await getDoc(docRef)
 
             if (docSnap.exists()) {
                 const data = docSnap.data()
-                console.log(data)
+                setRutaData({
+                    nombre: data.nombre_ruta || 'Nombre desconocido',
+                    region: data.region || 'Región desconocida',
+                    cliente: data.cliente || 'Cliente desconocido',
+                })
 
-                // Obtén la data de la subcolección "Establecimientos"
                 const establecimientosRef = collection(
                     docRef,
                     'Establecimientos',
                 )
                 const establecimientosSnap = await getDocs(establecimientosRef)
-
                 const asignados = establecimientosSnap.docs.map((doc) => ({
-                    id: doc.id, // Incluye el ID del documento de la subcolección
-                    ...doc.data(), // Incluye los datos del documento
+                    id: doc.id,
+                    ...doc.data(),
                 }))
-
-                setRutaData({
-                    nombre: data.nombre_ruta || 'Nombre desconocido',
-                    region: data.region || 'Región desconocida',
-                    cliente: data.cliente || 'Región desconocida',
-                })
-
                 setEstablecimientosAsignados(asignados)
-            } else {
-                console.error('No se encontró el documento')
             }
         } catch (error) {
             console.error('Error al obtener la ruta:', error)
         }
     }
 
-    // Obtén los establecimientos
-    const getDataEstablecimientos = async () => {
+    // Obtiene los establecimientos disponibles
+    const fetchEstablecimientosDisponibles = async () => {
+        if (!rutaData) return
         try {
-            const q = query(collection(db, 'establecimientos')) // Consulta todos los establecimientos
-            const querySnapshot = await getDocs(q) // Obtiene los documentos de la consulta
-            const establecimientosDisponibles: any[] = [] // Array para guardar los establecimientos filtrados
+            const q = query(collection(db, 'establecimientos'))
+            const querySnapshot = await getDocs(q)
 
-            querySnapshot.forEach((doc) => {
-                const data = doc.data() // Obtiene los datos del establecimiento
-
-                // Verifica que el establecimiento tenga las propiedades necesarias
-                if (data && data.region && data.status && data.cliente) {
-                    const establecimientoConId = { ...data, id: doc.id } // Incluye el ID del documento
-
-                    // Filtra los establecimientos que coinciden con la ruta
+            const disponibles = querySnapshot.docs
+                .map((doc) => {
+                    const data = doc.data()
                     if (
-                        rutaData &&
-                        data.region === rutaData.region && // Coincide la región
+                        data.region === rutaData.region &&
                         data.cliente.some(
                             (c: { status: boolean }) => c.status === false,
                         ) &&
                         data.cliente.some(
                             (c: { nombre: string }) =>
                                 c.nombre === rutaData.cliente,
-                        ) // Coincide al menos un cliente en el array
+                        )
                     ) {
-                        establecimientosDisponibles.push(establecimientoConId) // Añade el establecimiento al array
+                        return { id: doc.id, ...data }
                     }
-                } else {
-                    console.warn(
-                        'El establecimiento no tiene las propiedades necesarias: ',
-                        doc.id,
-                    )
-                }
-            })
-            console.log(
-                'estacimientos disponibles',
-                establecimientosDisponibles,
-            )
+                    return null
+                })
+                .filter(Boolean)
 
-            setEstablecimientosDisponibles(establecimientosDisponibles) // Guarda los establecimientos filtrados
+            setEstablecimientosDisponibles(disponibles)
         } catch (error) {
             console.error('Error al obtener establecimientos:', error)
         }
     }
 
-    const deleteNotification = (
-        <Notification title="Mesasge" type="success">
-            Se elimino el establecimiento de la ruta con exito!
-        </Notification>
-    )
-
     useEffect(() => {
-        const fetchData = async () => {
-            if (id) {
-                try {
-                    const docRef = doc(db, 'Plantilla_rutas', `${id}`)
-                    const docSnap = await getDoc(docRef)
-
-                    if (docSnap.exists()) {
-                        const data = docSnap.data()
-                        console.log(data)
-
-                        // Obtén la data de la subcolección "Establecimientos"
-                        const establecimientosRef = collection(
-                            docRef,
-                            'Establecimientos',
-                        )
-                        const establecimientosSnap =
-                            await getDocs(establecimientosRef)
-
-                        const asignados = establecimientosSnap.docs.map(
-                            (doc) => ({
-                                id: doc.id, // Incluye el ID del documento de la subcolección
-                                ...doc.data(), // Incluye los datos del documento
-                            }),
-                        )
-                        console.log('Establecimientos asignado', asignados)
-
-                        // Actualizar el estado de rutaData
-                        setRutaData({
-                            nombre: data.nombre_ruta || 'Nombre desconocido',
-                            region: data.region || 'Región desconocida',
-                            cliente: data.cliente || 'Región desconocida',
-                        })
-
-                        setEstablecimientosAsignados(asignados)
-                    } else {
-                        console.error('No se encontró el documento')
-                    }
-                } catch (error) {
-                    console.error('Error al obtener la ruta:', error)
-                }
-            }
-        }
-
-        fetchData()
-    }, [id]) // Solo depende de "id"
+        fetchRutaData()
+    }, [id])
 
     useEffect(() => {
         if (rutaData) {
-            getDataEstablecimientos() // Llama a la función solo cuando "rutaData" se actualiza por primera vez
+            fetchEstablecimientosDisponibles()
         }
     }, [rutaData])
 
     const handleDelete = async (row: any) => {
-        console.log('rutaData', rutaData)
-        try {
-            console.log('Row recibido:', row)
-            console.log('ID recibido:', id)
+        // Verificar si rutaData está definido y no es nulo
+        if (!rutaData) {
+            console.warn(
+                'No se puede eliminar el establecimiento porque rutaData es null o undefined',
+            )
+            return // Salir de la función si rutaData no está disponible
+        }
 
-            // Obtener la referencia del documento global del establecimiento
+        try {
             const globalDocRef = doc(db, 'establecimientos', row.uid)
             const globalDocSnap = await getDoc(globalDocRef)
 
-            if (!globalDocSnap.exists()) {
-                console.error(
-                    `No se encontró el documento global para el establecimiento con uid: ${row.uid}`,
-                )
-                return // Si no existe, detener la ejecución
-            }
-
-            // Obtener los datos del establecimiento global
-            const globalData = globalDocSnap.data()
-            if (globalData && globalData.cliente) {
-                // Actualizar el estado del cliente dentro del array 'cliente'
+            if (globalDocSnap.exists()) {
+                const globalData = globalDocSnap.data()
                 const updatedClientes = globalData.cliente.map(
-                    (cliente: any) => {
-                        if (cliente.nombre === rutaData?.cliente) {
-                            return { ...cliente, status: false } // Cambiar el status a 'false' (o lo que corresponda)
-                        }
-                        return cliente
-                    },
+                    (cliente: any) =>
+                        cliente.nombre === rutaData.cliente
+                            ? { ...cliente, status: false }
+                            : cliente,
                 )
-
-                // Actualizar el documento con el nuevo array de clientes
                 await updateDoc(globalDocRef, { cliente: updatedClientes })
             }
 
-            // Referencia al subdocumento dentro de la ruta
             const subDocRef = doc(
                 db,
                 `Plantilla_rutas/${id}/Establecimientos`,
                 row.id,
             )
-            console.log('Referencia del subdocumento creada:', subDocRef)
+            await deleteDoc(subDocRef)
 
-            await deleteDoc(subDocRef).then(() => {
-                toast.push(deleteNotification)
-            })
-            console.log('Subdocumento eliminado.')
-
-            getRutaData() // Recargar datos de la ruta
+            toast.push(
+                <Notification title="Mensaje" type="success">
+                    Establecimiento eliminado correctamente!
+                </Notification>,
+            )
+            fetchRutaData()
         } catch (error) {
-            console.error('Error en handleDelete:', error)
+            console.error('Error al eliminar el establecimiento:', error)
         }
     }
 
-    const handleRowSelect = (checked: boolean, row: any) => {
-        if (checked) {
-            // Verificar si el establecimiento ya está en selectedEstablecimientos
-            const isAlreadySelected = selectedEstablecimientos.some(
-                (selected) => selected.id === row.id,
-            )
-
-            if (!isAlreadySelected) {
-                setSelectedEstablecimientos((prevSelected) => [
-                    ...prevSelected,
-                    row,
-                ])
-            } else {
-                console.warn(
-                    `El establecimiento ${row.nombre} ya está seleccionado.`,
-                )
-            }
-        } else {
-            setSelectedEstablecimientos((prevSelected) =>
-                prevSelected.filter((item) => item.id !== row.id),
-            )
-        }
-    }
-
-    const toastNotification = (
-        <Notification title="Mesasge" type="success">
-            Se asigno el establecimiento con exito!
-        </Notification>
-    )
     const handleAsignarEstablecimientos = async () => {
+        if (!id) return
+
         try {
-            if (!id) {
-                console.error('ID de ruta no definido')
-                return
-            }
-
-            console.log('id', id)
-
-            const rutaRef = doc(db, 'Plantilla_rutas', id) // Referencia a la ruta
-            const establecimientosRef = collection(rutaRef, 'Establecimientos') // Subcolección de Establecimientos
+            const rutaRef = doc(db, 'Plantilla_rutas', id)
+            const establecimientosRef = collection(rutaRef, 'Establecimientos')
 
             for (const establecimiento of selectedEstablecimientos) {
-                // Verificar si el establecimiento ya está asignado a la ruta
-                console.log(
-                    'establecimientosAsignados',
-                    establecimientosAsignados,
-                )
                 const isAssigned = establecimientosAsignados.some(
-                    (asignado) => {
-                        console.log('asignado', asignado)
-                        return asignado.uid === establecimiento.uid
-                    },
+                    (asignado) => asignado.uid === establecimiento.uid,
                 )
 
-                if (isAssigned) {
-                    console.warn(
-                        `El establecimiento ${establecimiento.nombre} ya está asignado.`,
-                    )
-                    continue // Si ya está asignado, seguimos al siguiente establecimiento
-                }
+                if (isAssigned) continue
 
-                console.log(establecimiento.id)
-
-                // Agregar el establecimiento a la subcolección "Establecimientos" de la ruta
                 await addDoc(establecimientosRef, {
                     nombre_establecimiento: establecimiento.nombre,
                     region: establecimiento.region,
                     ubicacion: establecimiento.ubicacion,
-
-                    uid: establecimiento.id, // Guardamos el uid para referencia futura
-                }).then((resp) => {
-                    toast.push(toastNotification)
+                    uid: establecimiento.id,
                 })
 
-                // **Verificar que el documento con el `uid` existe en la colección global `establecimientos`**
                 const globalDocRef = doc(
                     db,
                     'establecimientos',
                     establecimiento.id,
-                ) // Usamos el `uid` para acceder al documento global
+                )
                 const globalDocSnap = await getDoc(globalDocRef)
 
-                if (!globalDocSnap.exists()) {
-                    console.error(
-                        `No se encontró el documento global para el establecimiento con uid: ${establecimiento.uid}`,
-                    )
-                    continue // Si no existe el documento, saltamos este establecimiento
-                }
-
-                // Obtener los datos del establecimiento global
-                const globalData = globalDocSnap.data()
-                if (globalData && globalData.cliente) {
-                    // Encontrar el cliente dentro del array
+                if (globalDocSnap.exists()) {
+                    const globalData = globalDocSnap.data()
                     const updatedClientes = globalData.cliente.map(
-                        (cliente: any) => {
-                            if (cliente.nombre === rutaData?.cliente) {
-                                // Si el cliente coincide con el que se está asignando, actualizar su status
-                                return { ...cliente, status: true } // Cambiar el status a 'true' (o lo que corresponda)
-                            }
-                            return cliente // De lo contrario, mantener el cliente sin cambios
-                        },
+                        (cliente: any) =>
+                            cliente.nombre === rutaData.cliente
+                                ? { ...cliente, status: true }
+                                : cliente,
                     )
-
-                    // Actualizar el documento con el nuevo array de clientes
                     await updateDoc(globalDocRef, { cliente: updatedClientes })
                 }
             }
 
-            await getRutaData() // Volver a cargar los datos de la ruta
+            fetchRutaData()
+            toast.push(
+                <Notification title="Mensaje" type="success">
+                    Establecimientos asignados correctamente!
+                </Notification>,
+            )
         } catch (error) {
             console.error('Error al asignar establecimientos:', error)
         }
@@ -351,49 +203,34 @@ const AsignacionRuta = () => {
 
     const columns: ColumnDef<any>[] = useMemo(
         () => [
-            {
-                header: 'Nombre Establecimiento',
-                accessorKey: 'nombre',
-                cell: (props: any) => <span>{props.getValue()}</span>,
-            },
-            {
-                header: 'Región',
-                accessorKey: 'region',
-                cell: (props: any) => <span>{props.getValue()}</span>,
-            },
+            { header: 'Nombre Establecimiento', accessorKey: 'nombre' },
+            { header: 'Región', accessorKey: 'region' },
         ],
         [],
     )
 
-    const ActionColumn = ({ row }: { row: any }) => {
-        console.log('row', row)
-        return (
-            <div className="justify-center text-lg flex">
+    const ActionColumn = ({ row }: { row: any }) => (
+        <div className="justify-center text-lg flex">
+            <Tooltip title="Eliminar establecimiento">
                 <span
-                    className="cursor-pointer p-2 hover:text-red-500"
-                    onClick={
-                        () => handleDelete(row) // Llama a la función `handleDelete` con el ID del establecimiento
-                    }
+                    className={`cursor-pointer p-2 hover:text-red-500 ${
+                        !rutaData ? 'cursor-not-allowed opacity-50' : ''
+                    }`}
+                    onClick={() => rutaData && handleDelete(row)}
                 >
                     <HiOutlineTrash />
                 </span>
-            </div>
-        )
-    }
+            </Tooltip>
+        </div>
+    )
 
     const columns1: ColumnDef<any>[] = useMemo(
         () => [
             {
                 header: 'Nombre Establecimiento',
                 accessorKey: 'nombre_establecimiento',
-                cell: (props: any) => <span>{props.getValue()}</span>,
             },
-            {
-                header: 'Región',
-                accessorKey: 'region',
-                cell: (props: any) => <span>{props.getValue()}</span>,
-            },
-
+            { header: 'Región', accessorKey: 'region' },
             {
                 header: '',
                 id: 'action',
@@ -402,6 +239,16 @@ const AsignacionRuta = () => {
         ],
         [],
     )
+
+    function handleRowSelect(checked: boolean, row: any): void {
+        if (checked) {
+            setSelectedEstablecimientos((prev) => [...prev, row])
+        } else {
+            setSelectedEstablecimientos((prev) =>
+                prev.filter((est) => est.id !== row.id),
+            )
+        }
+    }
 
     return (
         <>
@@ -434,19 +281,20 @@ const AsignacionRuta = () => {
                     <TabContent value="tab1">
                         <DataTable
                             selectable
-                            onCheckBoxChange={handleRowSelect}
+                            onCheckBoxChange={(checked, row) =>
+                                handleRowSelect(checked, row)
+                            }
                             columns={columns}
                             data={establecimientosDisponibles}
                         />
                         <div className="flex justify-end mt-4">
                             <Button
-                                className="bg-orange-400 text-white font-semibold py-2 px-6 rounded-lg shadow hover:bg-orange-500 transition duration-300 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                color="orange-400"
                                 variant="solid"
+                                color="orange-500"
                                 onClick={handleAsignarEstablecimientos}
                                 disabled={selectedEstablecimientos.length === 0}
                             >
-                                <span>Asignar Establecimientos</span>
+                                Asignar Establecimientos
                             </Button>
                         </div>
                     </TabContent>

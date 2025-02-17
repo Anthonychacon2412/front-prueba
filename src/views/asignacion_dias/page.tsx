@@ -1,28 +1,21 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-    doc,
-    getDoc,
-    collection,
-    getDocs,
-    updateDoc,
-    setDoc,
-} from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs, setDoc } from 'firebase/firestore'
 import { db } from '@/configs/firebaseAssets.config'
 import { toast } from 'react-toastify'
 import { DataTable } from '@/components/shared'
 import { ColumnDef } from '@tanstack/react-table'
-import Checkbox from '@/components/ui/Checkbox'
 import { Button, Calendar, Card } from '@/components/ui'
-import { FaArrowLeft } from 'react-icons/fa'
-import { APP_PREFIX_PATH } from '@/constants/route.constant'
 import { HiChevronLeft } from 'react-icons/hi'
+import { APP_PREFIX_PATH } from '@/constants/route.constant'
+import es from 'dayjs/locale/es'
 
 const AsignacionDias = () => {
     const { id } = useParams<{ id: string }>()
     const [rutaData, setRutaData] = useState<any>(null)
     const [establecimientos, setEstablecimientos] = useState<any[]>([])
     const [selectedDates, setSelectedDates] = useState<Date[]>([])
+    const [hasChanges, setHasChanges] = useState(false)
 
     const navigate = useNavigate()
 
@@ -56,7 +49,9 @@ const AsignacionDias = () => {
                     const establecimientosList = establecimientosSnap.docs.map(
                         (doc) => ({
                             id: doc.id,
-                            ...(doc.data() as { fechas_asignadas?: string[] }),
+                            nombre_establecimiento:
+                                doc.data().nombre_establecimiento,
+                            fechas_asignadas: doc.data().fechas_asignadas || [],
                         }),
                     )
 
@@ -69,11 +64,8 @@ const AsignacionDias = () => {
                     // Extraer todas las fechas asignadas de todos los establecimientos
                     const fechasAsignadas: Date[] = []
                     establecimientosList.forEach((est) => {
-                        if (
-                            est.fechas_asignadas &&
-                            Array.isArray(est.fechas_asignadas)
-                        ) {
-                            est.fechas_asignadas.forEach((fechaStr) => {
+                        if (est.fechas_asignadas) {
+                            est.fechas_asignadas.forEach((fechaStr: string) => {
                                 const fecha = new Date(fechaStr)
                                 if (!isNaN(fecha.getTime())) {
                                     fechasAsignadas.push(fecha)
@@ -96,19 +88,38 @@ const AsignacionDias = () => {
         getRutaData()
     }, [id])
 
-    // Función para asignar la fecha seleccionada a los establecimientos
+    // Función para manejar la selección de fechas
+    const handleDateSelect = (date: Date | Date[]) => {
+        setSelectedDates((prevDates) => {
+            let newDates: Date[]
+            if (Array.isArray(date)) {
+                // Si ya es un array, se asigna directamente
+                newDates = date
+            } else {
+                // Si la fecha ya está seleccionada, la eliminamos
+                if (prevDates.some((d) => d.getTime() === date.getTime())) {
+                    newDates = prevDates.filter(
+                        (d) => d.getTime() !== date.getTime(),
+                    )
+                } else {
+                    newDates = [...prevDates, date] // Agrega la nueva fecha al array
+                }
+            }
+            setHasChanges(true)
+            return newDates
+        })
+    }
+
+    // Función para asignar las fechas seleccionadas a los establecimientos
     const assignDatesToEstablishments = async () => {
-        if (selectedDates.length === 0) {
-            toast.error('Por favor selecciona al menos una fecha')
+        if (!id) {
+            toast.error('ID de la ruta no proporcionado')
             return
         }
 
         try {
-            if (!id) {
-                throw new Error('ID de la ruta no proporcionado')
-            }
-
             const rutaDocRef = doc(db, 'Plantilla_rutas', id)
+            let cambiosRealizados = false // Verificará si hubo cambios
 
             for (const establecimiento of establecimientos) {
                 const estRef = doc(
@@ -123,37 +134,55 @@ const AsignacionDias = () => {
                     existingDates = estSnap.data().fechas_asignadas || []
                 }
 
-                // Convertimos todas las fechas a string en formato ISO
+                // Convertir selectedDates a formato de string ISO
                 const nuevasFechas = selectedDates.map((d) => d.toISOString())
 
-                // Fusionamos y eliminamos duplicados
-                const fechasFinales = Array.from(
-                    new Set([...existingDates, ...nuevasFechas]),
+                // Identificar si hay cambios reales
+                const fechasAgregadas = nuevasFechas.filter(
+                    (fecha) => !existingDates.includes(fecha),
+                )
+                const fechasEliminadas = existingDates.filter(
+                    (fecha) => !nuevasFechas.includes(fecha),
                 )
 
-                await setDoc(
-                    estRef,
-                    { fechas_asignadas: fechasFinales },
-                    { merge: true },
-                )
+                if (fechasAgregadas.length > 0 || fechasEliminadas.length > 0) {
+                    // Actualizar Firestore solo si hubo cambios
+                    const fechasActualizadas = [
+                        ...existingDates.filter(
+                            (fecha) => !fechasEliminadas.includes(fecha),
+                        ),
+                        ...fechasAgregadas,
+                    ]
+
+                    await setDoc(
+                        estRef,
+                        { fechas_asignadas: fechasActualizadas },
+                        { merge: true },
+                    )
+                    cambiosRealizados = true
+                }
             }
 
-            toast.success('Fechas asignadas correctamente')
+            if (cambiosRealizados) {
+                toast.success('Fechas actualizadas correctamente')
+
+                // Actualizar el estado local
+                setEstablecimientos((prev) =>
+                    prev.map((est) => ({
+                        ...est,
+                        fechas_asignadas: selectedDates.map((d) =>
+                            d.toISOString(),
+                        ),
+                    })),
+                )
+                setHasChanges(false)
+            } else {
+                toast.info('No hubo cambios en las fechas')
+            }
         } catch (error) {
             console.error('Error al asignar las fechas:', error)
             toast.error('Error al asignar las fechas')
         }
-    }
-
-    // Función para manejar la selección de fechas
-    const handleDateSelect = (date: Date | Date[]) => {
-        setSelectedDates((prevDates) => {
-            if (Array.isArray(date)) {
-                return date // Si ya es un array, se asigna directamente
-            } else {
-                return [...prevDates, date] // Agrega la nueva fecha al array
-            }
-        })
     }
 
     const columns: ColumnDef<any>[] = [
@@ -189,7 +218,7 @@ const AsignacionDias = () => {
                 <div>
                     {establecimientos.length > 0 ? (
                         <>
-                            <div className="flex justify- justify-between gap-4">
+                            <div className="flex justify-between gap-4">
                                 <div className="border border-gray-200 rounded-lg w-[25vw]">
                                     <DataTable
                                         columns={columns}
@@ -199,10 +228,10 @@ const AsignacionDias = () => {
 
                                 <Card className="w-[50vw] h-[50vh]">
                                     <Calendar
-                                        locale="es"
                                         multipleSelection={true} // Habilita la selección múltiple
                                         onChange={handleDateSelect}
                                         value={selectedDates}
+                                        locale={es}
                                     />
                                 </Card>
                             </div>
@@ -210,9 +239,9 @@ const AsignacionDias = () => {
                                 <Button
                                     onClick={assignDatesToEstablishments}
                                     variant="solid"
-                                    // className="ml-10 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
+                                    disabled={!hasChanges}
                                 >
-                                    Asignar Fechas
+                                    Actualizar Fechas
                                 </Button>
                             </div>
                         </>
