@@ -31,7 +31,7 @@ import {
 import { MdOutlineAddBusiness } from 'react-icons/md'
 import { FaRoadCircleCheck } from 'react-icons/fa6'
 import { RiMapPinTimeLine } from 'react-icons/ri'
-import { IoStatsChartSharp } from 'react-icons/io5'
+import { IoShieldCheckmarkOutline, IoStatsChartSharp } from 'react-icons/io5'
 import { GiPathDistance } from 'react-icons/gi'
 import { TbReport } from 'react-icons/tb'
 import { LucideMonitorCheck } from 'lucide-react'
@@ -76,6 +76,7 @@ const navigationIcon: NavigationIcons = {
     rutas: <GiPathDistance />,
     report: <TbReport />,
     monitor: <LucideMonitorCheck />,
+    security: <IoShieldCheckmarkOutline />
 }
 
 export default navigationIcon
