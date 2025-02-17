@@ -11,7 +11,7 @@ import {
 
 import { db, storage } from '@/configs/firebaseAssets.config'
 
-import { Button } from '@/components/ui'
+import { Button, Notification, toast } from '@/components/ui'
 import Tooltip from '@/components/ui/Tooltip'
 import { LucideTrash2, LucideUploadCloud } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
@@ -97,11 +97,19 @@ const Restore = () => {
             )
 
             if (response.ok) {
-                setSnackbarMessage('Restauración completada con éxito')
-                setSnackbarOpen(true)
+                toast.push(
+                    <Notification
+                        title="Restauración completada con éxito"
+                        type="success"
+                    />,
+                )
             } else {
-                setSnackbarMessage('Error al restaurar la copia de seguridad')
-                setSnackbarOpen(true)
+                toast.push(
+                    <Notification
+                        title="Error al restaurar la copia de seguridad"
+                        type="danger"
+                    />,
+                )
             }
         } catch (error) {
             console.error('Error al restaurar la copia de seguridad:', error)
@@ -116,13 +124,22 @@ const Restore = () => {
         try {
             const storageRef = ref(storage, `backups/${fileName}`)
             await deleteObject(storageRef)
-            setSnackbarMessage('Copia de seguridad eliminada con éxito')
-            setSnackbarOpen(true)
+            toast.push(
+                <Notification
+                    title="Copia de seguridad eliminada con éxito"
+                    type="success"
+                />,
+            )
+
             fetchBackups() // Actualizar la lista de backups
         } catch (error) {
             console.error('Error al eliminar la copia de seguridad:', error)
-            setSnackbarMessage('Error al eliminar la copia de seguridad')
-            setSnackbarOpen(true)
+            toast.push(
+                <Notification
+                    title="Error al eliminar la copia de seguridad"
+                    type="danger"
+                />,
+            )
         }
     }
 
