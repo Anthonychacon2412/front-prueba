@@ -134,7 +134,7 @@ const Supervisiones = () => {
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
-                header: 'Acciones',
+                header: '',
                 id: 'action',
                 cell: (props) => <ActionColumn row={props.row.original} />,
             },
@@ -177,6 +177,30 @@ const Supervisiones = () => {
                 </div>
             </div>
             <DataTable columns={columns} data={data} />
+            <Dialog
+                isOpen={dialogIsOpen.respuestas}
+                onClose={() => onDialogClose('respuestas')}
+                onRequestClose={() => onDialogClose('respuestas')}
+            >
+                <h5 className="mb-4">Supervisión de {selectedRow?.promotor}</h5>
+                {selectedRow?.supervision?.length ?? 0 > 0 ? (
+                    <div>
+                        {selectedRow?.supervision.map((entry, index) => (
+                            <div key={index} className="mb-3">
+                                <strong className="block">Pregunta:</strong>
+                                <p>{entry.pregunta}</p>
+
+                                <strong className="block mt-2">
+                                    Respuesta:
+                                </strong>
+                                <p>{formatRespuesta(entry.respuesta)}</p>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p>No hay respuestas disponibles.</p>
+                )}
+            </Dialog>
 
             {/* Modal para Ver Fotos como Carrusel */}
             <Dialog
