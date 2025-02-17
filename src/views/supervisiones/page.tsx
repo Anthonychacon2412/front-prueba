@@ -170,8 +170,8 @@ const Supervisiones = () => {
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">Supervisiones</h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Supervisa y gestiona actividades y desempeño de los
+                            promotores.
                         </span>
                     </div>
                 </div>

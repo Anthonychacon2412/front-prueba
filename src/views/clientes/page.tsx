@@ -144,8 +144,9 @@ const Clientes = () => {
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">Clientes</h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Consulte y gestione los clientes registrados en el
+                            sistema. Seleccione un cliente o cree un nuevo
+                            cliente.
                         </span>
                     </div>
                 </div>

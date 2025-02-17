@@ -142,8 +142,9 @@ const Seguimiento = () => {
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">Seguimiento</h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Monitorea el desempeño de los promotores. Selecciona
+                            un cliente y una región para comenzar el
+                            seguimiento.
                         </span>
                     </div>
                 </div>

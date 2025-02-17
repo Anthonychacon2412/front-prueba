@@ -132,8 +132,8 @@ const Establecimientos = () => {
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">Establecimientos</h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Consulte y gestione los establecimientos registrados
+                            en el sistema.
                         </span>
                     </div>
                 </div>

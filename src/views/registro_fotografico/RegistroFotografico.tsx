@@ -186,14 +186,14 @@ const Photos = () => {
                             Visualización de Fotos
                         </h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Visualiza y gestiona fotos relacionadas a los
+                            formularios cargados.
                         </span>
                     </div>
                 </div>
-                <Button onClick={() => downloadZip(imageUrls)}>
+                {/* <Button onClick={() => downloadZip(imageUrls)}>
                     Descargar lote filtrado
-                </Button>
+                </Button> */}
             </div>
             <div className="grid grid-cols-5 gap-4  mb-3">
                 <div>

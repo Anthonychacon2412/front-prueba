@@ -152,8 +152,9 @@ const Plantilla_rutas = () => {
                             Visualización de Rutas
                         </h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Gestiona y visualiza tus rutas de manera eficiente.
+                            Busca y crea rutas asignando clientes y regiones
+                            específicas.
                         </span>
                     </div>
                 </div>
