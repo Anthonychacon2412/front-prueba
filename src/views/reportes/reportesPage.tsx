@@ -3,83 +3,36 @@ import { getFunctions, httpsCallable } from 'firebase/functions'
 import { useState } from 'react'
 
 const functions = getFunctions()
-const getOpenAIResponse = httpsCallable(functions, 'getOpenAIResponse')
+const downloadImageFunction = httpsCallable(functions, 'downloadImage') // Evitamos confusión de nombres
 
 const FormularioPrueba = () => {
-    const [assistantResponse, setAssistantResponse] = useState<any>(null)
     const [loading, setLoading] = useState(false)
 
-    const realizarConsulta = async () => {
-        setLoading(true)
-
+    const handleDownloadImage = async (urlImagen: string) => {
+        console.log('Descargando imagen:', urlImagen)
+        setLoading(true) // Activamos el estado de carga
         try {
-            console.log('Hice la consulta')
-            const conversation = [
-                {
-                    role: 'system',
-                    content:
-                        'JSON. Eres el encargado de crear itinerarios de viajes',
-                },
-                {
-                    role: 'user',
-                    content: `JSON. Hola, necesito ayuda para crear un itinerario de viaje para un grupo de 10 personas. ¿Puedes ayudarme?`,
-                },
-            ]
-            console.log(conversation)
-            const response = await getOpenAIResponse({ conversation })
-
-            console.log(response.data)
-        } catch (error) {
-            console.error('Error:', error)
-            alert(
-                'Ocurrió un error al procesar la solicitud. Por favor, inténtalo de nuevo.',
-            )
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    const downloadImage = async (urlImagen: any) => {
-        try {
-            const response = await fetch(
-                `https://downloadimages-ozzehddkba-uc.a.run.app/?url=${urlImagen}`,
-            )
-
-            if (!response.ok) {
-                throw new Error('No se pudo descargar la imagen')
-            }
-
-            // Convertir la respuesta en un blob
-            const blob = await response.blob()
-
-            // Crear una URL de objeto para mostrar la imagen
-            const imageUrl = URL.createObjectURL(blob)
-
-            // Asignar la imagen a un elemento <img>
-            // document.getElementById("miImagen").src = imageUrl;
+            const response = await downloadImageFunction({ url: urlImagen }) // Llamada correcta a Firebase Function
+            console.log('Imagen descargada:', response.data)
         } catch (error) {
             console.error('Error al descargar la imagen:', error)
+        } finally {
+            setLoading(false) // Desactivamos el estado de carga
         }
     }
 
     return (
         <div>
-            <Button onClick={() => realizarConsulta()} disabled={loading}>
-                {loading ? 'Cargando...' : 'Realizar consulta'}
-            </Button>
             <Button
                 onClick={() =>
-                    downloadImage(
-                        'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Eiche_bei_Graditz.jpg/640px-Eiche_bei_Graditz.jpgs',
+                    handleDownloadImage(
+                        'https://firebasestorage.googleapis.com/v0/b/tesis-mobility.firebasestorage.app/o/images%2Fl8LK3y4jkPbcujNpMakl%2Fdepositphotos_40253985-stock-photo-chocolate-sweets-on-supermarket-shelf.jpg?alt=media&token=3c468b4f-a3b7-4a33-aaa9-1091ee6516f1',
                     )
                 }
                 disabled={loading}
             >
                 {loading ? 'Descargando Imagen...' : 'Descargar Imagen'}
             </Button>
-            {assistantResponse && (
-                <pre>{JSON.stringify(assistantResponse, null, 2)}</pre>
-            )}
         </div>
     )
 }

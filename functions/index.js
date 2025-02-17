@@ -70,11 +70,11 @@ exports.getOpenAIResponse = functions.https.onCall(async (data) => {
     }
 })
 
-exports.downloadImages = functions.https.onRequest(async (req, res) => {
+exports.downloadImage = functions.https.onRequest(async (req, res) => {
     try {
         // Habilitar CORS
         res.set('Access-Control-Allow-Origin', '*')
-        res.set('Access-Control-Allow-Methods', 'GET')
+        res.set('Access-Control-Allow-Methods', 'GET, OPTIONS')
         res.set('Access-Control-Allow-Headers', 'Content-Type')
 
         // Manejar solicitudes preflight OPTIONS
@@ -93,23 +93,32 @@ exports.downloadImages = functions.https.onRequest(async (req, res) => {
 
         console.log('Descargando imagen desde:', url)
 
-        // Usar fetch nativo de Node.js 18
+        // Obtener la imagen desde la URL
         const response = await fetch(url)
 
         if (!response.ok) {
-            throw new Error(
-                `Error al obtener la imagen: ${response.status} ${response.statusText}`,
-            )
+            return res.status(response.status).json({
+                success: false,
+                error: `Error al obtener la imagen: ${response.status} ${response.statusText}`,
+            })
         }
 
-        // Obtener la imagen como un buffer
+        // Obtener el tipo de contenido
+        const contentType = response.headers.get('content-type')
+
+        if (!contentType || !contentType.startsWith('image/')) {
+            return res.status(400).json({
+                success: false,
+                error: 'La URL proporcionada no es una imagen válida',
+            })
+        }
+
+        // Obtener la imagen como buffer
         const buffer = await response.arrayBuffer()
 
-        // Establecer el tipo de contenido de la respuesta
-        res.setHeader(
-            'Content-Type',
-            response.headers.get('content-type') || 'image/jpeg',
-        )
+        // Establecer los encabezados de respuesta
+        res.set('Content-Type', contentType)
+        res.set('Content-Disposition', 'inline; filename="downloaded-image"')
 
         // Enviar la imagen como respuesta
         res.status(200).send(Buffer.from(buffer))

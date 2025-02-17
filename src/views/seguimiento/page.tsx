@@ -117,6 +117,7 @@ const Seguimiento = () => {
         )
 
         setRutasFiltradas(resultados)
+        console.log('Resultados:', resultados)
 
         // Extraer los establecimientos de las rutas filtradas
         const establecimientosFiltrados = resultados.flatMap(
@@ -126,6 +127,7 @@ const Seguimiento = () => {
 
         // Obtener la ubicación del promotor de las rutas filtradas
         const ubicacionPromotor = resultados[0]?.ubicacion_promotor || null
+        console.log('Ubicación del promotor:', ubicacionPromotor)
         setPromotorUbicacion(ubicacionPromotor)
 
         console.log('Resultados filtrados:', resultados)
