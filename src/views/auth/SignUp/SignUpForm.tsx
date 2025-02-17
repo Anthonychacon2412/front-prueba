@@ -50,11 +50,11 @@ const SignUpForm = (props: SignUpFormProps) => {
         console.log(values)
 
         const newUser = {
-            name: values.userName,
+            nombre: values.userName,
             email: values.email,
-            registered: true,
+            // registered: true,
             status: true,
-            verified: false,
+            // verified: false,
             password: values.password,
         }
 

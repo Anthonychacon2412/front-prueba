@@ -19,7 +19,7 @@ const pagesNavigationConfig: NavigationTree[] = [
             {
                 key: 'Gestion de rutas y Clientes',
                 path: '',
-                title: 'Gestion de rutas y Clientes',
+                title: 'Gestión de rutas y Clientes',
                 translateKey: '',
                 icon: 'rutas',
                 type: NAV_ITEM_TYPE_ITEM,
@@ -48,7 +48,7 @@ const pagesNavigationConfig: NavigationTree[] = [
                     {
                         key: 'pages.plantilla-rutas',
                         path: `${APP_PREFIX_PATH}/plantilla-rutas`,
-                        title: 'Visualización Rutas',
+                        title: 'Visualización de Rutas',
                         translateKey: 'nav.pages.plantilla-rutas',
                         icon: 'newroute',
                         type: NAV_ITEM_TYPE_ITEM,
@@ -59,7 +59,7 @@ const pagesNavigationConfig: NavigationTree[] = [
                     {
                         key: 'pages.asignacion_promotor',
                         path: `${APP_PREFIX_PATH}/asignacion_promotor`,
-                        title: 'Asignacion ruta promotores',
+                        title: 'Asignación de Ruta',
                         translateKey: 'nav.pages.asignacion_promotor',
                         icon: 'ruta',
                         type: NAV_ITEM_TYPE_ITEM,
@@ -90,7 +90,7 @@ const pagesNavigationConfig: NavigationTree[] = [
                     {
                         key: 'pages.appPhotos',
                         path: `${APP_PREFIX_PATH}/visualizacion-fotografias`,
-                        title: 'Visualizacion de Fotos',
+                        title: 'Visualización de Fotos',
                         translateKey: 'nav.pages.clientes',
                         icon: 'ruta',
                         type: NAV_ITEM_TYPE_ITEM,
@@ -103,7 +103,7 @@ const pagesNavigationConfig: NavigationTree[] = [
             {
                 key: 'Evaluacion',
                 path: '',
-                title: 'Evaluacion',
+                title: 'Evaluación',
                 translateKey: '',
                 icon: 'report',
                 type: NAV_ITEM_TYPE_ITEM,

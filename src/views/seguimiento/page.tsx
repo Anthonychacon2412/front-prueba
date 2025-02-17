@@ -117,6 +117,7 @@ const Seguimiento = () => {
         )
 
         setRutasFiltradas(resultados)
+        console.log('Resultados:', resultados)
 
         // Extraer los establecimientos de las rutas filtradas
         const establecimientosFiltrados = resultados.flatMap(
@@ -126,6 +127,7 @@ const Seguimiento = () => {
 
         // Obtener la ubicación del promotor de las rutas filtradas
         const ubicacionPromotor = resultados[0]?.ubicacion_promotor || null
+        console.log('Ubicación del promotor:', ubicacionPromotor)
         setPromotorUbicacion(ubicacionPromotor)
 
         console.log('Resultados filtrados:', resultados)
@@ -140,8 +142,9 @@ const Seguimiento = () => {
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">Seguimiento</h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Monitorea el desempeño de los promotores. Selecciona
+                            un cliente y una región para comenzar el
+                            seguimiento.
                         </span>
                     </div>
                 </div>

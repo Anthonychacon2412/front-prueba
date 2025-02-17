@@ -25,9 +25,16 @@ const _UserDropdown = ({ className }: CommonProps) => {
 
     const UserAvatar = (
         <div className={classNames(className, 'flex items-center gap-2')}>
-            <FaUserCircle className="w-10 h-10" />
+            <Avatar
+                size="md"
+                src="/img/logo/logo.png"
+                alt="avatar"
+                shape="circle"
+                className="cursor-pointer bg-[#fff3e0]"
+            />
             <div className="hidden md:block">
                 <div className="font-bold">{userName}</div>
+                <div className="text-xs">{email}</div>
             </div>
         </div>
     )
@@ -41,34 +48,25 @@ const _UserDropdown = ({ className }: CommonProps) => {
                 renderTitle={UserAvatar}
                 placement="bottom-end"
             >
-                <Dropdown.Item variant="header">
-                    <div className="py-2 px-3 flex items-center gap-2">
-                        <div>
-                            <div className="text-xs">{email}</div>
-                        </div>
-                    </div>
-                </Dropdown.Item>
                 <Dropdown.Item
                     onClick={() => navigate(`${APP_PREFIX_PATH}/perfil`)}
                 >
                     <div className="py-2 px-3 flex items-center gap-2">
                         <div>
-                            <div className="font-bold text-gray-900  hover:text-orange-600">
-                                Ver perfil
-                            </div>
+                            <div className="font-bold">Ver perfil</div>
                         </div>
                     </div>
                 </Dropdown.Item>
                 <Dropdown.Item variant="divider" />
                 <Dropdown.Item
                     eventKey="Sign Out"
-                    className="gap-2"
+                    className="gap-2 "
                     onClick={signOut}
                 >
-                    <span className="text-xl opacity-50">
+                    <span className="text-xl opacity-50 text-amber-700">
                         <HiOutlineLogout />
                     </span>
-                    <span>Cerrar Sesión</span>
+                    <span className="text-amber-700">Cerrar Sesión</span>
                 </Dropdown.Item>
             </Dropdown>
         </div>

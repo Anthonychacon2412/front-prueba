@@ -374,8 +374,9 @@ const FormularioPrueba = () => {
                                     Formularios
                                 </h1>
                                 <span className="text-xs">
-                                    Lorem ipsum dolor sit amet consectetur
-                                    adipisicing elit. Optio quae ratione alias?
+                                    Visualiza y gestiona los formularios
+                                    cargados por los promotores en sus rutas
+                                    correspondientes.
                                 </span>
                             </div>
                         </div>

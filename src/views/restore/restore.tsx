@@ -11,7 +11,7 @@ import {
 
 import { db, storage } from '@/configs/firebaseAssets.config'
 
-import { Button } from '@/components/ui'
+import { Button, Notification, toast } from '@/components/ui'
 import Tooltip from '@/components/ui/Tooltip'
 import { LucideTrash2, LucideUploadCloud } from 'lucide-react'
 import { ColumnDef } from '@tanstack/react-table'
@@ -97,11 +97,19 @@ const Restore = () => {
             )
 
             if (response.ok) {
-                setSnackbarMessage('Restauración completada con éxito')
-                setSnackbarOpen(true)
+                toast.push(
+                    <Notification
+                        title="Restauración completada con éxito"
+                        type="success"
+                    />,
+                )
             } else {
-                setSnackbarMessage('Error al restaurar la copia de seguridad')
-                setSnackbarOpen(true)
+                toast.push(
+                    <Notification
+                        title="Error al restaurar la copia de seguridad"
+                        type="danger"
+                    />,
+                )
             }
         } catch (error) {
             console.error('Error al restaurar la copia de seguridad:', error)
@@ -116,13 +124,22 @@ const Restore = () => {
         try {
             const storageRef = ref(storage, `backups/${fileName}`)
             await deleteObject(storageRef)
-            setSnackbarMessage('Copia de seguridad eliminada con éxito')
-            setSnackbarOpen(true)
+            toast.push(
+                <Notification
+                    title="Copia de seguridad eliminada con éxito"
+                    type="success"
+                />,
+            )
+
             fetchBackups() // Actualizar la lista de backups
         } catch (error) {
             console.error('Error al eliminar la copia de seguridad:', error)
-            setSnackbarMessage('Error al eliminar la copia de seguridad')
-            setSnackbarOpen(true)
+            toast.push(
+                <Notification
+                    title="Error al eliminar la copia de seguridad"
+                    type="danger"
+                />,
+            )
         }
     }
 
@@ -176,11 +193,11 @@ const Restore = () => {
                     />
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">
-                            Copia de Seguridad y Restauracion
+                            Copia de Seguridad y Restauración
                         </h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Genera copias de seguridad y restaura la información
+                            almacenada en la base de datos.
                         </span>
                     </div>
                 </div>
@@ -195,80 +212,8 @@ const Restore = () => {
                     </Button>
                 </div>
             </div>
-            {/* <h2 className="mb-6 mt-6 flex justify-start items-center space-x-4">
-                <span className="font-bold dark:text-gray-200 text-gray-800 flex items-center">
-                    <FaCloudUploadAlt className="mx-4 text-blue-600" />
-                    Copia de seguridad / Restauración
-                </span>
-            </h2> */}
-
-            {/* <div className="flex mt-6 justify-end">
-                <Button
-                    color="sky"
-                    style={{ backgroundColor: '#3B82F6' }}
-                    className="mb-4 text-white hover:opacity-80 flex items-center justify-center"
-                    onClick={handleBackup}
-                >
-                    <FaSave className="w-5 h-5 mr-4" />
-                    Guardar copia de seguridad
-                </Button>
-            </div> */}
-
-            {/* Tabla de backups */}
-            {/* <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow className="bg-gray-200 dark:bg-gray-800 p-4">
-                            <TableCell>Archivo</TableCell>
-                            <TableCell align="right">Acciones</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {backups.map((backup, index) => (
-                            <TableRow key={index}>
-                                <TableCell>{backup.name}</TableCell>
-                                <TableCell align="right">
-                                    <Tooltip title="Restaurar">
-                                        <IconButton
-                                            color="secondary"
-                                            onClick={() =>
-                                                handleRestore(backup.url)
-                                            }
-                                            disabled={loading}
-                                        >
-                                            {loading ? (
-                                                <CircularProgress size={24} />
-                                            ) : (
-                                                <FaCloudUploadAlt className="text-blue-400" />
-                                            )}
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Tooltip title="Eliminar">
-                                        <IconButton
-                                            color="error"
-                                            onClick={() =>
-                                                handleDelete(backup.name)
-                                            }
-                                        >
-                                            <FaTrash className="h-5 w-5" />
-                                        </IconButton>
-                                    </Tooltip>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer> */}
 
             <DataTable data={backups} columns={columns} />
-
-            {/* Snackbar para mensajes
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={() => setSnackbarOpen(false)}
-                message={snackbarMessage}
-            /> */}
         </div>
     )
 }

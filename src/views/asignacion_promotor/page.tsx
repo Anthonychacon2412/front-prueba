@@ -97,11 +97,12 @@ const AsignacionPromotor = () => {
                     />
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">
-                            Asignacion de Promotor
+                            Asignación de Ruta
                         </h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Asigna promotores a rutas específicas. Selecciona
+                            rutas, regiones y promotores para optimizar la
+                            gestión de visitas.
                         </span>
                     </div>
                 </div>
