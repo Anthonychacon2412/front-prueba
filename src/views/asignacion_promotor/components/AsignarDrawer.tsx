@@ -81,7 +81,13 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
     const getUsuarios = async () => {
         try {
             const usuariosRef = collection(db, 'usuarios')
-            const q = query(usuariosRef, where('rol', '==', 'promotor'))
+            // Filtra por rol 'promotor' y región
+            const q = query(
+                usuariosRef,
+                where('rol', '==', 'promotor'),
+                where('region', '==', initialValues.region), // Asegúrate de usar la región de la ruta
+            )
+
             const querySnapshot = await getDocs(q)
 
             if (!querySnapshot.empty) {
@@ -92,7 +98,9 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
                 setPromotores(data)
                 console.log(data)
             } else {
-                console.error("No se encontraron usuarios con rol 'promotor'")
+                console.error(
+                    "No se encontraron usuarios con rol 'promotor' y región coincidente",
+                )
             }
         } catch (error) {
             console.error('Error al obtener los usuarios:', error)

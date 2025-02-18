@@ -164,7 +164,11 @@ const Seguimiento = () => {
                         isDisabled={!cliente}
                     />
 
-                    <Button variant="solid" onClick={handleSearch}>
+                    <Button
+                        variant="solid"
+                        onClick={handleSearch}
+                        disabled={!cliente || !region}
+                    >
                         <HiOutlineSearch />
                     </Button>
                 </div>

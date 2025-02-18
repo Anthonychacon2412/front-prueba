@@ -1,6 +1,5 @@
 import { ColumnDef, DataTable } from '@/components/shared'
 import { Button, Dialog, Spinner, Tooltip } from '@/components/ui'
-import { useAppDispatch } from '@/store'
 import { collection, getDocs, query } from 'firebase/firestore'
 import React, { useEffect, useMemo, useState } from 'react'
 import { HiOutlineEye, HiOutlinePhotograph } from 'react-icons/hi'
