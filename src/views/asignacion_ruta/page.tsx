@@ -80,11 +80,9 @@ const AsignacionRuta = () => {
                     if (
                         data.region === rutaData.region &&
                         data.cliente.some(
-                            (c: { status: boolean }) => c.status === false,
-                        ) &&
-                        data.cliente.some(
-                            (c: { nombre: string }) =>
-                                c.nombre === rutaData.cliente,
+                            (c: { nombre: string; status: boolean }) =>
+                                c.nombre === rutaData.cliente &&
+                                c.status === false,
                         )
                     ) {
                         return { id: doc.id, ...data }

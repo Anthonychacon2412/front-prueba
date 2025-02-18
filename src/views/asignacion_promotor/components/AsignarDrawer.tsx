@@ -140,6 +140,10 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
             console.error('Error:', error)
         } finally {
             setSubmitting(false)
+            setInitialValues((prevValues) => ({
+                ...prevValues,
+                promotor: values.promotor || '',
+            }))
         }
     }
 

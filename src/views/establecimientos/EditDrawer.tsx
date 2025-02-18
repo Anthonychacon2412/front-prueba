@@ -45,9 +45,6 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
     })
 
     const validationSchema = Yup.object({
-        nombre: Yup.string().required(
-            'El nombre del establecimiento es obligatorio',
-        ),
         region: Yup.string().required('La región es obligatoria'),
         cliente: Yup.array().min(1, 'Debe seleccionar al menos un cliente'),
         ubicacion: Yup.array()
@@ -180,6 +177,7 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                             <Field
                                 type="text"
                                 name="nombre"
+                                disabled
                                 className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                             />
                             <ErrorMessage

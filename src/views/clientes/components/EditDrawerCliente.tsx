@@ -36,17 +36,9 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
     const [isLoading, setIsLoading] = useState<boolean>(true) // Estado para cargar datos
 
     const validationSchema = Yup.object({
-        nombre: Yup.string().required('El nombre del cliente es obligatorio'),
         region: Yup.array()
             .of(Yup.string().required('Cada región debe ser válida'))
             .min(1, 'Debe seleccionar al menos una región'),
-
-        rif: Yup.string()
-            .matches(
-                /^[JE]-\d+$/,
-                'El RIF debe comenzar con J- o E- seguido de números',
-            )
-            .required('El RIF es obligatorio'),
     })
 
     const handleSubmit = async (
@@ -165,12 +157,8 @@ const EditDrawerCliente: React.FC<EditDrawerClienteProps> = ({
                             <Field
                                 type="text"
                                 name="nombre"
+                                disabled
                                 className="mt-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-orange-500 transition duration-200"
-                            />
-                            <ErrorMessage
-                                name="nombre"
-                                component="div"
-                                className="text-red-600 text-sm mt-1"
                             />
                         </div>
 

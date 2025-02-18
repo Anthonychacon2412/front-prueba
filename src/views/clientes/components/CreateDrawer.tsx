@@ -52,7 +52,11 @@ const CreateDrawer: React.FC<CreateDrawerProps> = ({
     const validationSchema = Yup.object({
         nombre: Yup.string().required('El nombre del cliente es obligatorio'),
         rif: Yup.string()
-        .required('El RIF es obligatorio'),
+            .matches(
+                /^[JEje]-\d+$/,
+                'El RIF debe comenzar con J- o E- seguido de números',
+            )
+            .required('El RIF es obligatorio'),
         region: Yup.array()
             .of(Yup.string().required('Cada región debe ser válida'))
             .min(1, 'Debes seleccionar al menos una región'),
@@ -148,10 +152,17 @@ const CreateDrawer: React.FC<CreateDrawerProps> = ({
                                 </div>
                                 <Input
                                     value={values.rif}
-                                    type="number"
-                                    onChange={(e) =>
-                                        setFieldValue('rif', e.target.value)
-                                    }
+                                    type="text"
+                                    onChange={(e) => {
+                                        const rifNumber =
+                                            e.target.value.replace(/^[JE]-/, '') // Eliminar cualquier prefijo viejo
+                                        setFieldValue(
+                                            'rif',
+                                            `${values.rif.charAt(
+                                                0,
+                                            )}-${rifNumber}`,
+                                        ) // Agregar prefijo actual
+                                    }}
                                     placeholder="Ingrese RIF"
                                 />
                             </InputGroup>
