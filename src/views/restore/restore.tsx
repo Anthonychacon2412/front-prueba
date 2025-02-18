@@ -113,8 +113,12 @@ const Restore = () => {
             }
         } catch (error) {
             console.error('Error al restaurar la copia de seguridad:', error)
-            setSnackbarMessage('Error al restaurar la copia de seguridad')
-            setSnackbarOpen(true)
+            toast.push(
+                <Notification
+                    title="Error al restaurar la copia de seguridad"
+                    type="danger"
+                />,
+            )
         } finally {
             setLoading(false)
         }
@@ -205,7 +209,7 @@ const Restore = () => {
                 <div className="flex gap-2">
                     <Button
                         // className="ml-4 bg-orange-400 text-white rounded-md shadow-md hover:bg-orange-500 active:bg-orange-600 transition duration-200 hover:opacity-80"
-                        onClick={() => handleBackup}
+                        onClick={handleBackup}
                         variant="solid"
                     >
                         Guardar copia de seguridad
