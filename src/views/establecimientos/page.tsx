@@ -95,6 +95,22 @@ const Establecimientos = () => {
                 cell: (props: any) => <span>{props.getValue()}</span>,
             },
             {
+                header: 'Clientes',
+                accessorKey: 'cliente',
+                cell: ({ getValue }) => {
+                    const clientes = getValue() // Obtiene las subcategorías
+                    if (Array.isArray(clientes) && clientes.length > 0) {
+                        return (
+                            <ul className="list-disc pl-5">
+                                {clientes.map((cliente) => (
+                                    <li>{cliente.nombre}</li>
+                                ))}
+                            </ul>
+                        )
+                    }
+                },
+            },
+            {
                 header: 'Estatus',
                 accessorKey: 'status',
                 cell: (props: any) => {

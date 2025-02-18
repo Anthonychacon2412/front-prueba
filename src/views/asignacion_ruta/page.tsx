@@ -57,6 +57,7 @@ const AsignacionRuta = () => {
                 const establecimientosSnap = await getDocs(establecimientosRef)
                 const asignados = establecimientosSnap.docs.map((doc) => ({
                     id: doc.id,
+                    cliente: data.cliente,
                     ...doc.data(),
                 }))
                 setEstablecimientosAsignados(asignados)
@@ -103,20 +104,11 @@ const AsignacionRuta = () => {
     }, [id])
 
     useEffect(() => {
-        if (rutaData) {
-            fetchEstablecimientosDisponibles()
-        }
+        fetchEstablecimientosDisponibles()
+        console.log('rutaData', rutaData)
     }, [rutaData])
 
     const handleDelete = async (row: any) => {
-        // Verificar si rutaData está definido y no es nulo
-        if (!rutaData) {
-            console.warn(
-                'No se puede eliminar el establecimiento porque rutaData es null o undefined',
-            )
-            return // Salir de la función si rutaData no está disponible
-        }
-
         try {
             const globalDocRef = doc(db, 'establecimientos', row.uid)
             const globalDocSnap = await getDoc(globalDocRef)
@@ -125,7 +117,7 @@ const AsignacionRuta = () => {
                 const globalData = globalDocSnap.data()
                 const updatedClientes = globalData.cliente.map(
                     (cliente: any) =>
-                        cliente.nombre === rutaData.cliente
+                        cliente.nombre === row.cliente
                             ? { ...cliente, status: false }
                             : cliente,
                 )
@@ -141,7 +133,7 @@ const AsignacionRuta = () => {
 
             toast.push(
                 <Notification title="Mensaje" type="success">
-                    Establecimiento eliminado correctamente!
+                    Establecimiento eliminado correctamente
                 </Notification>,
             )
             fetchRutaData()
@@ -213,10 +205,9 @@ const AsignacionRuta = () => {
         <div className="justify-center text-lg flex">
             <Tooltip title="Eliminar establecimiento">
                 <span
-                    className={`cursor-pointer p-2 hover:text-red-500 ${
-                        !rutaData ? 'cursor-not-allowed opacity-50' : ''
-                    }`}
-                    onClick={() => rutaData && handleDelete(row)}
+                    className={`cursor-pointer p-2 hover:text-red-500
+                    `}
+                    onClick={() => handleDelete(row)}
                 >
                     <HiOutlineTrash />
                 </span>

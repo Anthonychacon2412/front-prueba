@@ -102,7 +102,18 @@ const Clientes = () => {
             {
                 header: 'Región',
                 accessorKey: 'region',
-                cell: (props: any) => <span>{props.getValue()}</span>,
+                cell: ({ getValue }) => {
+                    const regiones = getValue() // Obtiene las subcategorías
+                    if (Array.isArray(regiones) && regiones.length > 0) {
+                        return (
+                            <ul className="list-disc pl-5">
+                                {regiones.map((region) => (
+                                    <li>{region}</li>
+                                ))}
+                            </ul>
+                        )
+                    }
+                },
             },
             {
                 header: 'Rif',

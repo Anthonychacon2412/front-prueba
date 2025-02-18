@@ -52,11 +52,7 @@ const CreateDrawer: React.FC<CreateDrawerProps> = ({
     const validationSchema = Yup.object({
         nombre: Yup.string().required('El nombre del cliente es obligatorio'),
         rif: Yup.string()
-            .matches(
-                /^[JE]-\d+$/,
-                'El RIF debe comenzar con J- o E- seguido de números',
-            )
-            .required('El RIF es obligatorio'),
+        .required('El RIF es obligatorio'),
         region: Yup.array()
             .of(Yup.string().required('Cada región debe ser válida'))
             .min(1, 'Debes seleccionar al menos una región'),
