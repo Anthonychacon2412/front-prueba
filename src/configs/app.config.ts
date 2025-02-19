@@ -9,7 +9,7 @@ export type AppConfig = {
 
 const appConfig: AppConfig = {
     apiPrefix: '/api',
-    authenticatedEntryPath: '/app/sales/dashboard',
+    authenticatedEntryPath: '/app/clientes',
     unAuthenticatedEntryPath: '/sign-in',
     tourPath: '/app/account/kyc-form',
     locale: 'en',
