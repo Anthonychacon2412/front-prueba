@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { getSalesDashboardData, useAppSelector } from '../store'
 import { useAppDispatch } from '@/store'
+import { Card } from '@/components/ui'
+import Charts from './Charts'
 
 const SalesDashboardBody = () => {
     const dispatch = useAppDispatch()
@@ -31,6 +33,12 @@ const SalesDashboardBody = () => {
                     manera eficiente y efectiva. ¡Explora nuestras herramientas
                     y optimiza tu estrategia de ventas!
                 </p>
+                <div className="grid grid-cols-2 gap-3">
+                    <Card />
+                    <Card>
+                        <Charts />
+                    </Card>
+                </div>
             </div>
         </>
     )

@@ -63,20 +63,59 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                 'establecimientos',
                 establecimientoId,
             )
+            const docSnap = await getDoc(establecimientoRef)
+
+            if (!docSnap.exists()) {
+                toast.error('El establecimiento no existe')
+                setSubmitting(false)
+                return
+            }
+
+            const data = docSnap.data()
+            const clientesExistentes = data.cliente || []
+
+            // Filtramos los clientes que deben permanecer (los que aún están seleccionados)
+            const clientesFiltrados = clientesExistentes.filter(
+                (cliente: { nombre: string }) =>
+                    values.cliente.includes(cliente.nombre),
+            )
+
+            // Determinar qué clientes son nuevos
+            const nuevosClientes = values.cliente
+                .filter(
+                    (cliente) =>
+                        !clientesFiltrados.some(
+                            (c: { nombre: string }) => c.nombre === cliente,
+                        ),
+                )
+                .map((cliente) => ({
+                    nombre: cliente,
+                    status: false, // Nuevos clientes con status false
+                }))
+
+            // Lista final de clientes: los que permanecen + los nuevos
+            const clientesActualizados = [
+                ...clientesFiltrados,
+                ...nuevosClientes,
+            ]
+
+            // Actualizar en Firebase
             await updateDoc(establecimientoRef, {
-                ...values,
+                nombre: values.nombre,
+                region: values.region,
+                cliente: clientesActualizados, // Guardamos la lista filtrada y actualizada
                 ubicacion: values.ubicacion
                     ? new GeoPoint(values.ubicacion[0], values.ubicacion[1])
                     : null,
             })
 
             toast.success('Establecimiento actualizado exitosamente')
-            setSubmitting(false)
             onEstablecimientoUpdated()
             onClose()
         } catch (error) {
             console.error('Error al actualizar el establecimiento:', error)
             toast.error('Error al actualizar el establecimiento')
+        } finally {
             setSubmitting(false)
         }
     }
@@ -168,7 +207,7 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                 validationSchema={validationSchema}
                 onSubmit={handleSubmit}
             >
-                {({ setFieldValue, isSubmitting }) => (
+                {({ setFieldValue, isSubmitting, values }) => (
                     <Form className="flex flex-col space-y-6">
                         <div className="flex flex-col">
                             <label className="font-semibold text-gray-700">
@@ -220,10 +259,10 @@ const EditDrawer: React.FC<EditDrawerProps> = ({
                                     value: cliente,
                                     label: cliente,
                                 }))} // Opciones para el Select
-                                value={initialValues.cliente.map((cliente) => ({
+                                value={values.cliente.map((cliente) => ({
                                     value: cliente,
                                     label: cliente,
-                                }))} // Mapea los valores seleccionados actuales
+                                }))} // Asegúrate de que el valor esté en el formato correcto
                                 onChange={(selectedOptions) => {
                                     const selectedValues = selectedOptions.map(
                                         (option) => option.value,

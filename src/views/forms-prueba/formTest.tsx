@@ -69,7 +69,8 @@ const FormularioPrueba = () => {
                     ),
                 }
             })
-
+            console.log('Opciones de clientes:', opcionesClientes)
+            console.log('Documentos:', documentos)
             setClients(opcionesClientes)
             setForms(documentos)
             setLoading(false)
@@ -110,7 +111,7 @@ const FormularioPrueba = () => {
     const columns: ColumnDef<any>[] = useMemo(
         () => [
             {
-                header: 'Usuario',
+                header: 'Promotor',
                 accessorKey: 'nombre_usuario',
                 cell: (props) => <span>{props.getValue() as string}</span>,
             },
@@ -178,71 +179,94 @@ const FormularioPrueba = () => {
         const { mejor_promotor, ranking } = data
         const doc = new jsPDF()
 
-        // Título del documento
-        doc.setFontSize(18)
-        doc.text('Análisis de Promotores', 10, 20)
+        // Ruta del logo en la carpeta public
+        const logoPath = '/logo-mobility.png' // Asegúrate de que la imagen esté en /public/logo.png
 
-        // Explicación con mejor separación
-        doc.setFontSize(12)
-        doc.text(`Explicación:`, 10, 30)
-        doc.setFontSize(10)
-        doc.text(explicacion, 10, 40, { maxWidth: 180 })
+        // Convertir la imagen a base64
+        const img = new Image()
+        img.src = logoPath
+        img.onload = () => {
+            const canvas = document.createElement('canvas')
+            const ctx = canvas.getContext('2d')
 
-        let currentY = doc.lastAutoTable?.finalY || 50
+            canvas.width = img.width
+            canvas.height = img.height
+            ctx.drawImage(img, 0, 0)
 
-        // Espaciado antes de la siguiente sección
-        currentY += 10
-        doc.setFontSize(14)
-        doc.text('Mejor Promotor', 10, currentY)
+            const logoBase64 = canvas.toDataURL('image/png') // Convertir a base64
 
-        doc.setFontSize(12)
-        currentY += 10
-        doc.text(`Nombre: ${mejor_promotor.nombre_usuario}`, 10, currentY)
-        currentY += 10
-        doc.text(
-            `Tiempo de Respuesta: ${mejor_promotor.tiempo_respuesta} segundos`,
-            10,
-            currentY,
-        )
-        currentY += 10
-        doc.text(
-            `Formularios Completados: ${mejor_promotor.formularios_completados}`,
-            10,
-            currentY,
-        )
-        currentY += 10
-        doc.text(
-            `Fotos Adjuntas: ${mejor_promotor.fotos_adjuntas}`,
-            10,
-            currentY,
-        )
+            // Agregar logo al PDF
+            doc.addImage(logoBase64, 'PNG', 10, 10, 40, 15) // (imagen, formato, x, y, ancho, alto)
 
-        // Espaciado antes del ranking
-        currentY += 15
-        doc.setFontSize(14)
-        doc.text('Ranking de Promotores', 10, currentY)
+            // Título del documento centrado
+            doc.setFontSize(18)
+            const pageWidth = doc.internal.pageSize.width // Obtiene el ancho del documento
+            const textWidth = doc.getTextWidth('Análisis de Promotores') // Obtiene el ancho del texto
+            const xPosition = (pageWidth - textWidth) / 2 // Calcula la posición centrada
 
-        // Generar tabla con margen adecuado
-        autoTable(doc, {
-            head: [['Nombre', 'Tiempo de Respuesta', 'Formularios', 'Fotos']],
-            body: ranking.map((promotor) => [
-                promotor.nombre_usuario,
-                promotor.tiempo_respuesta,
-                promotor.formularios_completados,
-                promotor.fotos_adjuntas,
-            ]),
-            startY: currentY + 10,
-            theme: 'striped',
-            headStyles: { fillColor: [35, 47, 62], textColor: [255, 255, 255] },
-            alternateRowStyles: { fillColor: [240, 240, 240] },
-            margin: { top: 10, left: 10, right: 10 },
-        })
+            doc.text('Análisis de Promotores', xPosition, 35)
 
-        // Descargar el PDF
-        doc.save('analisis_promotores.pdf')
+            let currentY = 50
 
-        setIsGeneratingPDF(false) // Desactivar el estado de carga
-        onDialogClose()
+            // Sección de Mejor Promotor
+            currentY += 10
+            doc.setFontSize(14)
+            doc.text('Mejor Promotor', 10, currentY)
+
+            doc.setFontSize(12)
+            currentY += 10
+            doc.text(`Nombre: ${mejor_promotor.nombre_usuario}`, 10, currentY)
+            currentY += 10
+            doc.text(
+                `Tiempo de Respuesta: ${mejor_promotor.tiempo_respuesta} segundos`,
+                10,
+                currentY,
+            )
+            currentY += 10
+            doc.text(
+                `Formularios Completados: ${mejor_promotor.formularios_completados}`,
+                10,
+                currentY,
+            )
+            currentY += 10
+            doc.text(
+                `Fotos Adjuntas: ${mejor_promotor.fotos_adjuntas}`,
+                10,
+                currentY,
+            )
+
+            // Espaciado antes del ranking
+            currentY += 15
+            doc.setFontSize(14)
+            doc.text('Ranking de Promotores', 10, currentY)
+
+            // Generar tabla con margen adecuado
+            autoTable(doc, {
+                head: [
+                    ['Nombre', 'Tiempo de Respuesta', 'Formularios', 'Fotos'],
+                ],
+                body: ranking.map((promotor) => [
+                    promotor.nombre_usuario,
+                    promotor.tiempo_respuesta,
+                    promotor.formularios_completados,
+                    promotor.fotos_adjuntas,
+                ]),
+                startY: currentY + 10,
+                theme: 'striped',
+                headStyles: {
+                    fillColor: [35, 47, 62],
+                    textColor: [255, 255, 255],
+                },
+                alternateRowStyles: { fillColor: [240, 240, 240] },
+                margin: { top: 10, left: 10, right: 10 },
+            })
+
+            // Descargar el PDF
+            doc.save('analisis_promotores.pdf')
+
+            setIsGeneratingPDF(false)
+            onDialogClose()
+        }
     }
 
     const realizarConsulta = async (datos: any) => {

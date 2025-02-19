@@ -73,8 +73,8 @@ const Perfil = () => {
                     <div>
                         <h1 className="mb-0 pb-0 text-3xl">Mi perfil</h1>
                         <span className="text-xs">
-                            Lorem ipsum dolor sit amet consectetur adipisicing
-                            elit. Optio quae ratione alias?
+                            Bienvenido a tu perfil. Aquí puedes ver visualizar
+                            tu información personal
                         </span>
                     </div>
                 </div>

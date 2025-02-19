@@ -70,6 +70,8 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
                     region: ruta.region,
                     promotor: ruta.promotor || '',
                 })
+                // Llama a getUsuarios después de actualizar initialValues
+                await getUsuarios(ruta.region)
             } else {
                 console.error('No se encontró la ruta')
             }
@@ -78,14 +80,14 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
         }
     }
 
-    const getUsuarios = async () => {
+    const getUsuarios = async (region: string) => {
         try {
             const usuariosRef = collection(db, 'usuarios')
             // Filtra por rol 'promotor' y región
             const q = query(
                 usuariosRef,
                 where('rol', '==', 'promotor'),
-                where('region', '==', initialValues.region), // Asegúrate de usar la región de la ruta
+                where('region', '==', region), // Usa la región pasada como parámetro
             )
 
             const querySnapshot = await getDocs(q)
@@ -93,7 +95,8 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
             if (!querySnapshot.empty) {
                 const data = querySnapshot.docs.map((doc) => ({
                     id: doc.id,
-                    nombre: doc.data().nombre, // Asegúrate de que 'nombre' existe en Firestore
+                    nombre: doc.data().nombre,
+                    region: doc.data().region, // Asegúrate de que 'nombre' existe en Firestore
                 }))
                 setPromotores(data)
                 console.log(data)
@@ -112,7 +115,6 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
             if (rutaId) {
                 setIsLoading(true)
                 await getRuta()
-                await getUsuarios()
                 setIsLoading(false)
             }
         }
@@ -258,7 +260,7 @@ const AsignarDrawer: React.FC<AsignarDrawerProps> = ({
                             <Button
                                 type="submit"
                                 variant="solid"
-                                className="text-white hover:opacity-80"
+                                color="orange-500"
                                 disabled={isSubmitting}
                             >
                                 {isSubmitting ? (

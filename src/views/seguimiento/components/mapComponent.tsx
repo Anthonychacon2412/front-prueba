@@ -53,7 +53,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
     console.log('Ubicación del promotor:', promotorUbicacion)
     return (
         <MapContainer
-            center={[10.500211, -66.922711]}
+            center={
+                promotorUbicacion
+                    ? [promotorUbicacion._lat, promotorUbicacion._long]
+                    : [10.500211, -66.922711]
+            }
             zoom={12}
             className="h-96 w-full"
         >
@@ -75,7 +79,6 @@ const MapComponent: React.FC<MapComponentProps> = ({
                             icon={establecimientoIcon}
                         >
                             <Tooltip>{est.nombre}</Tooltip>{' '}
-                            {/* Tooltip para establecimientos */}
                         </Marker>
                     ) : null
                 })}

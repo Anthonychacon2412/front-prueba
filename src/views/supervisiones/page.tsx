@@ -185,14 +185,19 @@ const Supervisiones = () => {
                 {selectedRow?.supervision?.length ?? 0 > 0 ? (
                     <div>
                         {selectedRow?.supervision.map((entry, index) => (
-                            <div key={index} className="mb-3">
-                                <strong className="block">Pregunta:</strong>
-                                <p>{entry.pregunta}</p>
+                            <div key={index} className="mb-3 grid grid-cols-2">
+                                <div>
+                                    {' '}
+                                    <strong className="block">Pregunta:</strong>
+                                    <p>{entry.pregunta}</p>
+                                </div>
 
-                                <strong className="block mt-2">
-                                    Respuesta:
-                                </strong>
-                                <p>{formatRespuesta(entry.respuesta)}</p>
+                                <div>
+                                    <strong className="block mt-2">
+                                        Respuesta:
+                                    </strong>
+                                    <p>{formatRespuesta(entry.respuesta)}</p>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -225,7 +230,7 @@ const Supervisiones = () => {
                                     <img
                                         src={entry.foto}
                                         alt={`Foto ${index}`}
-                                        className="transition-transform duration-200 transform group-hover:scale-105"
+                                        className="w-[400px] h-[300px] transition-transform duration-200 transform group-hover:scale-105"
                                     />
                                     <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                         <span className="text-xl font-bold">
