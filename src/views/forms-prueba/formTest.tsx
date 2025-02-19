@@ -134,12 +134,13 @@ const FormularioPrueba = () => {
         [],
     )
     const generarExcel = (data: any) => {
+        console.log('Generando Excel...')
+        console.log('Datos:', data)
         // Mapear datos para estructurar las filas del Excel
         const filas = data?.map((item: any) => ({
-            'Cliente UID': item.cliente_uid,
             'Nombre Cliente': item.nombre_cliente,
             Establecimiento: item.establecimiento,
-            'Establecimiento ID': item.establecimiento_id,
+
             'Nombre Usuario': item.nombre_usuario,
             'Nombre Formulario': item.nombre_formulario,
             Región: item.region,
@@ -344,7 +345,7 @@ const FormularioPrueba = () => {
             }
 
             generarPDF(json)
-            generarExcel(json)
+            generarExcel(datos)
         } catch (error) {
             console.error('Error al obtener la respuesta:', error)
         }
