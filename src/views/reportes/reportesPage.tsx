@@ -1,34 +1,118 @@
 import { Button } from '@/components/ui'
-import { getFunctions, httpsCallable } from 'firebase/functions'
+import { db } from '@/configs/firebaseAssets.config'
+import { doc, updateDoc } from 'firebase/firestore'
 import { useState } from 'react'
-
-const functions = getFunctions()
-const downloadImageFunction = httpsCallable(functions, 'downloadImage') // Evitamos confusión de nombres
 
 const FormularioPrueba = () => {
     const [loading, setLoading] = useState(false)
+    const [uploading, setUploading] = useState(false)
 
-    const handleDownloadImage = async (urlImagen: string) => {
-        console.log('Descargando imagen:', urlImagen)
-        setLoading(true) // Activamos el estado de carga
+    async function addDocument() {
+        setUploading(true)
         try {
-            const response = await downloadImageFunction({ url: urlImagen }) // Llamada correcta a Firebase Function
-            console.log('Imagen descargada:', response.data)
+            const docRef = doc(db, 'forms-resp-prueba', 'z9W8yYcpDKGFLGJDk9G9')
+
+            const data = {
+                form_structure: {
+                    categories: {
+                        '0': {
+                            name: 'Cervezas',
+                            subcategories: {
+                                '0': {
+                                    name: 'Cervezas Lager',
+                                    brands: {
+                                        '0': {
+                                            name: 'Heineken',
+                                            products: {
+                                                '0': {
+                                                    name: 'Heineken 330ml',
+                                                    questions: {
+                                                        '0': {
+                                                            question: 'Precio',
+                                                            answer: '2.5$',
+                                                        },
+                                                        '1': {
+                                                            question:
+                                                                'Se encuentra el producto en el anaquel?',
+                                                            answer: 'Sí',
+                                                        },
+                                                        '2': {
+                                                            question:
+                                                                'Cumple con el planograma?',
+                                                            answer: 'Sí',
+                                                        },
+                                                    },
+                                                },
+                                                '1': {
+                                                    name: 'Heineken 500ml',
+                                                    questions: {
+                                                        '0': {
+                                                            question: 'Precio',
+                                                            answer: '3.0$',
+                                                        },
+                                                        '1': {
+                                                            question:
+                                                                'Se encuentra el producto en el anaquel?',
+                                                            answer: 'No',
+                                                        },
+                                                        '2': {
+                                                            question:
+                                                                'Cumple con el planograma?',
+                                                            answer: 'No',
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                        '1': {
+                                            name: 'Amstel',
+                                            products: {
+                                                '0': {
+                                                    name: 'Amstel Lager 330ml',
+                                                    questions: {
+                                                        '0': {
+                                                            question: 'Precio',
+                                                            answer: '2.3$',
+                                                        },
+                                                        '1': {
+                                                            question:
+                                                                'Se encuentra el producto en el anaquel?',
+                                                            answer: 'Sí',
+                                                        },
+                                                        '2': {
+                                                            question:
+                                                                'Cumple con el planograma?',
+                                                            answer: 'No',
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            }
+
+            await updateDoc(docRef, data)
+            console.log('Documento actualizado correctamente!')
         } catch (error) {
-            console.error('Error al descargar la imagen:', error)
+            console.error('Error al actualizar el documento:', error)
         } finally {
-            setLoading(false) // Desactivamos el estado de carga
+            setUploading(false)
         }
     }
 
     return (
-        <div>
+        <div className="flex flex-col gap-4">
+            <Button onClick={addDocument} disabled={uploading}>
+                {uploading ? 'Subiendo...' : 'Subir Datos'}
+            </Button>
+
             <Button
-                onClick={() =>
-                    handleDownloadImage(
-                        'https://firebasestorage.googleapis.com/v0/b/tesis-mobility.firebasestorage.app/o/images%2Fl8LK3y4jkPbcujNpMakl%2Fdepositphotos_40253985-stock-photo-chocolate-sweets-on-supermarket-shelf.jpg?alt=media&token=3c468b4f-a3b7-4a33-aaa9-1091ee6516f1',
-                    )
-                }
+                onClick={() => console.log('Descargar Imagen')}
                 disabled={loading}
             >
                 {loading ? 'Descargando Imagen...' : 'Descargar Imagen'}
